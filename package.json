@@ -12,9 +12,16 @@
   },
   "keywords": [
     "gps",
+    "geolocation",
+    "position",
     "location",
     "tracking",
-    "background"
+    "background",
+    "react",
+    "react-native",
+    "react-component",
+    "android",
+    "ios"
   ],
   "author": "Marian Hello",
   "license": "Apache-2.0",

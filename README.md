@@ -1,5 +1,11 @@
 # react-native-mauron85-background-geolocation
 
+# Donation
+
+Please support my work and support continuous development by your donation. 
+
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=6GW8FPTE6TV5J)
+
 ## Description
 
 Special React Native fork of [cordova-plugin-mauron85-background-geolocation](https://github.com/mauron85/cordova-plugin-background-geolocation).
