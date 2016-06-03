@@ -1,0 +1,11 @@
+node_modules
+
+# Android/IJ
+.idea
+.gradle
+local.properties
+*.iml
+build
+*.skip
+
+npm-debug.log
