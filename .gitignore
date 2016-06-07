@@ -1,4 +1,10 @@
 node_modules
+npm-debug.log
+
+# Xcode
+xcuserdata
+project.xcworkspace
+ios/react-native
 
 # Android/IJ
 .idea
@@ -7,5 +13,3 @@ local.properties
 *.iml
 build
 *.skip
-
-npm-debug.log

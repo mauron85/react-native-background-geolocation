@@ -1,12 +1,8 @@
 /*
 According to apache license
 
-This is fork of christocracy cordova-plugin-background-geolocation plugin
+This is class is using code from christocracy cordova-plugin-background-geolocation plugin
 https://github.com/christocracy/cordova-plugin-background-geolocation
-
-Differences to original version:
-
-1. location is not persisted to db anymore, but broadcasted using intents instead
 */
 
 package com.tenforwardconsulting.bgloc;
