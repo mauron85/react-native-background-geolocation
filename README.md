@@ -10,11 +10,15 @@ Please support my work and support continuous development by your donation.
 
 Special React Native fork of [cordova-plugin-mauron85-background-geolocation](https://github.com/mauron85/cordova-plugin-background-geolocation).
 
+## Example Apps
+
+Repository [react-native-background-geolocation-example](https://github.com/mauron85/react-native-background-geolocation-example) is hosting example app for both iOS and Android platform.
+
 ## Quick example
 
 ```javascript
 import React, { Component } from 'react';
-var BackgroundGeolocation = require('react-native-mauron85-background-geolocation');
+import BackgroundGeolocation from 'react-native-mauron85-background-geolocation';
 
 class BgTracking extends Component {
   componentWillMount() {
