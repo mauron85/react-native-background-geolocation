@@ -113,3 +113,5 @@ public class MainActivity extends Activity implements DefaultHardwareBackBtnHand
 1. In XCode, in the project navigator, right click `Libraries` ➜ `Add Files to [your project's name]`
 2. add `./node_modules/react-native-mauron85-background-geolocation/ios/RCTBackgroundGeolocation.xcodeproj`
 3. In the XCode project navigator, select your project, select the `Build Phases` tab and in the `Link Binary With Libraries` section add **libRCTBackgroundGeolocation.a**
+4. add `UIBackgroundModes` **location** to `Info.plist`
+5. add `NSLocationAlwaysUsageDescription` **App requires background tracking** to `Info.plist`
