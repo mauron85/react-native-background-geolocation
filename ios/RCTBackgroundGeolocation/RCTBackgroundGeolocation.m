@@ -51,10 +51,11 @@ RCT_EXPORT_METHOD(start:(RCTResponseSenderBlock)success failure:(RCTResponseSend
     });
 }
 
-RCT_EXPORT_METHOD(stop)
+RCT_EXPORT_METHOD(stop:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #stop");
     [bgDelegate stop];
+    success(@[]);
 }
 
 RCT_EXPORT_METHOD(finish:(int)taskId)
