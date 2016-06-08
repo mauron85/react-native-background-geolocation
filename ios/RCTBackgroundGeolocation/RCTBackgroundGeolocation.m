@@ -36,18 +36,18 @@ RCT_EXPORT_MODULE();
 RCT_EXPORT_METHOD(configure:(NSDictionary*)config success:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #configure");
-    dispatch_async(dispatch_get_main_queue(), ^{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [bgDelegate configure:config];
-        success(@[]);
+        success(@[[NSNull null]]);
     });
 }
 
 RCT_EXPORT_METHOD(start:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #start");
-    dispatch_async(dispatch_get_main_queue(), ^{
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         [bgDelegate start];
-        success(@[]);
+        success(@[[NSNull null]]);
     });
 }
 
@@ -55,7 +55,7 @@ RCT_EXPORT_METHOD(stop:(RCTResponseSenderBlock)success failure:(RCTResponseSende
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #stop");
     [bgDelegate stop];
-    success(@[]);
+    success(@[[NSNull null]]);
 }
 
 RCT_EXPORT_METHOD(finish:(int)taskId)
