@@ -1,7 +1,5 @@
 package com.marianhello.bgloc;
 
-import java.util.ArrayList;
-
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -12,22 +10,23 @@ import android.os.Bundle;
 import android.os.PowerManager;
 import android.util.Log;
 import android.widget.Toast;
+
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.ActivityRecognition;
+import com.google.android.gms.location.ActivityRecognitionResult;
+import com.google.android.gms.location.DetectedActivity;
+import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.location.LocationListener;
-import com.google.android.gms.location.ActivityRecognition;
-import com.google.android.gms.location.DetectedActivity;
-import com.google.android.gms.location.ActivityRecognitionResult;
+import com.marianhello.logging.LoggerManager;
 
-import com.marianhello.bgloc.Config;
-import com.marianhello.bgloc.data.LocationDAO;
+import java.util.ArrayList;
 
 public class ActivityRecognitionLocationProvider extends AbstractLocationProvider implements GoogleApiClient.ConnectionCallbacks,
     GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
-    private static final String TAG = "FusedLocationProvider";
+    private static final String TAG = ActivityRecognitionLocationProvider.class.getSimpleName();
     private static final String P_NAME = " com.marianhello.bgloc";
     private static final String DETECTED_ACTIVITY_UPDATE = P_NAME + ".DETECTED_ACTIVITY_UPDATE";
 
@@ -40,34 +39,40 @@ public class ActivityRecognitionLocationProvider extends AbstractLocationProvide
     private Boolean isWatchingActivity = false;
     private DetectedActivity lastActivity = new DetectedActivity(DetectedActivity.UNKNOWN, 100);
 
-    public ActivityRecognitionLocationProvider(LocationService context) {
-        super(context);
+    private org.slf4j.Logger log;
+
+    public ActivityRecognitionLocationProvider(LocationService locationService) {
+        super(locationService);
         PROVIDER_ID = 1;
     }
 
     public void onCreate() {
         super.onCreate();
-        Log.i(TAG, "onCreate");
 
-        PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+        log = LoggerManager.getLogger(ActivityRecognitionLocationProvider.class);
+        log.info("Creating ActivityRecognitionLocationProvider");
+
+        PowerManager pm = (PowerManager) locationService.getSystemService(Context.POWER_SERVICE);
         wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
         wakeLock.acquire();
 
         Intent detectedActivitiesIntent = new Intent(DETECTED_ACTIVITY_UPDATE);
-        detectedActivitiesPI = PendingIntent.getBroadcast(context, 9002, detectedActivitiesIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        detectedActivitiesPI = PendingIntent.getBroadcast(locationService, 9002, detectedActivitiesIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         registerReceiver(detectedActivitiesReceiver, new IntentFilter(DETECTED_ACTIVITY_UPDATE));
     }
 
     @Override
     public void onLocationChanged(Location location) {
-        Log.d(TAG, "onLocationChanged: " + location.toString());
+        log.debug("Location change: {}", location.toString());
 
         if (lastActivity.getType() == DetectedActivity.STILL) {
+            handleStationary(location);
             stopTracking();
+            return;
         }
 
         if (config.isDebugging()) {
-            Toast.makeText(context, "acy:" + location.getAccuracy() + ",v:" + location.getSpeed() + ",df:" + config.getDistanceFilter(), Toast.LENGTH_LONG).show();
+            Toast.makeText(locationService, "acy:" + location.getAccuracy() + ",v:" + location.getSpeed() + ",df:" + config.getDistanceFilter(), Toast.LENGTH_LONG).show();
         }
 
         // if (lastLocation != null && location.distanceTo(lastLocation) < config.getDistanceFilter()) {
@@ -75,7 +80,7 @@ public class ActivityRecognitionLocationProvider extends AbstractLocationProvide
         // }
 
         if (config.isDebugging()) {
-            startTone("beep");
+            startTone(Tone.BEEP);
         }
 
         lastLocation = location;
@@ -83,13 +88,13 @@ public class ActivityRecognitionLocationProvider extends AbstractLocationProvide
     }
 
     public void startRecording() {
-        Log.i(TAG, "startRecording");
+        log.info("Start recording");
         this.startRecordingOnConnect = true;
         attachRecorder();
     }
 
     public void stopRecording() {
-        Log.i(TAG, "stopRecording");
+        log.info("Stop recording");
         this.startRecordingOnConnect = false;
         detachRecorder();
         stopTracking();
@@ -104,10 +109,14 @@ public class ActivityRecognitionLocationProvider extends AbstractLocationProvide
                 .setFastestInterval(config.getFastestInterval())
                 .setInterval(config.getInterval());
                 // .setSmallestDisplacement(config.getStationaryRadius());
-        LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
-        isTracking = true;
-        Log.d(TAG, "startTracking with priority: "
-            + priority + ", fastestInterval: " + config.getFastestInterval() + ", interval: " + config.getInterval() + ", smallestDisplacement: " + config.getStationaryRadius());
+        try {
+            LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
+            isTracking = true;
+            log.debug("Start tracking with priority={} fastestInterval={} interval={} activitiesInterval={} stopOnStillActivity={}", priority, config.getFastestInterval(), config.getInterval(), config.getActivitiesInterval(), config.getStopOnStillActivity());
+        } catch (SecurityException e) {
+            log.error("Security exception: {}", e.getMessage());
+            this.handleSecurityException(e);
+        }
     }
 
     public void stopTracking() {
@@ -118,8 +127,8 @@ public class ActivityRecognitionLocationProvider extends AbstractLocationProvide
     }
 
     private void connectToPlayAPI() {
-        Log.d(TAG, "connecting to Google Play Services");
-        googleApiClient =  new GoogleApiClient.Builder(context)
+        log.debug("Connecting to Google Play Services");
+        googleApiClient =  new GoogleApiClient.Builder(locationService)
                 .addApi(LocationServices.API)
                 .addApi(ActivityRecognition.API)
                 .addConnectionCallbacks(this)
@@ -155,7 +164,7 @@ public class ActivityRecognitionLocationProvider extends AbstractLocationProvide
 
     private void detachRecorder() {
         if (isWatchingActivity) {
-            Log.d(TAG, "detachRecorder");
+            log.debug("Detaching recorder");
             ActivityRecognition.ActivityRecognitionApi.removeActivityUpdates(googleApiClient, detectedActivitiesPI);
             isWatchingActivity = false;
         }
@@ -163,7 +172,7 @@ public class ActivityRecognitionLocationProvider extends AbstractLocationProvide
 
     @Override
     public void onConnected(Bundle connectionHint) {
-        Log.d(TAG, "connected to Google Play Services");
+        log.debug("Connected to Google Play Services");
         if (this.startRecordingOnConnect) {
             attachRecorder();
         }
@@ -172,40 +181,37 @@ public class ActivityRecognitionLocationProvider extends AbstractLocationProvide
     @Override
     public void onConnectionSuspended(int cause) {
         // googleApiClient.connect();
-        Log.i(TAG, "connection to Google Play Services suspended");
+        log.info("Connection to Google Play Services suspended");
     }
 
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
-        Log.e(TAG, "connection to Google Play Services failed");
+        log.error("Connection to Google Play Services failed");
     }
 
     /**
-    * Translates a number representing desired accuracy of GeoLocation system from set [0, 10, 100, 1000].
+    * Translates a number representing desired accuracy of Geolocation system from set [0, 10, 100, 1000].
     * 0:  most aggressive, most accurate, worst battery drain
     * 1000:  least aggressive, least accurate, best for battery.
     */
     private Integer translateDesiredAccuracy(Integer accuracy) {
-        switch (accuracy) {
-            case 10000:
-                accuracy = LocationRequest.PRIORITY_NO_POWER;
-                break;
-            case 1000:
-                accuracy = LocationRequest.PRIORITY_LOW_POWER;
-                break;
-            case 100:
-                accuracy = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY;
-                break;
-            case 10:
-                accuracy = LocationRequest.PRIORITY_HIGH_ACCURACY;
-                break;
-            case 0:
-                accuracy = LocationRequest.PRIORITY_HIGH_ACCURACY;
-                break;
-            default:
-                accuracy = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY;
+        if (accuracy >= 10000) {
+            return LocationRequest.PRIORITY_NO_POWER;
         }
-        return accuracy;
+        if (accuracy >= 1000) {
+            return LocationRequest.PRIORITY_LOW_POWER;
+        }
+        if (accuracy >= 100) {
+            return LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY;
+        }
+        if (accuracy >= 10) {
+            return LocationRequest.PRIORITY_HIGH_ACCURACY;
+        }
+        if (accuracy >= 0) {
+            return LocationRequest.PRIORITY_HIGH_ACCURACY;
+        }
+
+        return LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY;
     }
 
 
@@ -257,7 +263,7 @@ public class ActivityRecognitionLocationProvider extends AbstractLocationProvide
             //Find the activity with the highest percentage
             lastActivity = getProbableActivity(detectedActivities);
 
-            Log.d(TAG, "MOST LIKELY ACTIVITY: " + getActivityString(lastActivity.getType()) + " " + lastActivity.getConfidence());
+            log.debug("Detected activity={} confidence={}", getActivityString(lastActivity.getType()), lastActivity.getConfidence());
 
             if (lastActivity.getType() == DetectedActivity.STILL) {
                 if (config.isDebugging()) {
@@ -277,7 +283,7 @@ public class ActivityRecognitionLocationProvider extends AbstractLocationProvide
 
     public void onDestroy() {
         super.onDestroy();
-        Log.d(TAG, "onDestroy");
+        log.info("Destroying ActivityRecognitionLocationProvider");
         stopRecording();
         disconnectFromPlayAPI();
         unregisterReceiver(detectedActivitiesReceiver);
