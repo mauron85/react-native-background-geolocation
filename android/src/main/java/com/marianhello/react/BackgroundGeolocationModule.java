@@ -97,12 +97,10 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule {
             BackgroundLocation location = (BackgroundLocation) bundle.getParcelable("location");
             Long locationId = location.getLocationId();
             Integer locationProvider = location.getLocationProvider();
-            Boolean debug = location.getDebug();
 
             WritableMap out = Arguments.createMap();
             if (locationId != null) out.putInt("locationId", Convert.safeLongToInt(locationId));
             if (locationProvider != null) out.putInt("locationProvider", locationProvider);
-            if (debug != null) out.putBoolean("debug", debug);
             out.putInt("time", Convert.safeLongToInt(location.getTime()));
             out.putDouble("latitude", location.getLatitude());
             out.putDouble("longitude", location.getLongitude());

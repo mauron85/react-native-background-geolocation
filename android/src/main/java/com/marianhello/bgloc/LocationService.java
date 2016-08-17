@@ -1,68 +1,135 @@
+/*
+According to apache license
+
+This is fork of christocracy cordova-plugin-background-geolocation plugin
+https://github.com/christocracy/cordova-plugin-background-geolocation
+
+This is a new class
+*/
+
 package com.marianhello.bgloc;
 
+import android.accounts.Account;
 import android.app.Notification;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.content.IntentFilter;
+import android.database.SQLException;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
-import android.os.AsyncTask;
-import android.os.Build;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 
 import com.marianhello.bgloc.data.BackgroundLocation;
+import com.marianhello.bgloc.data.ConfigurationDAO;
 import com.marianhello.bgloc.data.DAOFactory;
 import com.marianhello.bgloc.data.LocationDAO;
-import com.marianhello.bgloc.HttpPostService;
+import com.marianhello.bgloc.sync.AccountHelper;
+import com.marianhello.bgloc.sync.AuthenticatorService;
+import com.marianhello.bgloc.sync.SyncService;
+import com.marianhello.logging.LoggerManager;
 
-import java.util.ArrayList;
-import java.util.Random;
-
+import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.net.HttpURLConnection;
+import java.util.ArrayList;
 
 public class LocationService extends Service {
-    private static final String TAG = "LocationService";
-
-    private LocationDAO dao;
-    private Config config;
-    private LocationProvider provider;
 
     /** Keeps track of all current registered clients. */
     ArrayList<Messenger> mClients = new ArrayList<Messenger>();
+
+    /**
+     * Command sent by the service to
+     * any registered clients with error.
+     */
+    public static final int MSG_ERROR = 1;
 
     /**
      * Command to the service to register a client, receiving callbacks
      * from the service.  The Message's replyTo field must be a Messenger of
      * the client where callbacks should be sent.
      */
-    public static final int MSG_REGISTER_CLIENT = 1;
+    public static final int MSG_REGISTER_CLIENT = 2;
 
     /**
      * Command to the service to unregister a client, ot stop receiving callbacks
      * from the service.  The Message's replyTo field must be a Messenger of
      * the client as previously given with MSG_REGISTER_CLIENT.
      */
-    public static final int MSG_UNREGISTER_CLIENT = 2;
+    public static final int MSG_UNREGISTER_CLIENT = 3;
 
     /**
-     * Command ent by the service to
+     * Command sent by the service to
      * any registered clients with the new position.
      */
-    public static final int MSG_LOCATION_UPDATE = 3;
+    public static final int MSG_LOCATION_UPDATE = 4;
+
+    /**
+     * Command sent by the service to
+     * any registered clients whenever the devices enters "stationary-mode"
+     */
+    public static final int MSG_ON_STATIONARY = 5;
+
+
+    /**
+     * Command sent by the service to
+     * any registered clients whenever the clients want to change provider operation mode
+     */
+    public static final int MSG_SWITCH_MODE = 6;
+
+
+    /** background operation mode of location provider */
+    public static final int BACKGROUND_MODE = 0;
+
+    /** foreground operation mode of location provider */
+    public static final int FOREGROUND_MODE = 1;
+
+    private static final int ONE_MINUTE = 1000 * 60;
+    private static final int FIVE_MINUTES = 1000 * 60 * 5;
+
+    private LocationDAO dao;
+    private Config config;
+    private LocationProvider provider;
+    private Account syncAccount;
+    private Boolean hasConnectivity = true;
+    private BackgroundLocation lastLocation;
+
+    private org.slf4j.Logger log;
+
+    private volatile HandlerThread handlerThread;
+    private ServiceHandler serviceHandler;
+
+    private class ServiceHandler extends Handler {
+        public ServiceHandler(Looper looper) {
+            super(looper);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+        }
+    }
 
     /**
      * Handler of incoming messages from clients.
      */
-    class IncomingHandler extends Handler {
+    private class IncomingHandler extends Handler {
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
@@ -71,6 +138,9 @@ public class LocationService extends Service {
                     break;
                 case MSG_UNREGISTER_CLIENT:
                     mClients.remove(msg.replyTo);
+                    break;
+                case MSG_SWITCH_MODE:
+                    switchMode(msg.arg1);
                     break;
                 default:
                     super.handleMessage(msg);
@@ -81,7 +151,7 @@ public class LocationService extends Service {
     /**
      * Target we publish for clients to send messages to IncomingHandler.
      */
-    final Messenger mMessenger = new Messenger(new IncomingHandler());
+    final Messenger messenger = new Messenger(new IncomingHandler());
 
     /**
      * When binding to the service, we return an interface to our messenger
@@ -89,48 +159,79 @@ public class LocationService extends Service {
      */
     @Override
     public IBinder onBind(Intent intent) {
-        return mMessenger.getBinder();
+        return messenger.getBinder();
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
+        log = LoggerManager.getLogger(LocationService.class);
+        log.info("Creating LocationService");
+
+        // An Android handler thread internally operates on a looper.
+        handlerThread = new HandlerThread("LocationService.HandlerThread");
+        handlerThread.start();
+        // An Android service handler is a handler running on a specific background thread.
+        serviceHandler = new ServiceHandler(handlerThread.getLooper());
+
         dao = (DAOFactory.createLocationDAO(this));
+        syncAccount = AccountHelper.CreateSyncAccount(this,
+                AuthenticatorService.getAccount(getStringResource(Config.ACCOUNT_TYPE_RESOURCE)));
+
+        registerReceiver(connectivityChangeReceiver, new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION));
     }
 
     @Override
     public void onDestroy() {
-        Log.w(TAG, "Destroying Location Service");
+        log.info("Destroying LocationService");
         provider.onDestroy();
-//        stopForeground(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            handlerThread.quitSafely();
+        } else {
+            handlerThread.quit(); //sorry
+        }
+        unregisterReceiver(connectivityChangeReceiver);
         super.onDestroy();
     }
 
-    // @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     @Override
     public void onTaskRemoved(Intent rootIntent) {
-        Log.d(TAG, "Task has been removed");
+        log.debug("Task has been removed");
         if (config.getStopOnTerminate()) {
-            Log.d(TAG, "Stopping self");
+            log.info("Stopping self");
             stopSelf();
         } else {
-            Log.d(TAG, "Continue running in background");
-//            Intent intent = new Intent( this, DummyActivity.class );
-//            intent.addFlags( Intent.FLAG_ACTIVITY_NEW_TASK );
-//            startActivity(intent);
+            log.info("Continue running in background");
         }
         super.onTaskRemoved(rootIntent);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.i(TAG, "Received start id " + startId + ": " + intent);
+        log.info("Received start startId: {} intent: {}", startId, intent);
 
-        if (intent.hasExtra("config")) {
-            config = (Config) intent.getParcelableExtra("config");
-        } else {
-            config = new Config();
+        if (provider != null) {
+            provider.onDestroy();
         }
+
+        if (intent == null) {
+            //service has been probably restarted so we need to load config from db
+            ConfigurationDAO dao = DAOFactory.createConfigurationDAO(this);
+            try {
+                config = dao.retrieveConfiguration();
+            } catch (JSONException e) {
+                log.error("Config exception: {}", e.getMessage());
+                config = new Config(); //using default config
+            }
+        } else {
+            if (intent.hasExtra("config")) {
+                config = intent.getParcelableExtra("config");
+            } else {
+                config = new Config(); //using default config
+            }
+        }
+
+        log.debug("Will start service with: {}", config.toString());
 
         LocationProviderFactory spf = new LocationProviderFactory(this);
         provider = spf.getInstance(config.getLocationProvider());
@@ -141,18 +242,24 @@ public class LocationService extends Service {
             builder.setContentTitle(config.getNotificationTitle());
             builder.setContentText(config.getNotificationText());
             if (config.getSmallNotificationIcon() != null) {
-                builder.setSmallIcon(getPluginResource(config.getSmallNotificationIcon()));
+                builder.setSmallIcon(getDrawableResource(config.getSmallNotificationIcon()));
             } else {
                 builder.setSmallIcon(android.R.drawable.ic_menu_mylocation);
             }
             if (config.getLargeNotificationIcon() != null) {
-                builder.setLargeIcon(BitmapFactory.decodeResource(getApplication().getResources(), getPluginResource(config.getLargeNotificationIcon())));
+                builder.setLargeIcon(BitmapFactory.decodeResource(getApplication().getResources(), getDrawableResource(config.getLargeNotificationIcon())));
             }
             if (config.getNotificationIconColor() != null) {
                 builder.setColor(this.parseNotificationIconColor(config.getNotificationIconColor()));
             }
 
-            setClickEvent(builder);
+            // Add an onclick handler to the notification
+            Context context = getApplicationContext();
+            String packageName = context.getPackageName();
+            Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageName);
+            launchIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            PendingIntent contentIntent = PendingIntent.getActivity(context, 0, launchIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+            builder.setContentIntent(contentIntent);
 
             Notification notification = builder.build();
             notification.flags |= Notification.FLAG_ONGOING_EVENT | Notification.FLAG_FOREGROUND_SERVICE | Notification.FLAG_NO_CLEAR;
@@ -162,25 +269,19 @@ public class LocationService extends Service {
         provider.startRecording();
 
         //We want this service to continue running until it is explicitly stopped
-        return START_REDELIVER_INTENT;
+        return START_STICKY;
     }
 
-    protected Integer getPluginResource(String resourceName) {
-        return getApplication().getResources().getIdentifier(resourceName, "drawable", getApplication().getPackageName());
+    protected int getAppResource(String name, String type) {
+        return getApplication().getResources().getIdentifier(name, type, getApplication().getPackageName());
     }
 
-    /**
-     * Adds an onclick handler to the notification
-     */
-    protected NotificationCompat.Builder setClickEvent (NotificationCompat.Builder builder) {
-        int requestCode = new Random().nextInt();
-        Context context     = getApplicationContext();
-        String packageName  = context.getPackageName();
-        Intent launchIntent = context.getPackageManager().getLaunchIntentForPackage(packageName);
-        launchIntent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-        PendingIntent contentIntent = PendingIntent.getActivity(context, requestCode, launchIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+    protected Integer getDrawableResource(String resourceName) {
+        return getAppResource(resourceName, "drawable");
+    }
 
-        return builder.setContentIntent(contentIntent);
+    protected String getStringResource(String name) {
+        return getApplication().getString(getAppResource(name, "string"));
     }
 
     private Integer parseNotificationIconColor(String color) {
@@ -189,7 +290,7 @@ public class LocationService extends Service {
             try {
                 iconColor = Color.parseColor(color);
             } catch (IllegalArgumentException e) {
-                Log.e(TAG, "couldn't parse color from android options");
+                log.error("Couldn't parse color from android options");
             }
         }
         return iconColor;
@@ -203,50 +304,129 @@ public class LocationService extends Service {
         provider.stopRecording();
     }
 
-    public void handleLocation (BackgroundLocation location) {
-        // Boolean shouldPersists = mClients.size() == 0;
 
-        for (int i=mClients.size()-1; i>=0; i--) {
+    /**
+     * Handle location from location location provider
+     *
+     * All locations updates are recorded in local db at all times.
+     * Also location is also send to all messenger clients.
+     *
+     * If option.url is defined, each location is also immediately posted.
+     * If post is successful, the location is deleted from local db.
+     * All failed to post locations are coalesced and send in some time later in one single batch.
+     * Batch sync takes place only when number of failed to post locations reaches syncTreshold.
+     *
+     * If only option.syncUrl is defined, locations are send only in single batch,
+     * when number of locations reaches syncTreshold.
+     *
+     * @param location
+     * @param PROVIDER_ID
+     */
+    public void handleLocation(BackgroundLocation location) {
+        log.debug("New location {}", location.toString());
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            // we do check only of API level >= 17 because in lower version it does more harm than good
+            if (location.isBetterLocationThan(lastLocation) == false) {
+                log.debug("Previous location: [{} acc={} t={}] is better than current",
+                        lastLocation.getProvider(), lastLocation.getAccuracy(), lastLocation.getTime());
+                return;
+            }
+        }
+
+        location.setBatchStartMillis(System.currentTimeMillis() + ONE_MINUTE); // prevent sync of not yet posted location
+        persistLocation(location);
+
+        if (config.hasUrl() || config.hasSyncUrl()) {
+            Long locationsCount = dao.locationsForSyncCount(System.currentTimeMillis());
+            log.debug("Location to sync: {} threshold: {}", locationsCount, config.getSyncThreshold());
+            if (locationsCount >= config.getSyncThreshold()) {
+                log.debug("Attempt to sync locations: {} threshold: {}", locationsCount, config.getSyncThreshold());
+                SyncService.sync(syncAccount, getStringResource(Config.CONTENT_AUTHORITY_RESOURCE));
+            }
+        }
+
+        if (hasConnectivity && config.hasUrl()) {
+            postLocationAsync(location);
+        }
+
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("location", location);
+        Message msg = Message.obtain(null, MSG_LOCATION_UPDATE);
+        msg.setData(bundle);
+
+        sendClientMessage(msg);
+
+        lastLocation = location;
+    }
+
+    public void handleStationary(BackgroundLocation location) {
+        log.debug("New stationary {}", location.toString());
+
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("location", location);
+        Message msg = Message.obtain(null, MSG_ON_STATIONARY);
+        msg.setData(bundle);
+
+        sendClientMessage(msg);
+    }
+
+    public void switchMode(int mode) {
+        // TODO: implement
+    }
+
+    public void sendClientMessage(Message msg) {
+        for (int i = mClients.size() - 1; i >= 0; i--) {
             try {
-                Bundle bundle = new Bundle();
-                bundle.putParcelable("location", location);
-                Message msg = Message.obtain(null, MSG_LOCATION_UPDATE);
-                msg.setData(bundle);
                 mClients.get(i).send(msg);
             } catch (RemoteException e) {
                 // The client is dead.  Remove it from the list;
                 // we are going through the list from back to front
                 // so this is safe to do inside the loop.
                 mClients.remove(i);
-                // shouldPersists = true;
             }
         }
-
-        if (config.getUrl() != null) {
-            postLocation(location);
-        }
-
-        if (config.isDebugging()) {
-            BackgroundLocation cloned = location.makeClone();
-            cloned.setDebug(true);
-            persistLocation(cloned);
-        }
-
-        // if (shouldPersists) {
-        //     Log.d(TAG, "Persisting location. Reason: Main activity was probably killed.");
-        //     persistLocation(location);
-        // }
     }
 
-    public void persistLocation (BackgroundLocation location) {
-        if (dao.persistLocation(location) > -1) {
-            Log.d(TAG, "Persisted Location: " + location.toString());
-        } else {
-            Log.w(TAG, "Failed to persist location");
+    @Override
+    public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
+        return super.registerReceiver(receiver, filter, null, serviceHandler);
+    }
+
+    @Override
+    public void unregisterReceiver (BroadcastReceiver receiver) {
+        super.unregisterReceiver(receiver);
+    }
+
+    public void handleError(JSONObject error) {
+        Bundle bundle = new Bundle();
+        bundle.putString("error", error.toString());
+        Message msg = Message.obtain(null, MSG_ERROR);
+        msg.setData(bundle);
+
+        sendClientMessage(msg);
+    }
+
+    // method will mutate location
+    public Long persistLocation (BackgroundLocation location) {
+        Long locationId = -1L;
+        try {
+            locationId = dao.persistLocationWithLimit(location, config.getMaxLocations());
+            location.setLocationId(locationId);
+            log.debug("Persisted location: {}", location.toString());
+        } catch (SQLException e) {
+            log.error("Failed to persist location: {} error: {}", location.toString(), e.getMessage());
         }
+
+        return locationId;
     }
 
     public void postLocation(BackgroundLocation location) {
+        PostLocationTask task = new LocationService.PostLocationTask();
+        task.doInBackground(location);
+    }
+
+    public void postLocationAsync(BackgroundLocation location) {
         PostLocationTask task = new LocationService.PostLocationTask();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
             task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, location);
@@ -254,15 +434,6 @@ public class LocationService extends Service {
         else {
             task.execute(location);
         }
-    }
-
-    /**
-     * Forces the main activity to re-launch if it's unloaded.
-     */
-    private void forceMainActivityReload() {
-        PackageManager pm = getPackageManager();
-        Intent launchIntent = pm.getLaunchIntentForPackage(getApplicationContext().getPackageName());
-        startActivity(launchIntent);
     }
 
     public Config getConfig() {
@@ -277,32 +448,63 @@ public class LocationService extends Service {
 
         @Override
         protected Boolean doInBackground(BackgroundLocation... locations) {
-            Log.d(TAG, "Executing PostLocationTask#doInBackground");
-            int count = locations.length;
-            for (int i = 0; i < count; i++) {
-                BackgroundLocation location = locations[i];
-                Long locationId = location.getLocationId();
+            log.debug("Executing PostLocationTask#doInBackground");
+            JSONArray jsonLocations = new JSONArray();
+            for (BackgroundLocation location : locations) {
                 try {
-                    if (HttpPostService.postJSON(config.getUrl(), location.toJSONObject(), config.getHttpHeaders())) {
-                        if (locationId != null) {
-                            dao.deleteLocation(locationId);
-                        }
-                    } else {
-                        if (locationId == null) {
-                            persistLocation(location);
-                        }
-                    }
+                    JSONObject jsonLocation = location.toJSONObject();
+                    jsonLocations.put(jsonLocation);
                 } catch (JSONException e) {
-                    Log.w(TAG, "location to json failed" + location.toString());
+                    log.warn("Location to json failed: {}", location.toString());
+                    return false;
+                }
+            }
+
+            String url = config.getUrl();
+            log.debug("Posting json to url: {} headers: {}", url, config.getHttpHeaders());
+            int responseCode;
+
+            try {
+                responseCode = HttpPostService.postFile(url, jsonLocations, config.getHttpHeaders());
+            } catch (Exception e) {
+                hasConnectivity = isNetworkAvailable();
+                log.warn("Error while posting locations: {}", e.getMessage());
+                return false;
+            }
+
+            if (responseCode != HttpURLConnection.HTTP_OK) {
+                log.warn("Server error while posting locations responseCode: {}", responseCode);
+                return false;
+            }
+
+            for (BackgroundLocation location : locations) {
+                Long locationId = location.getLocationId();
+                if (locationId != null) {
+                    dao.deleteLocation(locationId);
                 }
             }
 
             return true;
         }
+    }
+
+    /**
+     * Broadcast receiver which detects connectivity change condition
+     */
+    private BroadcastReceiver connectivityChangeReceiver = new BroadcastReceiver() {
+        private static final String LOG_TAG = "NetworkChangeReceiver";
 
         @Override
-        protected void onPostExecute(Boolean result) {
-            Log.d(TAG, "PostLocationTask#onPostExecture");
+        public void onReceive(Context context, Intent intent) {
+            hasConnectivity = isNetworkAvailable();
+            log.info("Network condition changed hasConnectivity: {}", hasConnectivity);
         }
+    };
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager cm =
+                (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
     }
 }

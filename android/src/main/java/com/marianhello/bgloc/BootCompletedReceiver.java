@@ -1,3 +1,12 @@
+/*
+According to apache license
+
+This is fork of christocracy cordova-plugin-background-geolocation plugin
+https://github.com/christocracy/cordova-plugin-background-geolocation
+
+This is a new class
+*/
+
 package com.marianhello.bgloc;
 
 import android.content.BroadcastReceiver;
@@ -15,11 +24,11 @@ import com.marianhello.bgloc.data.ConfigurationDAO;
  * BootCompletedReceiver class
  */
 public class BootCompletedReceiver extends BroadcastReceiver {
-    private static final String TAG = "BootCompletedReceiver";
+    private static final String TAG = BootCompletedReceiver.class.getName();
 
     @Override
      public void onReceive(Context context, Intent intent) {
-        Log.i(TAG, "Received boot completed");
+        Log.d(TAG, "Received boot completed");
         ConfigurationDAO dao = DAOFactory.createConfigurationDAO(context);
         Config config = null;
 
@@ -31,9 +40,10 @@ public class BootCompletedReceiver extends BroadcastReceiver {
 
         if (config == null) { return; }
 
-        Log.i(TAG, "Config: " + config.toString());
+        Log.d(TAG, "Boot completed " + config.toString());
 
         if (config.getStartOnBoot()) {
+            Log.i(TAG, "Starting service after boot");
             Intent locationServiceIntent = new Intent(context, LocationService.class);
             locationServiceIntent.addFlags(Intent.FLAG_FROM_BACKGROUND);
             locationServiceIntent.putExtra("config", config);

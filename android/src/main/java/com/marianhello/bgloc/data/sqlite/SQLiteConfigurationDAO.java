@@ -1,13 +1,5 @@
 package com.marianhello.bgloc.data.sqlite;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.TimeZone;
-import java.util.List;
-import java.util.Collection;
-
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
@@ -19,19 +11,23 @@ import org.json.JSONException;
 
 import com.marianhello.bgloc.Config;
 import com.marianhello.bgloc.data.ConfigurationDAO;
-import com.marianhello.bgloc.data.sqlite.ConfigurationContract.ConfigurationEntry;
+import com.marianhello.bgloc.data.sqlite.SQLiteConfigurationContract.ConfigurationEntry;
 
 public class SQLiteConfigurationDAO implements ConfigurationDAO {
-  public static final String DATE_FORMAT = "yyyy-MM-dd'T'HH:mm'Z'";
-  private static final String TAG = "SQLiteConfigurationDAO";
-  private Context context;
+  private static final String TAG = SQLiteConfigurationDAO.class.getName();
+
+    private SQLiteDatabase db;
 
   public SQLiteConfigurationDAO(Context context) {
-      this.context = context;
+    SQLiteOpenHelper helper = SQLiteOpenHelper.getHelper(context);
+    this.db = helper.getWritableDatabase();
+  }
+
+  public SQLiteConfigurationDAO(SQLiteDatabase db) {
+    this.db = db;
   }
 
   public Config retrieveConfiguration() throws JSONException {
-    SQLiteDatabase db = null;
     Cursor cursor = null;
 
     String[] columns = {
@@ -46,6 +42,7 @@ public class SQLiteConfigurationDAO implements ConfigurationDAO {
       ConfigurationEntry.COLUMN_NAME_NOTIF_ICON_SMALL,
       ConfigurationEntry.COLUMN_NAME_NOTIF_COLOR,
       ConfigurationEntry.COLUMN_NAME_STOP_TERMINATE,
+      ConfigurationEntry.COLUMN_NAME_STOP_ON_STILL,
       ConfigurationEntry.COLUMN_NAME_START_BOOT,
       ConfigurationEntry.COLUMN_NAME_START_FOREGROUND,
       ConfigurationEntry.COLUMN_NAME_LOCATION_PROVIDER,
@@ -53,7 +50,10 @@ public class SQLiteConfigurationDAO implements ConfigurationDAO {
       ConfigurationEntry.COLUMN_NAME_FASTEST_INTERVAL,
       ConfigurationEntry.COLUMN_NAME_ACTIVITIES_INTERVAL,
       ConfigurationEntry.COLUMN_NAME_URL,
-      ConfigurationEntry.COLUMN_NAME_HEADERS
+      ConfigurationEntry.COLUMN_NAME_SYNC_URL,
+      ConfigurationEntry.COLUMN_NAME_SYNC_THRESHOLD,
+      ConfigurationEntry.COLUMN_NAME_HEADERS,
+      ConfigurationEntry.COLUMN_NAME_MAX_LOCATIONS
     };
 
     String whereClause = null;
@@ -64,7 +64,6 @@ public class SQLiteConfigurationDAO implements ConfigurationDAO {
 
     Config config = null;
     try {
-      db = new SQLiteOpenHelper(context).getReadableDatabase();
       cursor = db.query(
           ConfigurationEntry.TABLE_NAME,  // The table to query
           columns,                   // The columns to return
@@ -81,22 +80,13 @@ public class SQLiteConfigurationDAO implements ConfigurationDAO {
       if (cursor != null) {
         cursor.close();
       }
-      if (db != null) {
-        db.close();
-      }
     }
     return config;
   }
 
   public boolean persistConfiguration(Config config) throws NullPointerException {
-    SQLiteDatabase db = new SQLiteOpenHelper(context).getWritableDatabase();
-    db.beginTransaction();
-    db.delete(ConfigurationEntry.TABLE_NAME, null, null);
-    long rowId = db.insert(ConfigurationEntry.TABLE_NAME, ConfigurationEntry.COLUMN_NAME_NULLABLE, getContentValues(config));
-    Log.d(TAG, "After insert, rowId = " + rowId);
-    db.setTransactionSuccessful();
-    db.endTransaction();
-    db.close();
+    long rowId = db.replace(ConfigurationEntry.TABLE_NAME, ConfigurationEntry.COLUMN_NAME_NULLABLE, getContentValues(config));
+    Log.d(TAG, "Configuration persisted with rowId = " + rowId);
     if (rowId > -1) {
       return true;
     } else {
@@ -116,6 +106,7 @@ public class SQLiteConfigurationDAO implements ConfigurationDAO {
     config.setLargeNotificationIcon(c.getString(c.getColumnIndex(ConfigurationEntry.COLUMN_NAME_NOTIF_ICON_LARGE)));
     config.setNotificationIconColor(c.getString(c.getColumnIndex(ConfigurationEntry.COLUMN_NAME_NOTIF_COLOR)));
     config.setStopOnTerminate( (c.getInt(c.getColumnIndex(ConfigurationEntry.COLUMN_NAME_STOP_TERMINATE)) == 1) ? true : false );
+    config.setStopOnStillActivity( (c.getInt(c.getColumnIndex(ConfigurationEntry.COLUMN_NAME_STOP_ON_STILL)) == 1) ? true : false );
     config.setStartOnBoot( (c.getInt(c.getColumnIndex(ConfigurationEntry.COLUMN_NAME_START_BOOT)) == 1) ? true : false );
     config.setStartForeground( (c.getInt(c.getColumnIndex(ConfigurationEntry.COLUMN_NAME_START_FOREGROUND)) == 1) ? true : false );
     config.setLocationProvider(c.getInt(c.getColumnIndex(ConfigurationEntry.COLUMN_NAME_LOCATION_PROVIDER)));
@@ -123,13 +114,17 @@ public class SQLiteConfigurationDAO implements ConfigurationDAO {
     config.setFastestInterval(c.getInt(c.getColumnIndex(ConfigurationEntry.COLUMN_NAME_FASTEST_INTERVAL)));
     config.setActivitiesInterval(c.getInt(c.getColumnIndex(ConfigurationEntry.COLUMN_NAME_ACTIVITIES_INTERVAL)));
     config.setUrl(c.getString(c.getColumnIndex(ConfigurationEntry.COLUMN_NAME_URL)));
+    config.setSyncUrl(c.getString(c.getColumnIndex(ConfigurationEntry.COLUMN_NAME_SYNC_URL)));
+    config.setSyncThreshold(c.getInt(c.getColumnIndex(ConfigurationEntry.COLUMN_NAME_SYNC_THRESHOLD)));
     config.setHttpHeaders(new JSONObject(c.getString(c.getColumnIndex(ConfigurationEntry.COLUMN_NAME_HEADERS))));
+    config.setMaxLocations(c.getInt(c.getColumnIndex(ConfigurationEntry.COLUMN_NAME_MAX_LOCATIONS)));
 
     return config;
   }
 
   private ContentValues getContentValues(Config config) throws NullPointerException {
     ContentValues values = new ContentValues();
+    values.put(ConfigurationEntry._ID, 1);
     values.put(ConfigurationEntry.COLUMN_NAME_RADIUS, config.getStationaryRadius());
     values.put(ConfigurationEntry.COLUMN_NAME_DISTANCE_FILTER, config.getDistanceFilter());
     values.put(ConfigurationEntry.COLUMN_NAME_DESIRED_ACCURACY, config.getDesiredAccuracy());
@@ -140,6 +135,7 @@ public class SQLiteConfigurationDAO implements ConfigurationDAO {
     values.put(ConfigurationEntry.COLUMN_NAME_NOTIF_ICON_LARGE, config.getLargeNotificationIcon());
     values.put(ConfigurationEntry.COLUMN_NAME_NOTIF_COLOR, config.getNotificationIconColor());
     values.put(ConfigurationEntry.COLUMN_NAME_STOP_TERMINATE, (config.getStopOnTerminate() == true) ? 1 : 0);
+    values.put(ConfigurationEntry.COLUMN_NAME_STOP_ON_STILL, (config.getStopOnStillActivity() == true) ? 1 : 0);
     values.put(ConfigurationEntry.COLUMN_NAME_START_BOOT, (config.getStartOnBoot() == true) ? 1 : 0);
     values.put(ConfigurationEntry.COLUMN_NAME_START_FOREGROUND, (config.getStartForeground() == true) ? 1 : 0);
     values.put(ConfigurationEntry.COLUMN_NAME_LOCATION_PROVIDER, config.getLocationProvider());
@@ -147,7 +143,10 @@ public class SQLiteConfigurationDAO implements ConfigurationDAO {
     values.put(ConfigurationEntry.COLUMN_NAME_FASTEST_INTERVAL, config.getFastestInterval());
     values.put(ConfigurationEntry.COLUMN_NAME_ACTIVITIES_INTERVAL, config.getActivitiesInterval());
     values.put(ConfigurationEntry.COLUMN_NAME_URL, config.getUrl());
+    values.put(ConfigurationEntry.COLUMN_NAME_SYNC_URL, config.getSyncUrl());
+    values.put(ConfigurationEntry.COLUMN_NAME_SYNC_THRESHOLD, config.getSyncThreshold());
     values.put(ConfigurationEntry.COLUMN_NAME_HEADERS, new JSONObject(config.getHttpHeaders()).toString());
+    values.put(ConfigurationEntry.COLUMN_NAME_MAX_LOCATIONS, config.getMaxLocations());
 
     return values;
   }
