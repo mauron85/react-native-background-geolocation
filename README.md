@@ -10,6 +10,10 @@ Please support my work and support continuous development by your donation.
 
 Special React Native fork of [cordova-plugin-mauron85-background-geolocation](https://github.com/mauron85/cordova-plugin-background-geolocation).
 
+## Submitting issues
+
+All new issues should follow instructions in [ISSUE_TEMPLATE.md](https://raw.githubusercontent.com/mauron85/react-native-background-geolocation/master/ISSUE_TEMPLATE.md). Properly filled issue report will significantly reduce number of follow up questions and decrease issue resolve time.
+
 ## Example Apps
 
 Repository [react-native-background-geolocation-example](https://github.com/mauron85/react-native-background-geolocation-example) is hosting example app for both iOS and Android platform.

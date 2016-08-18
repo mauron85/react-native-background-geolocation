@@ -1,6 +1,6 @@
 ## Changelog
 
-### [0.2.0] - unreleased
+### [0.2.0-alpha.1] - 2016-08-17
 #### Changed
 - upgrading plugin to match cordova 2.2.0-alpha.6
 
