@@ -5,12 +5,14 @@ import java.util.HashMap;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.Application;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ComponentName;
 import android.content.ServiceConnection;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -52,6 +54,7 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 
 import com.marianhello.bgloc.Config;
 import com.marianhello.utils.Convert;
+import com.marianhello.bgloc.data.DAOFactory;
 
 public class BackgroundGeolocationModule extends ReactContextBaseJavaModule {
   protected static final String TAG = "BackgroundGeolocation";
@@ -182,13 +185,13 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule {
     if (options.hasKey("interval")) config.setInterval(options.getInt("interval"));
     if (options.hasKey("fastestInterval")) config.setFastestInterval(options.getInt("fastestInterval"));
     if (options.hasKey("activitiesInterval")) config.setActivitiesInterval(options.getInt("activitiesInterval"));
-    if (options.hasKey("stopOnStillActivity")) config.setStopOnStillActivity(options.getBoolean("stopOnStillActivity"));    
+    if (options.hasKey("stopOnStillActivity")) config.setStopOnStillActivity(options.getBoolean("stopOnStillActivity"));
     if (options.hasKey("url")) config.setUrl(options.getString("url"));
     if (options.hasKey("httpHeaders")) {
       HashMap httpHeaders = new HashMap<String, String>();
       ReadableMap rm = options.getMap("httpHeaders");
       ReadableMapKeySetIterator it = rm.keySetIterator();
-      
+
       while (it.hasNextKey()) {
         String key = it.nextKey();
         httpHeaders.put(key, rm.getString(key));
@@ -196,8 +199,16 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule {
 
       config.setHttpHeaders(httpHeaders);
     }
-    this.mConfig = config;
 
+    try {
+      persistConfiguration(config);
+    } catch (NullPointerException e) {
+      Log.e(TAG, "Configuration error: " + e.getMessage());
+      error.invoke("Configuration error: " + e.getMessage());
+      return;
+    }
+
+    this.mConfig = config;
     Log.d(TAG, "bg service configured: " + config.toString());
     success.invoke(true);
   }
@@ -222,6 +233,110 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule {
     doUnbindService();
     stopBackgroundService();
     success.invoke(true);
+  }
+
+  @ReactMethod
+  public void isLocationEnabled(Callback success, Callback error) {
+    Log.d(TAG, "Location services enabled check");
+    try {
+      int isLocationEnabled = isLocationEnabled(getContext()) ? 1 : 0;
+      success.invoke(isLocationEnabled);
+    } catch (SettingNotFoundException e) {
+      Log.e(TAG, "Location service checked failed: " + e.getMessage());
+      error.invoke("Location setting error occured");
+    }
+  }
+
+  @ReactMethod
+  public void showAppSettings(Callback success, Callback error) {
+    Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+    intent.addCategory(Intent.CATEGORY_DEFAULT);
+    intent.setData(Uri.parse("package:" + getContext().getPackageName()));
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+    intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+    getContext().startActivity(intent);
+  }
+
+  @ReactMethod
+  public void showLocationSettings(Callback success, Callback error) {
+    Intent settingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+    getActivity().startActivity(settingsIntent);
+  }
+
+  @ReactMethod
+  public void watchLocationMode(Callback success, Callback error) {
+    //TODO: implement
+    error.invoke("Not implemented yet");
+  }
+
+  @ReactMethod
+  public void stopWatchingLocationMode(Callback success, Callback error) {
+    //TODO: implement
+    error.invoke("Not implemented yet");
+  }
+
+  @ReactMethod
+  public void getLocations(Callback success, Callback error) {
+    JSONArray jsonLocationsArray = new JSONArray();
+    LocationDAO dao = DAOFactory.createLocationDAO(getContext());
+    try {
+      Collection<BackgroundLocation> locations = dao.getAllLocations();
+      for (BackgroundLocation location : locations) {
+          jsonLocationsArray.put(location.toJSONObject());
+      }
+      success.invoke(jsonLocationsArray);
+    } catch (JSONException e) {
+      Log.e(TAG, "Getting all locations failed: " + e.getMessage());
+      error.invoke("Converting locations to JSON failed.");      
+    }
+  }
+
+  @ReactMethod
+  public void getValidLocations(Callback success, Callback error) {
+    JSONArray jsonLocationsArray = new JSONArray();
+    LocationDAO dao = DAOFactory.createLocationDAO(getContext());
+    try {
+      Collection<BackgroundLocation> locations = dao.getValidLocations();
+      for (BackgroundLocation location : locations) {
+          jsonLocationsArray.put(location.toJSONObjectWithId());
+      }
+      success.invoke(jsonLocationsArray);
+    } catch (JSONException e) {
+        Log.e(TAG, "Getting valid locations failed: " + e.getMessage());
+        error.invoke("Converting locations to JSON failed.");
+    }
+  }
+
+  @ReactMethod
+  public void deleteLocation(ReadableMap options, Callback success, Callback error) {
+    //TODO: implement
+    error.invoke("Not implemented yet");
+  }
+
+  @ReactMethod
+  public void deleteAllLocations(Callback success, Callback error) {
+    LocationDAO dao = DAOFactory.createLocationDAO(getContext());
+    dao.deleteAllLocations();
+    success.invoke(true);
+  }
+
+  @ReactMethod
+  public void switchMode(ReadableMap options, Callback success, Callback error) {
+    //TODO: implement
+    error.invoke("Not implemented yet");
+  }
+
+  @ReactMethod
+  public void retrieveConfiguration(Callback success, Callback error) {
+      ConfigurationDAO dao = DAOFactory.createConfigurationDAO(getContext());
+      try {
+        Config config = dao.retrieveConfiguration();  
+        success.invoke(config.toJSONObject());
+      } catch (JSONException e) {
+        Log.e(TAG, "Error getting config: " + e.getMessage());
+        error.invoke("Error getting config: " + e.getMessage());
+      }      
   }
 
   private void sendEvent(ReactContext reactContext, String eventName, @Nullable WritableMap params) {
@@ -295,5 +410,36 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule {
         mIsBound = false;
       }
     }
+  }
+
+  protected Activity getActivity() {
+    return this.getCurrentActivity();
+  }
+
+  protected Application getApplication() {
+    return getActivity().getApplication();
+  }
+
+  protected Context getContext() {
+    return getActivity().getApplicationContext();
+  }
+
+  public void persistConfiguration(Config config) throws NullPointerException {
+    ConfigurationDAO dao = DAOFactory.createConfigurationDAO(getContext());
+    dao.persistConfiguration(config);
+  }
+
+  public static boolean isLocationEnabled(Context context) throws SettingNotFoundException {
+      int locationMode = 0;
+      String locationProviders;
+
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+          locationMode = Settings.Secure.getInt(context.getContentResolver(), Settings.Secure.LOCATION_MODE);
+          return locationMode != Settings.Secure.LOCATION_MODE_OFF;
+
+      } else {
+          locationProviders = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+          return !TextUtils.isEmpty(locationProviders);
+      }
   }
 }
