@@ -23,7 +23,7 @@ import java.io.OutputStreamWriter;
 
 public class HttpPostService {
 
-    public static int postFile(String url, Object json, Map headers) throws IOException {
+    public static int postJSON(String url, Object json, Map headers) throws IOException {
         String jsonString = json.toString();
         HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
         conn.setDoOutput(true);

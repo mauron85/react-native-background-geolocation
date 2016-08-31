@@ -36,7 +36,7 @@ class BgTracking extends Component {
       debug: true,
       startOnBoot: false,
       stopOnTerminate: false,
-      locationProvider: 1, // 0 => ANDROID_DISTANCE_FILTER_PROVIDER | 1 => ANDROID_ACTIVITY_PROVIDER
+      locationProvider: BackgroundGeolocation.provider.ANDROID_ACTIVITY_PROVIDER,
       interval: 10000,
       fastestInterval: 5000,
       activitiesInterval: 10000,
@@ -212,6 +212,7 @@ Location callback will be called with one argument - location object, which trie
 | `altitude`         | `Number`  | altitude if available, in meters above the WGS 84 reference ellipsoid. |
 | `bearing`          | `Number`  | bearing, in degrees.                                                   |
 
+Note: Android currently returns `time` as type of String (instead of Number) [@see issue #9685](https://github.com/facebook/react-native/issues/9685)
 
 ### start()
 Platform: iOS, Android
@@ -263,6 +264,7 @@ Platform: iOS, Android
 
 Method will return all stored locations.
 This method is useful for initial rendering of user location on a map just after application launch.
+
 NOTE: Returned locations does not contain locationId.
 
 | Success callback parameter | Type    | Description                    |
@@ -276,32 +278,6 @@ backgroundGeolocation.getLocations(
   }
 );
 ```
-
-### getValidLocations(success, fail)
-Platform: iOS, Android
-
-Method will return locations, which has not been yet posted to server.
-NOTE: Locations does contain locationId.
-
-| Success callback parameter | Type    | Description                    |
-|----------------------------|---------|--------------------------------|
-| `locations`                | `Array` | collection of stored locations |
-
-### deleteLocation(locationId, success, fail)
-Platform: iOS, Android
-
-Delete location with locationId.
-
-Note: Locations are not actually deleted from database to avoid gaps in locationId numbering.
-Instead locations are marked as deleted. Locations marked as deleted will not appear in output of `backgroundGeolocation.getLocations`.
-
-### deleteAllLocations(success, fail)
-Note: You don't need to delete all locations. Plugin manages number of locations automatically and location count never exceeds number as defined by `option.maxLocations`.
-
-Platform: iOS, Android
-
-Delete all stored locations.
-
 ### switchMode(modeId, success, fail)
 Platform: iOS
 

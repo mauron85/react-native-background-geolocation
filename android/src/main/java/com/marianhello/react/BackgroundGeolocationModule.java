@@ -39,9 +39,12 @@ import com.marianhello.bgloc.data.ConfigurationDAO;
 import com.marianhello.bgloc.data.DAOFactory;
 import com.marianhello.bgloc.data.BackgroundLocation;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Iterator;
 
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.WritableMap;
+import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
@@ -104,7 +107,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule {
             WritableMap out = Arguments.createMap();
             if (locationId != null) out.putInt("locationId", Convert.safeLongToInt(locationId));
             if (locationProvider != null) out.putInt("locationProvider", locationProvider);
-            out.putInt("time", Convert.safeLongToInt(location.getTime()));
+            out.putString("time", new Long(location.getTime()).toString());
             out.putDouble("latitude", location.getLatitude());
             out.putDouble("longitude", location.getLongitude());
             out.putDouble("accuracy", location.getAccuracy());
@@ -248,7 +251,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void showAppSettings(Callback success, Callback error) {
+  public void showAppSettings() {
     Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
     intent.addCategory(Intent.CATEGORY_DEFAULT);
     intent.setData(Uri.parse("package:" + getContext().getPackageName()));
@@ -259,7 +262,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void showLocationSettings(Callback success, Callback error) {
+  public void showLocationSettings() {
     Intent settingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
     getActivity().startActivity(settingsIntent);
   }
@@ -278,47 +281,31 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule {
 
   @ReactMethod
   public void getLocations(Callback success, Callback error) {
-    JSONArray jsonLocationsArray = new JSONArray();
+    WritableArray locationsArray = Arguments.createArray();
     LocationDAO dao = DAOFactory.createLocationDAO(getContext());
     try {
       Collection<BackgroundLocation> locations = dao.getAllLocations();
       for (BackgroundLocation location : locations) {
-          jsonLocationsArray.put(location.toJSONObject());
+        WritableMap out = Arguments.createMap();
+        Long locationId = location.getLocationId();
+        Integer locationProvider = location.getLocationProvider();
+        if (locationId != null) out.putInt("locationId", Convert.safeLongToInt(locationId));
+        if (locationProvider != null) out.putInt("locationProvider", locationProvider);
+        out.putString("time", new Long(location.getTime()).toString());
+        out.putDouble("latitude", location.getLatitude());
+        out.putDouble("longitude", location.getLongitude());
+        out.putDouble("accuracy", location.getAccuracy());
+        out.putDouble("speed", location.getSpeed());
+        out.putDouble("altitude", location.getAltitude());
+        out.putDouble("bearing", location.getBearing());
+
+        locationsArray.pushMap(out);
       }
-      success.invoke(jsonLocationsArray);
-    } catch (JSONException e) {
+      success.invoke(locationsArray);
+    } catch (Exception e) {
       Log.e(TAG, "Getting all locations failed: " + e.getMessage());
-      error.invoke("Converting locations to JSON failed.");      
+      error.invoke("Converting locations to JSON failed.");
     }
-  }
-
-  @ReactMethod
-  public void getValidLocations(Callback success, Callback error) {
-    JSONArray jsonLocationsArray = new JSONArray();
-    LocationDAO dao = DAOFactory.createLocationDAO(getContext());
-    try {
-      Collection<BackgroundLocation> locations = dao.getValidLocations();
-      for (BackgroundLocation location : locations) {
-          jsonLocationsArray.put(location.toJSONObjectWithId());
-      }
-      success.invoke(jsonLocationsArray);
-    } catch (JSONException e) {
-        Log.e(TAG, "Getting valid locations failed: " + e.getMessage());
-        error.invoke("Converting locations to JSON failed.");
-    }
-  }
-
-  @ReactMethod
-  public void deleteLocation(ReadableMap options, Callback success, Callback error) {
-    //TODO: implement
-    error.invoke("Not implemented yet");
-  }
-
-  @ReactMethod
-  public void deleteAllLocations(Callback success, Callback error) {
-    LocationDAO dao = DAOFactory.createLocationDAO(getContext());
-    dao.deleteAllLocations();
-    success.invoke(true);
   }
 
   @ReactMethod
@@ -328,15 +315,46 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule {
   }
 
   @ReactMethod
-  public void retrieveConfiguration(Callback success, Callback error) {
+  public void getConfig(Callback success, Callback error) {
       ConfigurationDAO dao = DAOFactory.createConfigurationDAO(getContext());
       try {
-        Config config = dao.retrieveConfiguration();  
-        success.invoke(config.toJSONObject());
-      } catch (JSONException e) {
+        Config config = dao.retrieveConfiguration();
+        WritableMap json = Arguments.createMap();
+        WritableMap httpHeaders = Arguments.createMap();
+        json.putDouble("stationaryRadius", config.getStationaryRadius());
+        json.putInt("distanceFilter", config.getDistanceFilter());
+        json.putInt("desiredAccuracy", config.getDesiredAccuracy());
+        json.putBoolean("debug", config.isDebugging());
+        json.putString("notificationTitle", config.getNotificationTitle());
+        json.putString("notificationText", config.getNotificationText());
+        json.putString("notificationIconLarge", config.getLargeNotificationIcon());
+        json.putString("notificationIconSmall", config.getSmallNotificationIcon());
+        json.putString("notificationIconColor", config.getNotificationIconColor());
+        json.putBoolean("stopOnTerminate", config.getStopOnTerminate());
+        json.putBoolean("startOnBoot", config.getStartOnBoot());
+        json.putBoolean("startForeground", config.getStartForeground());
+        json.putInt("locationProvider", config.getLocationProvider());
+        json.putInt("interval", config.getInterval());
+        json.putInt("fastestInterval", config.getFastestInterval());
+        json.putInt("activitiesInterval", config.getActivitiesInterval());
+        json.putBoolean("stopOnStillActivity", config.getStopOnStillActivity());
+        json.putString("url", config.getUrl());
+        json.putString("syncUrl", config.getSyncUrl());
+        json.putInt("syncThreshold", config.getSyncThreshold());
+        // httpHeaders
+        Iterator<Map.Entry<String, String>> it = config.getHttpHeaders().entrySet().iterator();
+        while (it.hasNext()) {
+          Map.Entry<String, String> pair = it.next();
+          httpHeaders.putString(pair.getKey(), pair.getValue());
+        }
+        json.putMap("httpHeaders", httpHeaders);
+        json.putInt("maxLocations", config.getMaxLocations());
+
+        success.invoke(json);
+      } catch (Exception e) {
         Log.e(TAG, "Error getting config: " + e.getMessage());
         error.invoke("Error getting config: " + e.getMessage());
-      }      
+      }
   }
 
   private void sendEvent(ReactContext reactContext, String eventName, @Nullable WritableMap params) {
