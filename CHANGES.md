@@ -1,5 +1,21 @@
 ## Changelog
 
+### [0.2.0-alpha.3] - 2016-09-07
+#### Fixed
+- fix Android issue #10 - crash on refresh
+
+#### Added
+- Android onStationary
+- Android getLogEntries
+
+#### Removed
+- Android location filtering
+
+#### Changed
+- Android project directory structure
+(please read updated install instructions)
+- Android db logging instead of file
+
 ### [0.2.0-alpha.2] - 2016-08-31
 #### Fixed
 - fix config not persisted

@@ -52,6 +52,7 @@ public class LoggerManager {
             LoggerContext context = (LoggerContext) org.slf4j.LoggerFactory.getILoggerFactory();
             SQLiteAppender appender = new SQLiteAppender();
             appender.setName(SQLITE_APPENDER_NAME);
+            appender.setMaxHistory("7 days"); //keep 7 days' worth of history
             appender.setContext(context);
             appender.start();
             root.addAppender(appender);

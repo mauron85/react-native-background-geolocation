@@ -6,7 +6,7 @@ const RNBackgroundGeolocation = NativeModules.BackgroundGeolocation;
 function emptyFn() {}
 
 var BackgroundGeolocation = {
-  events: ['location', 'error'],
+  events: ['location', 'stationary', 'error'],
 
   provider: {
     ANDROID_DISTANCE_FILTER_PROVIDER: 0,
@@ -103,6 +103,12 @@ var BackgroundGeolocation = {
     successFn = successFn || emptyFn;
     errorFn = errorFn || emptyFn;
     RNBackgroundGeolocation.getConfig(successFn, errorFn);
+  },
+  
+  getLogEntries: function(limit, successFn, errorFn) {
+    successFn = successFn || emptyFn;
+    errorFn = errorFn || emptyFn;
+    RNBackgroundGeolocation.getLogEntries(limit, successFn, errorFn);
   },
 
   on: function(event, callbackFn) {

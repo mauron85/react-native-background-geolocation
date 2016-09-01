@@ -32,3 +32,8 @@
 
 ## Context
 <!--- How has this bug affected you? What were you trying to accomplish? -->
+
+## Debug logs
+<!-- Relevant parts from printAndroidLogs or printIosLogs.
+More info in README.md section Debugging.
+If you're reporting app crash also provide output of "adb logcat" -->

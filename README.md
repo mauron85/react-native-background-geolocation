@@ -2,7 +2,7 @@
 
 # Donation
 
-Please support my work and support continuous development by your donation. 
+Please support my work and support continuous development by your donation.
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=6GW8FPTE6TV5J)
 
@@ -12,7 +12,12 @@ Special React Native fork of [cordova-plugin-mauron85-background-geolocation](ht
 
 ## Submitting issues
 
-All new issues should follow instructions in [ISSUE_TEMPLATE.md](https://raw.githubusercontent.com/mauron85/react-native-background-geolocation/master/ISSUE_TEMPLATE.md). Properly filled issue report will significantly reduce number of follow up questions and decrease issue resolve time.
+All new issues should follow instructions in [ISSUE_TEMPLATE.md](https://raw.githubusercontent.com/mauron85/react-native-background-geolocation/master/ISSUE_TEMPLATE.md).
+Properly filled issue report will significantly reduce number of follow up questions and decrease issue resolving time.
+Most issues cannot be resolved without debug logs. Please try to isolate debug lines related to your issue.
+Instructions how to prepare debug logs can be found in section [Debugging](#debugging).
+If you're reporting app crash, debug logs might not contain all needed informations about the cause of the crash.
+In that case, also provide relevant parts of output of `adb logcat` command.
 
 ## Example Apps
 
@@ -46,11 +51,16 @@ class BgTracking extends Component {
         'X-FOO': 'bar'
       }
     });
-    
+
     BackgroundGeolocation.on('location', (location) => {
       //handle your locations here
       Actions.sendLocation(location);
-    }); 
+    });
+
+    BackgroundGeolocation.on('stationary', (stationaryLocation) => {
+      //handle stationary locations here
+      Actions.sendLocation(stationaryLocation);
+    });
 
     BackgroundGeolocation.on('error', (error) => {
       console.log('[ERROR] BackgroundGeolocation error:', error);
@@ -80,7 +90,7 @@ In `android/settings.gradle`
 ```gradle
 ...
 include ':react-native-mauron85-background-geolocation', ':app'
-project(':react-native-mauron85-background-geolocation').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-mauron85-background-geolocation/android')
+project(':react-native-mauron85-background-geolocation').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-mauron85-background-geolocation/android/lib')
 ...
 ```
 
@@ -298,6 +308,13 @@ backgroundGeolocation.switchMode(backgroundGeolocation.mode.FOREGROUND);
 backgroundGeolocation.switchMode(backgroundGeolocation.mode.BACKGROUND);
 ```
 
+### getLogEntries(limit, success, fail)
+Platform: Android
+
+Return all logged events. Useful for plugin debugging.
+Parameter `limit` limits number of returned entries.
+**@see [Debugging](#debugging)** for more information.
+
 ## HTTP locations posting
 
 All locations updates are recorded in local db at all times. When App is in foreground or background in addition to storing location in local db, location callback function is triggered. Number of location stored in db is limited by `option.maxLocations` a never exceeds this number. Instead old locations are replaced by new ones.
@@ -329,3 +346,103 @@ app.post('/locations', function(request, response){
 app.listen(3000);
 console.log('Server started...');
 ```
+## Debugging
+
+Plugin logs all activity into database. Logs are retained for 7 days.
+You can use following snippets in your app.
+
+Print Android logs:
+
+```
+backgroundGeolocation.getLogEntries(100, printAndroidLogs);
+```
+
+Print iOS logs:
+
+```
+backgroundGeolocation.getLogEntries(100, printIosLogs);
+```
+
+```javascript
+function padLeft(nr, n, str) {
+  return Array(n - String(nr).length + 1).join(str || '0') + nr;
+}
+
+function printLogs(logEntries, logFormatter, COLORS, MAX_LINES) {
+  MAX_LINES = MAX_LINES || 100; // maximum lines to print per batch
+  var batch = Math.ceil(logEntries.length / MAX_LINES);
+  var logLines = Array(MAX_LINES); //preallocate memory prevents GC
+  var logLinesColor = Array(MAX_LINES * 2);
+  for (var i = 0; i < batch; i++) {
+    var it = 0;
+    var logEntriesPart = logEntries.slice((i * MAX_LINES), (i + 1) * MAX_LINES);
+    for (var j = 0; j < logEntriesPart.length; j++) {
+      var logEntry = logEntriesPart[j];
+      logLines[j] = logFormatter(logEntry);
+      logLinesColor[it++] = ('background:white;color:black');
+      logLinesColor[it++] = (COLORS[logEntry.level]);      
+    }
+    if (logEntriesPart.length < MAX_LINES) {
+      console.log.apply(console, [logLines.slice(0,logEntriesPart.length).join('\n')]
+        .concat(logLinesColor.slice(0,logEntriesPart.length*2)));
+    } else {
+      console.log.apply(console, [logLines.join('\n')].concat(logLinesColor));
+    }
+  }
+}
+
+function printAndroidLogs(logEntries) {
+  var COLORS = Object();
+  COLORS['ERROR'] = 'background:white;color:red';
+  COLORS['WARN'] = 'background:black;color:yellow';
+  COLORS['INFO'] = 'background:white;color:blue';
+  COLORS['TRACE'] = 'background:white;color:black';
+  COLORS['DEBUG'] = 'background:white;color:black';
+
+  var logFormatter = function(logEntry) {
+    var d = new Date(logEntry.timestamp);
+    var dateStr = [d.getFullYear(), padLeft(d.getMonth()+1,2), padLeft(d.getDate(),2)].join('/');
+    var timeStr = [padLeft(d.getHours(),2), padLeft(d.getMinutes(),2), padLeft(d.getSeconds(),2)].join(':');
+    return ['%c[', dateStr, ' ', timeStr, '] %c', logEntry.logger, ':', logEntry.message].join('');
+  }
+
+  return printLogs(logEntries, logFormatter, COLORS);
+}
+
+function printIosLogs(logEntries) {
+  var COLORS = Array();
+  COLORS[1] = 'background:white;color:red';
+  COLORS[2] = 'background:black;color:yellow';
+  COLORS[4] = 'background:white;color:blue';
+  COLORS[8] = 'background:white;color:black';
+  COLORS[16] = 'background:white;color:black';
+
+  var logFormatter = function(logEntry) {
+    var d = new Date(logEntry.timestamp * 1000);
+    var dateStr = [d.getFullYear(), padLeft(d.getMonth()+1,2), padLeft(d.getDate(),2)].join('/');
+    var timeStr = [padLeft(d.getHours(),2), padLeft(d.getMinutes(),2), padLeft(d.getSeconds(),2)].join(':');
+    return ['%c[', dateStr, ' ', timeStr, '] %c', logEntry.logger, ':', logEntry.message].join('');
+  }
+
+  return printLogs(logEntries, logFormatter, COLORS);
+}
+```
+
+### Debugging sounds
+| *ios*                               | *android*                         |                         |
+|-------------------------------------|-----------------------------------|-------------------------|
+| Exit stationary region              | Calendar event notification sound | dialtone beep-beep-beep |
+| Geolocation recorded                | SMS sent sound                    | tt short beep           |
+| Aggressive geolocation engaged      | SIRI listening sound              |                         |
+| Passive geolocation engaged         | SIRI stop listening sound         |                         |
+| Acquiring stationary location sound | "tick,tick,tick" sound            |                         |
+| Stationary location acquired sound  | "bloom" sound                     | long tt beep            |
+
+**NOTE:** For iOS  in addition, you must manually enable the *Audio and Airplay* background mode in *Background Capabilities* to hear these debugging sounds.
+
+## Geofencing
+There is nice cordova plugin [cordova-plugin-geofence](https://github.com/cowbell/cordova-plugin-geofence), which does exactly that. Let's keep this plugin lightweight as much as possible.
+
+## Changelog
+
+See [CHANGES.md](/CHANGES.md)
