@@ -103,7 +103,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
 
         // Unbind from the service
         doUnbindService();
-        if (mConfig.getStopOnTerminate()) {
+        if (mConfig != null && mConfig.getStopOnTerminate()) {
             stopBackgroundService();
         }
     }

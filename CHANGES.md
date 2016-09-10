@@ -1,5 +1,9 @@
 ## Changelog
 
+### [0.2.0-alpha.4] - 2016-09-10
+#### Fixed
+- Android fix crash on destroy when plugin was not configured
+
 ### [0.2.0-alpha.3] - 2016-09-07
 #### Fixed
 - fix Android issue #10 - crash on refresh
