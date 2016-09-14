@@ -10,6 +10,19 @@ Please support my work and support continuous development by your donation.
 
 Special React Native fork of [cordova-plugin-mauron85-background-geolocation](https://github.com/mauron85/cordova-plugin-background-geolocation).
 
+## Compatibility
+
+Due to the rapid changes being made in the React Native ecosystem, this module will support
+only latest version of React Native. Older versions will only be supported, if they're
+compatible with this module.
+
+| Required peerDependencies  | Version |
+|----------------------------|---------|
+| React Native               | >=0.33  |
+| React                      | >=15.3.1|
+
+If you are using an older version of React Native with this module some features may be buggy.
+
 ## Submitting issues
 
 All new issues should follow instructions in [ISSUE_TEMPLATE.md](https://raw.githubusercontent.com/mauron85/react-native-background-geolocation/master/ISSUE_TEMPLATE.md).

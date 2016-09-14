@@ -28,5 +28,9 @@
   "bugs": {
     "url": "https://github.com/mauron85/react-native-background-geolocation/issues"
   },
-  "homepage": "https://github.com/mauron85/react-native-background-geolocation#readme"
+  "homepage": "https://github.com/mauron85/react-native-background-geolocation#readme",
+  "peerDependencies": {
+    "react": ">=15.3.0",
+    "react-native": ">=0.33.0"
+  }
 }
