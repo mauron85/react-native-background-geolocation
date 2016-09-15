@@ -134,10 +134,10 @@ public class LocationService extends Service {
         public void handleMessage(Message msg) {
             switch (msg.what) {
                 case MSG_REGISTER_CLIENT:
-                    mClients.put(msg.sendingUid, msg.replyTo);
+                    mClients.put(msg.arg1, msg.replyTo);
                     break;
                 case MSG_UNREGISTER_CLIENT:
-                    mClients.remove(msg.sendingUid);
+                    mClients.remove(msg.arg1);
                     break;
                 case MSG_SWITCH_MODE:
                     switchMode(msg.arg1);

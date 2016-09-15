@@ -200,7 +200,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
                 Message msg = Message.obtain(null,
                         LocationService.MSG_REGISTER_CLIENT);
                 msg.replyTo = mMessenger;
-                msg.sendingUid = MESSENGER_CLIENT_ID;
+                msg.arg1 = MESSENGER_CLIENT_ID;
                 mService.send(msg);
             } catch (RemoteException e) {
                 // In this case the service has crashed before we could even
@@ -486,7 +486,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
                     Message msg = Message.obtain(null,
                             LocationService.MSG_UNREGISTER_CLIENT);
                     msg.replyTo = mMessenger;
-                    msg.sendingUid = MESSENGER_CLIENT_ID;
+                    msg.arg1 = MESSENGER_CLIENT_ID;
                     mService.send(msg);
                 } catch (RemoteException e) {
                     // There is nothing special we need to do if the service
