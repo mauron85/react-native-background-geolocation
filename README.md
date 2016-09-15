@@ -7,8 +7,16 @@ Please support my work and support continuous development by your donation.
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=6GW8FPTE6TV5J)
 
 ## Description
+React Native fork of [cordova-plugin-background-geolocation](https://github.com/mauron85/cordova-plugin-background-geolocation)
+with battery-saving "circular region monitoring" and "stop detection".
 
-Special React Native fork of [cordova-plugin-mauron85-background-geolocation](https://github.com/mauron85/cordova-plugin-background-geolocation).
+Plugin can be used for geolocation when app is running in foreground or background.
+
+On Android you can choose from two location location providers:
+* **ANDROID_DISTANCE_FILTER_PROVIDER**
+* **ANDROID_ACTIVITY_PROVIDER**
+
+See [Which provider should I use?](https://github.com/mauron85/react-native-background-geolocation/blob/master/PROVIDERS.md) for more information about providers.
 
 ## Compatibility
 
