@@ -20,7 +20,7 @@ static const DDLogLevel ddLogLevel = DDLogLevelAll;
 
 @interface LogReader : NSObject
 
-+ (NSArray*) getEntries:(NSString*)path limit:(NSInteger)limit;
++ (NSArray*) getEntries:(NSString*)dbPath limit:(NSInteger)limit;
 
 @end
 

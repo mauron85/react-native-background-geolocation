@@ -13,12 +13,12 @@
 
 @implementation LogReader : NSObject
 
-+ (NSArray*) getEntries:(NSString*)path limit:(NSInteger)limit
++ (NSArray*) getEntries:(NSString*)dbPath limit:(NSInteger)limit
 {
     limit = (limit > 0) ? limit : 100;
 
     NSMutableArray *logs = [[NSMutableArray alloc] init];
-    FMDatabase *database = [[FMDatabase alloc] initWithPath:path];
+    FMDatabase *database = [[FMDatabase alloc] initWithPath:dbPath];
     if (![database openWithFlags:SQLITE_OPEN_READONLY]) {
         NSLog(@"%@: Failed opening database!", [self class]);
         database = nil;

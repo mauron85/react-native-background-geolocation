@@ -8,13 +8,15 @@
 #import <Foundation/Foundation.h>
 #import "Config.h"
 
+#define isNull(value) value == nil || [value isKindOfClass:[NSNull class]]
+
 @implementation Config
 
-@synthesize stationaryRadius, distanceFilter, desiredAccuracy, isDebugging, activityType, stopOnTerminate, url, syncUrl, syncThreshold, httpHeaders, saveBatteryOnBackground, maxLocations;
+@synthesize stationaryRadius, distanceFilter, desiredAccuracy, isDebugging, activityType, stopOnTerminate, url, syncUrl, syncThreshold, httpHeaders, saveBatteryOnBackground, maxLocations, pauseLocationUpdates, locationProvider;
 
 -(id) init {
     self = [super init];
-    
+
     if (self == nil) {
         return self;
     }
@@ -28,7 +30,9 @@
     saveBatteryOnBackground = YES;
     maxLocations = 10000;
     syncThreshold = 100;
-    
+    pauseLocationUpdates = YES;
+    locationProvider = DISTANCE_FILTER_PROVIDER;
+
     return self;
 }
 
@@ -36,43 +40,49 @@
 {
     Config *instance = [[Config alloc] init];
 
-    if (config[@"stationaryRadius"]) {
+    if (isNull(config[@"stationaryRadius"]) == NO) {
         instance.stationaryRadius = [config[@"stationaryRadius"] integerValue];
     }
-    if (config[@"distanceFilter"]) {
+    if (isNull(config[@"distanceFilter"]) == NO) {
         instance.distanceFilter = [config[@"distanceFilter"] integerValue];
     }
-    if (config[@"desiredAccuracy"]) {
+    if (isNull(config[@"desiredAccuracy"]) == NO) {
         instance.desiredAccuracy = [config[@"desiredAccuracy"] integerValue];
     }
-    if (config[@"debug"]) {
+    if (isNull(config[@"debug"]) == NO) {
         instance.isDebugging = [config[@"debug"] boolValue];
     }
-    if (config[@"activityType"]) {
+    if (isNull(config[@"activityType"]) == NO) {
         instance.activityType = config[@"activityType"];
     }
-    if (config[@"stopOnTerminate"]) {
+    if (isNull(config[@"stopOnTerminate"]) == NO) {
         instance.stopOnTerminate = [config[@"stopOnTerminate"] boolValue];
     }
-    if (config[@"url"]) {
+    if (isNull(config[@"url"]) == NO) {
         instance.url = config[@"url"];
     }
-    if (config[@"syncUrl"]) {
+    if (isNull(config[@"syncUrl"]) == NO) {
         instance.syncUrl = config[@"syncUrl"];
-    } else if (config[@"url"]) {
+    } else if (isNull(config[@"url"]) == NO) {
         instance.syncUrl = config[@"url"];
     }
-    if (config[@"syncThreshold"]) {
+    if (isNull(config[@"syncThreshold"]) == NO) {
         instance.syncThreshold = [config[@"syncThreshold"] integerValue];
     }
-    if (config[@"httpHeaders"]) {
+    if (isNull(config[@"httpHeaders"]) == NO) {
         instance.httpHeaders = config[@"httpHeaders"];
     }
-    if (config[@"saveBatteryOnBackground"]) {
+    if (isNull(config[@"saveBatteryOnBackground"]) == NO) {
         instance.saveBatteryOnBackground = [config[@"saveBatteryOnBackground"] boolValue];
     }
-    if (config[@"maxLocations"]) {
+    if (isNull(config[@"maxLocations"]) == NO) {
         instance.maxLocations = [config[@"maxLocations"] integerValue];
+    }
+    if (isNull(config[@"pauseLocationUpdates"]) == NO) {
+        instance.pauseLocationUpdates = [config[@"pauseLocationUpdates"] boolValue];
+    }
+    if (isNull(config[@"locationProvider"]) == NO) {
+        instance.locationProvider = [config[@"locationProvider"] integerValue];
     }
 
     return instance;
@@ -117,13 +127,13 @@
     if (desiredAccuracy >= 0) {
         return kCLLocationAccuracyBest;
     }
-    
+
     return kCLLocationAccuracyHundredMeters;
 }
 
 - (NSString *) description
 {
-    return [NSString stringWithFormat:@"Config: distanceFilter=%ld stationaryRadius=%ld desiredAccuracy=%ld activityType=%@ isDebugging=%d stopOnTerminate=%d url=%@ httpHeaders=%@", (long)distanceFilter, (long)stationaryRadius, (long)desiredAccuracy, activityType, isDebugging, stopOnTerminate, url, httpHeaders];
+    return [NSString stringWithFormat:@"Config: distanceFilter=%ld stationaryRadius=%ld desiredAccuracy=%ld activityType=%@ isDebugging=%d stopOnTerminate=%d url=%@ httpHeaders=%@ pauseLocationUpdates=%d", (long)distanceFilter, (long)stationaryRadius, (long)desiredAccuracy, activityType, isDebugging, stopOnTerminate, url, httpHeaders, pauseLocationUpdates];
 }
 
 

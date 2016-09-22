@@ -1,5 +1,18 @@
 ## Changelog
 
+### [0.2.0-alpha.6] - xxx
+#### Fixed
+- iOS fix potential issue sending outdated location
+- iOS onStationary null location
+
+#### Added
+- Android android.hardware.location permission
+- iOS option pauseLocationUpdates
+
+#### Changed
+- iOS use system time when updating locations (recordedAt)
+- iOS refactor LocationManager to enable multiple providers
+
 ### [0.2.0-alpha.5] - 2016-09-15
 #### Fixed
 - Android fix issue #10

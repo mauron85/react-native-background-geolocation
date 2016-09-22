@@ -9,37 +9,18 @@
 //  This is class is using code from christocracy cordova-plugin-background-geolocation plugin
 //  https://github.com/christocracy/cordova-plugin-background-geolocation
 
-
-#import <CoreLocation/CoreLocation.h>
-#import <AudioToolbox/AudioToolbox.h>
+#import "LocationDelegate.h"
 #import "Config.h"
-
-enum BGAuthorizationStatus {
-    NOT_DETERMINED = 0,
-    ALLOWED,
-    DENIED
-};
-
-enum BGOperationMode {
-    BACKGROUND = 0,
-    FOREGROUND = 1
-};
-
-typedef NSUInteger BGAuthorizationStatus;
-typedef NSUInteger BGOperationMode;
 
 @protocol LocationManagerDelegate <NSObject>
 
-- (void) onAuthorizationChanged:(NSInteger)authStatus;
-- (void) onLocationChanged:(NSMutableDictionary*)location;
-- (void) onStationaryChanged:(NSMutableDictionary*)location;
-- (void) onError:(NSError*)error;
+- (void) sync:(Location*)location;
 
 @end
 
 @interface LocationManager : NSObject
 
-@property (weak, nonatomic) id<LocationManagerDelegate> delegate;
+@property (weak, nonatomic) id<LocationDelegate> delegate;
 
 - (BOOL) configure:(Config*)config error:(NSError * __autoreleasing *)outError;
 - (BOOL) start:(NSError * __autoreleasing *)outError;
@@ -49,9 +30,9 @@ typedef NSUInteger BGOperationMode;
 - (void) showAppSettings;
 - (void) showLocationSettings;
 - (void) switchMode:(BGOperationMode)mode;
-- (NSMutableDictionary*)getStationaryLocation;
-- (NSArray<NSMutableDictionary*>*) getLocations;
-- (NSArray<NSMutableDictionary*>*) getValidLocations;
+- (Location*)getStationaryLocation;
+- (NSArray<Location*>*) getLocations;
+- (NSArray<Location*>*) getValidLocations;
 - (BOOL) deleteLocation:(NSNumber*)locationId;
 - (BOOL) deleteAllLocations;
 - (void) onAppTerminate;
