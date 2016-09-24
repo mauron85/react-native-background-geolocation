@@ -43,6 +43,10 @@ var BackgroundGeolocation = {
     RNBackgroundGeolocation.stop(successFn, errorFn);
   },
 
+  finish: function() {
+    RNBackgroundGeolocation.finish();
+  },
+
   isLocationEnabled: function(successFn, errorFn) {
     successFn = successFn || emptyFn;
     errorFn = errorFn || emptyFn;
@@ -57,24 +61,12 @@ var BackgroundGeolocation = {
     RNBackgroundGeolocation.showLocationSettings();
   },
 
-  watchLocationMode: function(successFn, errorFn) {
-    successFn = successFn || emptyFn;
-    errorFn = errorFn || emptyFn;
-    RNBackgroundGeolocation.watchLocationMode(successFn, errorFn);
-  },
-
-  stopWatchingLocationMode: function(successFn, errorFn) {
-    successFn = successFn || emptyFn;
-    errorFn = errorFn || emptyFn;
-    RNBackgroundGeolocation.stopWatchingLocationMode(successFn, errorFn);
-  },
-
   getLocations: function(successFn, errorFn) {
     successFn = successFn || emptyFn;
     errorFn = errorFn || emptyFn;
     RNBackgroundGeolocation.getLocations(successFn, errorFn);
   },
-/*
+
   getValidLocations: function(successFn, errorFn) {
     successFn = successFn || emptyFn;
     errorFn = errorFn || emptyFn;
@@ -92,7 +84,7 @@ var BackgroundGeolocation = {
     errorFn = errorFn || emptyFn;
     RNBackgroundGeolocation.deleteAllLocations(successFn, errorFn);
   },
-*/
+
   switchMode: function(modeId, successFn, errorFn) {
     successFn = successFn || emptyFn;
     errorFn = errorFn || emptyFn;
@@ -104,7 +96,7 @@ var BackgroundGeolocation = {
     errorFn = errorFn || emptyFn;
     RNBackgroundGeolocation.getConfig(successFn, errorFn);
   },
-  
+
   getLogEntries: function(limit, successFn, errorFn) {
     successFn = successFn || emptyFn;
     errorFn = errorFn || emptyFn;

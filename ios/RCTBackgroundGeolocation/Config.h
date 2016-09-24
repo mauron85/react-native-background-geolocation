@@ -37,6 +37,7 @@ enum {
 - (NSInteger) decodeDesiredAccuracy;
 - (BOOL) hasUrl;
 - (BOOL) hasSyncUrl;
+- (NSDictionary*) toDictionary;
 
 @end;
 

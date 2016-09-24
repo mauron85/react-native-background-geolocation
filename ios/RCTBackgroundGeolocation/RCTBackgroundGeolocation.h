@@ -9,7 +9,7 @@
 #import "RCTBridgeModule.h"
 #import "LocationManager.h"
 
-@interface RCTBackgroundGeolocation : NSObject <RCTBridgeModule, LocationManagerDelegate>
+@interface RCTBackgroundGeolocation : NSObject <RCTBridgeModule, LocationDelegate>
 
 @property (nonatomic, strong) LocationManager* locationManager;
 

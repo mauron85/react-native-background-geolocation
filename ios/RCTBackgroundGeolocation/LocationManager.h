@@ -35,6 +35,7 @@
 - (NSArray<Location*>*) getValidLocations;
 - (BOOL) deleteLocation:(NSNumber*)locationId;
 - (BOOL) deleteAllLocations;
+- (Config*) getConfig;
 - (void) onAppTerminate;
 
 @end

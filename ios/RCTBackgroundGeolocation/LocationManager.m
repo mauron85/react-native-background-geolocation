@@ -130,37 +130,43 @@ static NSString * const Domain = @"com.marianhello";
     }
     
     // Note: CLLocationManager must be created on a thread with an active run loop (main thread)
-    NSError *error = nil;
-    NSDictionary *errorDictionary;
-    switch (_config.locationProvider) {
-        case DISTANCE_FILTER_PROVIDER:
-            locationProvider = [[DistanceFilterLocationProvider alloc] init];
-            break;
-        case ACTIVITY_PROVIDER:
-            locationProvider = [[ActivityLocationProvider alloc] init];
-            break;
-        default:
-            errorDictionary = @{ @"code": [NSNumber numberWithInt:UNKNOWN_LOCATION_PROVIDER], @"message": @UNKNOWN_LOCATION_PROVIDER_MSG };
-            error = [NSError errorWithDomain:Domain code:UNKNOWN_LOCATION_PROVIDER userInfo:errorDictionary];
-            if (outError != nil) *outError = error;
-
-            return NO;
-    }
+    __block NSError *error = nil;
+    __block NSDictionary *errorDictionary;
     
-    // trap configuration errors
-    if (![locationProvider configure:_config error:&error]) {
+    [self runOnMainThread:^{
+        switch (_config.locationProvider) {
+            case DISTANCE_FILTER_PROVIDER:
+                locationProvider = [[DistanceFilterLocationProvider alloc] init];
+                break;
+            case ACTIVITY_PROVIDER:
+                locationProvider = [[ActivityLocationProvider alloc] init];
+                break;
+            default:
+                errorDictionary = @{ @"code": [NSNumber numberWithInt:UNKNOWN_LOCATION_PROVIDER], @"message": @UNKNOWN_LOCATION_PROVIDER_MSG };
+                error = [NSError errorWithDomain:Domain code:UNKNOWN_LOCATION_PROVIDER userInfo:errorDictionary];
+                return;
+        }
+       
+        // trap configuration errors
+        if (![locationProvider configure:_config error:&error]) {
+            if (outError != nil) *outError = error;
+            return;
+        }
+        
+        isStarted = [locationProvider start:&error];
+        locationProvider.delegate = self;
+    }];
+
+    if (locationProvider == nil) {
         if (outError != nil) *outError = error;
         return NO;
     }
     
-    locationProvider.delegate = self;
-    isStarted = [locationProvider start:&error];
-  
     if (!isStarted) {
         if (outError != nil) *outError = error;
         return NO;
     }
-    
+  
     return isStarted;
 }
 
@@ -176,8 +182,12 @@ static NSString * const Domain = @"com.marianhello";
     }
 
     [reach stopNotifier];
+    
+    [self runOnMainThread:^{
+        isStarted = ![locationProvider stop:outError];
+    }];
 
-    return isStarted = ![locationProvider stop:outError];
+    return isStarted;
 }
 
 /**
@@ -194,8 +204,10 @@ static NSString * const Domain = @"com.marianhello";
     if (_config.isDebugging) {
         AudioServicesPlaySystemSound (operationMode  == FOREGROUND ? paceChangeYesSound : paceChangeNoSound);
     }
-    
-    return [locationProvider switchMode:mode];
+   
+    [self runOnMainThread:^{
+        [locationProvider switchMode:mode];
+    }];
 }
 
 /**
@@ -257,6 +269,11 @@ static NSString * const Domain = @"com.marianhello";
 {
     SQLiteLocationDAO* locationDAO = [SQLiteLocationDAO sharedInstance];
     return [locationDAO deleteAllLocations];
+}
+
+- (Config*) getConfig
+{
+    return _config;
 }
 
 - (void) flushQueue
@@ -358,6 +375,19 @@ static NSString * const Domain = @"com.marianhello";
     localNotification.fireDate = [NSDate date];
     localNotification.alertBody = message;
     [[UIApplication sharedApplication] scheduleLocalNotification:localNotification];
+}
+
+-(void) runOnMainThread:(dispatch_block_t)completionHandle {
+    BOOL alreadyOnMainThread = [NSThread isMainThread];
+    // this check avoids possible deadlock resulting from
+    // calling dispatch_sync() on the same queue as current one
+    if (alreadyOnMainThread) {
+        // execute code in place
+        completionHandle();
+    } else {
+        // dispatch to main queue
+        dispatch_sync(dispatch_get_main_queue(), completionHandle);
+    }
 }
 
 - (void) onStationaryChanged:(Location *)location
