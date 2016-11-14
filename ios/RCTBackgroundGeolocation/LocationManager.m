@@ -533,6 +533,10 @@ enum {
         if ([bgloc isBetterLocation:lastLocation]) {
             DDLogInfo(@"Better location found: %@", bgloc);
             lastLocation = bgloc;
+            bgloc.type = @"raw";
+            if (self.delegate && [self.delegate respondsToSelector:@selector(onLocationChanged:)]) {
+                [self.delegate onLocationChanged:[bgloc toDictionary]];
+            }
         }
     }
 
