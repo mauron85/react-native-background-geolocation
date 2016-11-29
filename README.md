@@ -76,6 +76,13 @@ class BgTracking extends Component {
     BackgroundGeolocation.on('location', (location) => {
       //handle your locations here
       Actions.sendLocation(location);
+
+      /*
+      IMPORTANT:  You must execute the finish method here to inform the native plugin that you're finished,
+      and the background-task may be completed.  You must do this regardless if your HTTP request is successful or not.
+      IF YOU DON'T, ios will CRASH YOUR APP for spending too much time in the background.
+      */
+      BackgroundGeolocation.finish();
     });
 
     BackgroundGeolocation.on('stationary', (stationaryLocation) => {
@@ -85,6 +92,11 @@ class BgTracking extends Component {
 
     BackgroundGeolocation.on('error', (error) => {
       console.log('[ERROR] BackgroundGeolocation error:', error);
+    });
+
+    BackgroundGeolocation.on('authorizationChanged', (authStatus) => {
+      // called when authorization changed or
+      // location services has been disabled
     });
 
     BackgroundGeolocation.start(() => {
@@ -179,8 +191,9 @@ You will need to ensure that you have installed the following items through the 
 1. In XCode, in the project navigator, right click `Libraries` ➜ `Add Files to [your project's name]`
 2. add `./node_modules/react-native-mauron85-background-geolocation/ios/RCTBackgroundGeolocation.xcodeproj`
 3. In the XCode project navigator, select your project, select the `Build Phases` tab and in the `Link Binary With Libraries` section add **libRCTBackgroundGeolocation.a**
-4. add `UIBackgroundModes` **location** to `Info.plist`
-5. add `NSLocationAlwaysUsageDescription` **App requires background tracking** to `Info.plist`
+4. In the XCode project navigator, select your project, select the `Build Phases` tab and in the `Link Binary With Libraries` section add **libsqlite3.tbd**
+5. add `UIBackgroundModes` **location** to `Info.plist`
+6. add `NSLocationAlwaysUsageDescription` **App requires background tracking** to `Info.plist`
 
 
 ## API
@@ -215,7 +228,7 @@ Configure options:
 | `syncUrl`                 | `String`          | all          | Server url where to send fail to post locations **@see** [HTTP locations posting](#http-locations-posting)                                                                                                                                                                                                                                         |
 | `syncThreshold`           | `Number`          | all          | Specifies how many previously failed locations will be sent to server at once (default: 100)                                                                                                                                                                                                                                                       |
 | `httpHeaders`             | `Object`          | all          | Optional HTTP headers sent along in HTTP request                                                                                                                                                                                                                                                                                                   |
-| `saveBatteryOnBackground` | `Boolean`         | iOS          | Switch to less accurate significant changes and region monitory when in background (default)                                                                                                                                                                                                                                                       |
+| `saveBatteryOnBackground` | `Boolean`         | iOS          | Switch to less accurate significant changes and region monitory when in background (default true)                                                                                                                                                                                                                                                  |
 | `maxLocations`            | `Number`          | all          | Limit maximum number of locations stored into db (default: 10000)                                                                                                                                                                                                                                                                                  |
 
 Following options are specific to provider as defined by locationProvider option
@@ -275,22 +288,6 @@ Platform: iOS, Android
 
 Show system settings to allow configuration of current location sources.
 
-### watchLocationMode(success, fail)
-Platform: iOS, Android
-
-Method can be used to detect user changes in location services settings.
-If user enable or disable location services then success callback will be executed.
-In case or error (SettingNotFoundException) fail callback will be executed.
-
-| Success callback parameter | Type      | Description                                          |
-|----------------------------|-----------|------------------------------------------------------|
-| `enabled`                  | `Boolean` | true/false (true when location services are enabled) |
-
-### stopWatchingLocationMode()
-Platform: iOS, Android
-
-Stop watching for location mode changes.
-
 ### getLocations(success, fail)
 Platform: iOS, Android
 
@@ -310,6 +307,31 @@ backgroundGeolocation.getLocations(
   }
 );
 ```
+### getValidLocations(success, fail)
+Platform: iOS, Android
+
+Method will return locations, which has not been yet posted to server.
+NOTE: Locations does contain locationId.
+
+| Success callback parameter | Type    | Description                    |
+|----------------------------|---------|--------------------------------|
+| `locations`                | `Array` | collection of stored locations |
+
+### deleteLocation(locationId, success, fail)
+Platform: iOS, Android
+
+Delete location with locationId.
+
+Note: Locations are not actually deleted from database to avoid gaps in locationId numbering.
+Instead locations are marked as deleted. Locations marked as deleted will not appear in output of `backgroundGeolocation.getLocations`.
+
+### deleteAllLocations(success, fail)
+Note: You don't need to delete all locations. Plugin manages number of locations automatically and location count never exceeds number as defined by `option.maxLocations`.
+
+Platform: iOS, Android
+
+Delete all stored locations.
+
 ### switchMode(modeId, success, fail)
 Platform: iOS
 

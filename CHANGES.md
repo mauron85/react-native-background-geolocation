@@ -4,14 +4,29 @@
 #### Fixed
 - iOS fix potential issue sending outdated location
 - iOS onStationary null location
+- iOS fix #12 - remove sqlite3.tbd dependency
+- iOS background mode
 
 #### Added
 - Android android.hardware.location permission
 - iOS option pauseLocationUpdates
+- event authorizationChanged (replacement for watchLocationMode)
+- method getLocations
+- method getValidLocations
+- method getLocations
+- method getValidLocations
+- method deleteLocation
+- method deleteAllLocations
+- method getLogEntries
+- iOS method switchMode
 
 #### Changed
 - iOS use system time when updating locations (recordedAt)
 - iOS refactor LocationManager to enable multiple providers
+
+#### Removed
+- method watchLocationMode
+- method authorizationChanged
 
 ### [0.2.0-alpha.5] - 2016-09-15
 #### Fixed
