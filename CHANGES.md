@@ -1,5 +1,9 @@
 ## Changelog
 
+### [0.2.0-alpha.6] - unreleased
+#### Added
+- Android android.hardware.location permission
+
 ### [0.2.0-alpha.5] - 2016-09-15
 #### Fixed
 - Android fix issue #10
