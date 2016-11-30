@@ -314,10 +314,7 @@
 					"$(SRCROOT)/../../react-native/React/**",
 					"$(SRCROOT)/react-native/React/**",
 				);
-				OTHER_LDFLAGS = (
-					"-ObjC",
-					"-lsqlite",
-				);
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
@@ -332,10 +329,7 @@
 					"$(SRCROOT)/../../react-native/React/**",
 					"$(SRCROOT)/react-native/React/**",
 				);
-				OTHER_LDFLAGS = (
-					"-ObjC",
-					"-lsqlite",
-				);
+				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
 			};
