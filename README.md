@@ -48,10 +48,11 @@ Repository [react-native-background-geolocation-example](https://github.com/maur
 
 ```javascript
 import React, { Component } from 'react';
+import { Alert } from 'react-native';
 import BackgroundGeolocation from 'react-native-mauron85-background-geolocation';
 
 class BgTracking extends Component {
-  componentWillMount() {
+  componentDidMount() {
     BackgroundGeolocation.configure({
       desiredAccuracy: 10,
       stationaryRadius: 50,
@@ -87,9 +88,56 @@ class BgTracking extends Component {
       console.log('[ERROR] BackgroundGeolocation error:', error);
     });
 
-    BackgroundGeolocation.start(() => {
-      console.log('[DEBUG] BackgroundGeolocation started successfully');    
+    BackgroundGeolocation.on('start', () => {
+      console.log('[INFO] BackgroundGeolocation service has been started');
     });
+
+    BackgroundGeolocation.on('stop', () => {
+      console.log('[INFO] BackgroundGeolocation service has been stopped');
+    });
+
+    BackgroundGeolocation.on('mode_change', (enabled) => {
+      console.log('[INFO] BackgroundGeolocation location is enabled: ' + enabled);
+      Alert.alert('Location is disabled', 'Would you like to open location settings?', [
+        { text: 'Yes', onPress: () => BackgroundGeolocation.showLocationSettings() },
+        { text: 'No', onPress: () => console.log('No Pressed'), style: 'cancel' }
+      ]);
+    });
+
+    BackgroundGeolocation.on('permissions_denied', (enabled) => {
+      console.log('[INFO] BackgroundGeolocation needs permissions');
+      Alert.alert('Not authorized for location updates', 'Would you like to open app settings?', [
+        { text: 'Yes', onPress: () => BackgroundGeolocation.showAppSettings() },
+        { text: 'No', onPress: () => console.log('No Pressed'), style: 'cancel' }
+      ]);
+    });
+
+    BackgroundGeolocation.on('background', () => {
+      console.log('[INFO] App is in background');
+    });
+
+    BackgroundGeolocation.on('foreground', () => {
+      console.log('[INFO] App is in foreground');
+    });
+
+    BackgroundGeolocation.checkStatus(status => {
+      console.log('[INFO] BackgroundGeolocation service is running', status.isRunning);
+      console.log('[INFO] BackgroundGeolocation service has permissions': status.hasPermissions);
+      console.log('[INFO] BackgroundGeolocation location services are on': status.locationModeOn);
+
+      // you don't need to check status before start (this is just the example)
+      if (!status.isRunning) {
+        BackgroundGeolocation.start(); //triggers start on start event
+      }
+    });
+
+    // you can also just start without checking for status
+    // BackgroundGeolocation.start();
+  }
+
+  componentWillUnmount() {
+    // unregister all event listeners
+    BackgroundGeolocation.events.forEach(event => BackgroundGeolocation.removeAllListeners(event));
   }
 }
 
@@ -256,6 +304,9 @@ Platform: iOS, Android
 Stop background geolocation.
 
 ### isLocationEnabled(success, fail)
+Deprecated: This method is deprecated and will be removed in next major version.
+Use `checkStatus` as replacement.
+
 Platform: iOS, Android
 
 One time check for status of location services. In case of error, fail callback will be executed.
@@ -263,6 +314,17 @@ One time check for status of location services. In case of error, fail callback 
 | Success callback parameter | Type      | Description                                          |
 |----------------------------|-----------|------------------------------------------------------|
 | `enabled`                  | `Boolean` | true/false (true when location services are enabled) |
+
+### checkStatus(success, fail)
+Platform: Android
+
+Check status of the service
+
+| Success callback parameter | Type      | Description                                          |
+|----------------------------|-----------|------------------------------------------------------|
+| `isRunning`                | `Boolean` | true/false (true if service is running)              |
+| `hasPermissions`           | `Boolean` | true/false (true if service has permissions)         |
+| `locationModeOn`           | `Boolean` | true/false (true if location mode is on)             |
 
 ### showAppSettings()
 Platform: Android >= 6, iOS >= 8.0
@@ -273,22 +335,6 @@ Show app settings to allow change of app location permissions.
 Platform: iOS, Android
 
 Show system settings to allow configuration of current location sources.
-
-### watchLocationMode(success, fail)
-Platform: iOS, Android
-
-Method can be used to detect user changes in location services settings.
-If user enable or disable location services then success callback will be executed.
-In case or error (SettingNotFoundException) fail callback will be executed.
-
-| Success callback parameter | Type      | Description                                          |
-|----------------------------|-----------|------------------------------------------------------|
-| `enabled`                  | `Boolean` | true/false (true when location services are enabled) |
-
-### stopWatchingLocationMode()
-Platform: iOS, Android
-
-Stop watching for location mode changes.
 
 ### getLocations(success, fail)
 Platform: iOS, Android
@@ -309,6 +355,32 @@ backgroundGeolocation.getLocations(
   }
 );
 ```
+
+### getValidLocations(success, fail)
+Platform: iOS, Android
+
+Method will return locations, which has not been yet posted to server.
+NOTE: Locations does contain locationId.
+
+| Success callback parameter | Type    | Description                    |
+|----------------------------|---------|--------------------------------|
+| `locations`                | `Array` | collection of stored locations |
+
+### deleteLocation(locationId, success, fail)
+Platform: iOS, Android
+
+Delete location with locationId.
+
+Note: Locations are not actually deleted from database to avoid gaps in locationId numbering.
+Instead locations are marked as deleted. Locations marked as deleted will not appear in output of `backgroundGeolocation.getLocations`.
+
+### deleteAllLocations(success, fail)
+Note: You don't need to delete all locations. Plugin manages number of locations automatically and location count never exceeds number as defined by `option.maxLocations`.
+
+Platform: iOS, Android
+
+Delete all stored locations.
+
 ### switchMode(modeId, success, fail)
 Platform: iOS
 
@@ -335,6 +407,38 @@ Platform: Android
 Return all logged events. Useful for plugin debugging.
 Parameter `limit` limits number of returned entries.
 **@see [Debugging](#debugging)** for more information.
+
+### removeAllListeners(event)
+
+Unregister all event listeners for given event
+
+## Events
+
+Event listeners can registered with:
+
+```
+const eventSubscription = BackgroundGeolocation.on('event', callbackFn);
+```
+
+And unregistered:
+
+```
+eventSubscription.remove();
+```
+
+Note: Components should unregister all event listeners in `componentWillUnmount` method,
+individually, or with `removeAllListeners`
+
+| Name                | Callback param | Platform | Description                                                                     |
+|---------------------|--------------- |----------|----------------------------------------|
+| `location`          | `Location`     | all      | on location update                     |
+| `stationary`        | `Location`     | all      | on device entered stationary mode      |
+| `error`             | `{ message }`  | all      | on plugin error                        |
+| `mode_change`       | `{ enabled }`  | all      | on user toggle location service        |
+| `permissions_denied`|                | all      | user denied permissions options        |
+| `foreground`        |                | android  | app entered foreground state (visible) |
+| `background`        |                | android  | app entered background state           |
+
 
 ## HTTP locations posting
 

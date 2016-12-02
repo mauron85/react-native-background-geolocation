@@ -3,6 +3,10 @@
 ### [0.2.0-alpha.6] - unreleased
 #### Added
 - Android android.hardware.location permission
+- Android methods: getValidLocations, deleteLocation, deleteAllLocations
+- Android method checkStatus check if service is running and more
+- Android 6.0 permissions
+- Android events (mode_change, permissions_denied ...)
 
 ### [0.2.0-alpha.5] - 2016-09-15
 #### Fixed

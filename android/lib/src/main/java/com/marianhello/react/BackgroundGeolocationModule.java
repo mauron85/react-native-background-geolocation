@@ -1,11 +1,16 @@
 package com.marianhello.react;
 
+import android.Manifest;
+import android.annotation.TargetApi;
 import android.app.Activity;
-import android.app.Application;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,17 +21,18 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.ReadableMap;
-import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
@@ -40,32 +46,33 @@ import com.marianhello.logging.DBLogReader;
 import com.marianhello.logging.LogEntry;
 import com.marianhello.logging.LogReader;
 import com.marianhello.logging.LoggerManager;
-import com.marianhello.utils.Convert;
+import com.marianhello.react.data.LocationMapper;
+
+import org.json.JSONException;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
 
-import javax.annotation.Nullable;
-
-public class BackgroundGeolocationModule extends ReactContextBaseJavaModule implements LifecycleEventListener {
+public class BackgroundGeolocationModule extends ReactContextBaseJavaModule implements LifecycleEventListener, ActivityCompat.OnRequestPermissionsResultCallback {
 
     public static final String LOCATION_EVENT = "location";
     public static final String STATIONARY_EVENT = "stationary";
+    public static final String START_EVENT = "start";
+    public static final String STOP_EVENT = "stop";
     public static final String ERROR_EVENT = "error";
+    public static final String LOCATION_MODE_EVENT = "mode_change";
+    public static final String FOREGROUND_EVENT = "foreground";
+    public static final String BACKGROUND_EVENT = "background";
+    public static final String PERMISSIONS_DENIED_EVENT = "permissions_denied";
+    public static final String[] PERMISSIONS = { Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION };
+    private static final int PERMISSIONS_REQUEST = 1;
     private static final Integer MESSENGER_CLIENT_ID = 666;
 
     /** Messenger for communicating with the service. */
     private Messenger mService = null;
     /** Flag indicating whether we have called bind on the service. */
     private Boolean mIsBound = false;
-
-    private Boolean mIsServiceRunning = false;
-    private Boolean mIsLocationModeChangeReceiverRegistered = false;
-
-    private LocationDAO mDao;
-    private Config mConfig;
+    private Boolean locationModeChangeReceiverRegistered = false;
+    private Config mConfig = null;
 
     private org.slf4j.Logger log;
 
@@ -77,7 +84,17 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
 
         LoggerManager.enableDBLogging();
         log = LoggerManager.getLogger(BackgroundGeolocationModule.class);
-        log.info("initializing plugin");
+        log.info("Initializing plugin");
+
+        try {
+            mConfig = getStoredConfig();
+            if (mConfig == null) {
+                log.info("Plugin configured using default config");
+                mConfig = new Config(); // use default config
+            }
+        } catch(JSONException e) {
+            log.warn("Cannot configure plugin due json parse exception: {}", e.getMessage());
+        }
     }
 
     @Override
@@ -88,23 +105,64 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     @Override
     public void onHostResume() {
         log.info("App will be resumed");
+        if (LocationService.isRunning()) {
+            if (!mIsBound) {
+                doBindService();
+            }
+            if (!locationModeChangeReceiverRegistered) {
+                registerLocationModeChangeReceiver();
+            }
+        }
+        sendEvent(FOREGROUND_EVENT, null);
     }
 
     @Override
     public void onHostPause() {
         log.info("App will be paused");
+        sendEvent(BACKGROUND_EVENT, null);
     }
 
     @Override
     public void onHostDestroy() {
         log.info("Destroying plugin");
 
-        //TODO: unregisterLocationModeChangeReceiver();
-
+        unregisterLocationModeChangeReceiver();
         // Unbind from the service
         doUnbindService();
         if (mConfig != null && mConfig.getStopOnTerminate()) {
             stopBackgroundService();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSIONS_REQUEST: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length == 0) {
+                    // permission denied
+                    log.info("User denied requested permissions");
+                    sendEvent(PERMISSIONS_DENIED_EVENT, null);
+                    return;
+                }
+                for (int grant : grantResults) {
+                    if (grant != PackageManager.PERMISSION_GRANTED) {
+                        // permission denied
+                        log.info("User denied requested permissions");
+                        sendEvent(PERMISSIONS_DENIED_EVENT, null);
+                        return;
+                    }
+                }
+
+                // permission was granted
+                // start service
+                log.info("User granted requested permissions");
+                startAndBindBackgroundService();
+                // watch location mode changes
+                registerLocationModeChangeReceiver();
+
+                return;
+            }
         }
     }
 
@@ -121,19 +179,9 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
                         Bundle bundle = msg.getData();
                         bundle.setClassLoader(LocationService.class.getClassLoader());
                         BackgroundLocation location = (BackgroundLocation) bundle.getParcelable("location");
-                        Integer locationProvider = location.getLocationProvider();
+                        WritableMap out = LocationMapper.toWriteableMap(location);
 
-                        WritableMap out = Arguments.createMap();
-                        if (locationProvider != null) out.putInt("locationProvider", locationProvider);
-                        out.putDouble("time", new Long(location.getTime()).doubleValue());
-                        out.putDouble("latitude", location.getLatitude());
-                        out.putDouble("longitude", location.getLongitude());
-                        out.putDouble("accuracy", location.getAccuracy());
-                        out.putDouble("speed", location.getSpeed());
-                        out.putDouble("altitude", location.getAltitude());
-                        out.putDouble("bearing", location.getBearing());
-
-                        sendEvent(getReactApplicationContext(), LOCATION_EVENT, out);
+                        sendEvent(LOCATION_EVENT, out);
                     } catch (Exception e) {
                         log.warn("Error converting message to json");
 
@@ -141,7 +189,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
                         out.putString("message", "Error converting message to json");
                         out.putString("detail", e.getMessage());
 
-                        sendEvent(getReactApplicationContext(), ERROR_EVENT, out);
+                        sendEvent(ERROR_EVENT, out);
                     }
 
                     break;
@@ -151,19 +199,9 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
                         Bundle bundle = msg.getData();
                         bundle.setClassLoader(LocationService.class.getClassLoader());
                         BackgroundLocation location = (BackgroundLocation) bundle.getParcelable("location");
-                        Integer locationProvider = location.getLocationProvider();
+                        WritableMap out = LocationMapper.toWriteableMap(location);
 
-                        WritableMap out = Arguments.createMap();
-                        if (locationProvider != null) out.putInt("locationProvider", locationProvider);
-                        out.putDouble("time", new Long(location.getTime()).doubleValue());
-                        out.putDouble("latitude", location.getLatitude());
-                        out.putDouble("longitude", location.getLongitude());
-                        out.putDouble("accuracy", location.getAccuracy());
-                        out.putDouble("speed", location.getSpeed());
-                        out.putDouble("altitude", location.getAltitude());
-                        out.putDouble("bearing", location.getBearing());
-
-                        sendEvent(getReactApplicationContext(), STATIONARY_EVENT, out);
+                        sendEvent(STATIONARY_EVENT, out);
                     } catch (Exception e) {
                         log.warn("Error converting message to json");
 
@@ -171,7 +209,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
                         out.putString("message", "Error converting message to json");
                         out.putString("detail", e.getMessage());
 
-                        sendEvent(getReactApplicationContext(), ERROR_EVENT, out);
+                        sendEvent(ERROR_EVENT, out);
                     }
 
                     break;
@@ -218,81 +256,85 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
         }
     };
 
+    private BroadcastReceiver locationModeChangeReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            log.debug("Received MODE_CHANGED_ACTION action");
+            try {
+                boolean isLocationEnabled = isLocationEnabled(context);
+                sendEvent(LOCATION_MODE_EVENT, isLocationEnabled);
+            } catch (SettingNotFoundException e) {
+                WritableMap out = Arguments.createMap();
+                out.putString("message", "Error occured while determining location mode");
+                sendEvent(ERROR_EVENT, out);
+            }
+        }
+    };
+
+    @TargetApi(Build.VERSION_CODES.KITKAT)
+    private void registerLocationModeChangeReceiver () {
+        if (locationModeChangeReceiverRegistered) return;
+
+        getReactApplicationContext().registerReceiver(locationModeChangeReceiver, new IntentFilter(LocationManager.MODE_CHANGED_ACTION));
+        locationModeChangeReceiverRegistered = true;
+    }
+
+    private void unregisterLocationModeChangeReceiver () {
+        if (locationModeChangeReceiverRegistered == false) return;
+
+        Context context = getReactApplicationContext();
+        if (context != null) {
+            context.unregisterReceiver(locationModeChangeReceiver);
+        }
+        locationModeChangeReceiverRegistered = false;
+    }
+
     @ReactMethod
     public void configure(ReadableMap options, Callback success, Callback error) {
-        Config config = new Config();
-        if (options.hasKey("stationaryRadius")) config.setStationaryRadius((float) options.getDouble("stationaryRadius"));
-        if (options.hasKey("distanceFilter")) config.setDistanceFilter(options.getInt("distanceFilter"));
-        if (options.hasKey("desiredAccuracy")) config.setDesiredAccuracy(options.getInt("desiredAccuracy"));
-        if (options.hasKey("debug")) config.setDebugging(options.getBoolean("debug"));
-        if (options.hasKey("notificationTitle")) config.setNotificationTitle(options.getString("notificationTitle"));
-        if (options.hasKey("notificationText")) config.setNotificationText(options.getString("notificationText"));
-        if (options.hasKey("notificationIconLarge")) config.setLargeNotificationIcon(options.getString("notificationIconLarge"));
-        if (options.hasKey("notificationIconSmall")) config.setSmallNotificationIcon(options.getString("notificationIconSmall"));
-        if (options.hasKey("notificationIconColor")) config.setNotificationIconColor(options.getString("notificationIconColor"));
-        if (options.hasKey("stopOnTerminate")) config.setStopOnTerminate(options.getBoolean("stopOnTerminate"));
-        if (options.hasKey("startOnBoot")) config.setStartOnBoot(options.getBoolean("startOnBoot"));
-        if (options.hasKey("startForeground")) config.setStartForeground(options.getBoolean("startForeground"));
-        if (options.hasKey("locationProvider")) config.setLocationProvider(options.getInt("locationProvider"));
-        if (options.hasKey("interval")) config.setInterval(options.getInt("interval"));
-        if (options.hasKey("fastestInterval")) config.setFastestInterval(options.getInt("fastestInterval"));
-        if (options.hasKey("activitiesInterval")) config.setActivitiesInterval(options.getInt("activitiesInterval"));
-        if (options.hasKey("stopOnStillActivity")) config.setStopOnStillActivity(options.getBoolean("stopOnStillActivity"));
-        if (options.hasKey("url")) config.setUrl(options.getString("url"));
-        if (options.hasKey("httpHeaders")) {
-            HashMap httpHeaders = new HashMap<String, String>();
-            ReadableMap rm = options.getMap("httpHeaders");
-            ReadableMapKeySetIterator it = rm.keySetIterator();
-
-            while (it.hasNextKey()) {
-                String key = it.nextKey();
-                httpHeaders.put(key, rm.getString(key));
-            }
-
-            config.setHttpHeaders(httpHeaders);
-        }
-
         try {
+            Config config = ConfigMapper.mapToConfig(options);
             persistConfiguration(config);
+            this.mConfig = config;
+            success.invoke(true);
         } catch (NullPointerException e) {
             log.error("Configuration error: {}", e.getMessage());
             error.invoke("Configuration error: " + e.getMessage());
-            return;
         }
-
-        this.mConfig = config;
-        success.invoke(true);
     }
 
     @ReactMethod
-    public void start(Callback success, Callback error) {
+    public void start() {
         if (mConfig == null) {
             log.warn("Attempt to start unconfigured service");
-            error.invoke("Plugin not configured. Please call configure method first.");
+            WritableMap out = Arguments.createMap();
+            out.putString("message", "Plugin not configured. Please call configure method first.");
+            sendEvent(ERROR_EVENT, out);
             return;
         }
-
-        if (hasPermissions()) {
-            log.info("Requesting permissions from user");
+        if (hasPermissions(PERMISSIONS)) {
+            log.debug("Permissions granted");
             startAndBindBackgroundService();
-            success.invoke(true);
+            // watch location mode changes
+            registerLocationModeChangeReceiver();
         } else {
-            //TODO: requestPermissions
+            log.debug("Permissions not granted");
+            requestPermissions(PERMISSIONS);
         }
     }
 
     @ReactMethod
-    public void stop(Callback success, Callback error) {
+    public void stop() {
+        unregisterLocationModeChangeReceiver();
         doUnbindService();
         stopBackgroundService();
-        success.invoke(true);
     }
 
+    @Deprecated // use checkStatus as replacement
     @ReactMethod
     public void isLocationEnabled(Callback success, Callback error) {
         log.debug("Location services enabled check");
         try {
-            int isLocationEnabled = isLocationEnabled(getContext()) ? 1 : 0;
+            int isLocationEnabled = isLocationEnabled(getReactApplicationContext()) ? 1 : 0;
             success.invoke(isLocationEnabled);
         } catch (SettingNotFoundException e) {
             log.error("Location service checked failed: {}", e.getMessage());
@@ -301,61 +343,88 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     }
 
     @ReactMethod
+    public void checkStatus(Callback success, Callback error) {
+        try {
+            WritableMap out = Arguments.createMap();
+            out.putBoolean("isRunning", LocationService.isRunning());
+            out.putBoolean("hasPermissions", hasPermissions(PERMISSIONS));
+            out.putBoolean("locationModeOn", isLocationEnabled(getReactApplicationContext()));
+            success.invoke(out);
+        } catch (SettingNotFoundException e) {
+            log.error("Location service checked failed: {}", e.getMessage());
+            error.invoke("Location setting error occured");
+        }
+    }
+
+    @ReactMethod
     public void showAppSettings() {
+        Context context = getReactApplicationContext();
         Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
         intent.addCategory(Intent.CATEGORY_DEFAULT);
-        intent.setData(Uri.parse("package:" + getContext().getPackageName()));
+        intent.setData(Uri.parse("package:" + context.getPackageName()));
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-        getContext().startActivity(intent);
+        context.startActivity(intent);
     }
 
     @ReactMethod
     public void showLocationSettings() {
-        Intent settingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-        getActivity().startActivity(settingsIntent);
-    }
-
-    @ReactMethod
-    public void watchLocationMode(Callback success, Callback error) {
-        //TODO: implement
-        error.invoke("Not implemented yet");
-    }
-
-    @ReactMethod
-    public void stopWatchingLocationMode(Callback success, Callback error) {
-        //TODO: implement
-        error.invoke("Not implemented yet");
+        Context context = getReactApplicationContext();
+        Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+        intent.addCategory(Intent.CATEGORY_DEFAULT);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+        intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+        context.startActivity(intent);
     }
 
     @ReactMethod
     public void getLocations(Callback success, Callback error) {
         WritableArray locationsArray = Arguments.createArray();
-        LocationDAO dao = DAOFactory.createLocationDAO(getContext());
+        LocationDAO dao = DAOFactory.createLocationDAO(getReactApplicationContext());
         try {
             Collection<BackgroundLocation> locations = dao.getAllLocations();
             for (BackgroundLocation location : locations) {
-                WritableMap out = Arguments.createMap();
-                Long locationId = location.getLocationId();
-                Integer locationProvider = location.getLocationProvider();
-                if (locationId != null) out.putInt("locationId", Convert.safeLongToInt(locationId));
-                if (locationProvider != null) out.putInt("locationProvider", locationProvider);
-                out.putDouble("time", new Long(location.getTime()).doubleValue());
-                out.putDouble("latitude", location.getLatitude());
-                out.putDouble("longitude", location.getLongitude());
-                out.putDouble("accuracy", location.getAccuracy());
-                out.putDouble("speed", location.getSpeed());
-                out.putDouble("altitude", location.getAltitude());
-                out.putDouble("bearing", location.getBearing());
-
-                locationsArray.pushMap(out);
+                locationsArray.pushMap(LocationMapper.toWriteableMap(location));
             }
             success.invoke(locationsArray);
         } catch (Exception e) {
             log.error("Getting all locations failed: {}", e.getMessage());
             error.invoke("Converting locations to JSON failed.");
         }
+    }
+
+    @ReactMethod
+    public void getValidLocations(Callback success, Callback error) {
+        WritableArray locationsArray = Arguments.createArray();
+        LocationDAO dao = DAOFactory.createLocationDAO(getReactApplicationContext());
+        try {
+            Collection<BackgroundLocation> locations = dao.getValidLocations();
+            for (BackgroundLocation location : locations) {
+                locationsArray.pushMap(LocationMapper.toWriteableMapWithId(location));
+            }
+            success.invoke(locationsArray);
+        } catch (Exception e) {
+            log.error("Getting valid locations failed: {}", e.getMessage());
+            error.invoke("Converting locations to JSON failed.");
+        }
+    }
+
+    @ReactMethod
+    public void deleteLocation(Integer locationId, Callback success, Callback error) {
+        log.info("Deleting location locationId={}", locationId);
+        LocationDAO dao = DAOFactory.createLocationDAO(getReactApplicationContext());
+        dao.deleteLocation(locationId.longValue());
+        success.invoke(true);
+    }
+
+    @ReactMethod
+    public void deleteAllLocations(Callback success, Callback error) {
+        log.info("Deleting all locations");
+        LocationDAO dao = DAOFactory.createLocationDAO(getReactApplicationContext());
+        dao.deleteAllLocations();
+        success.invoke(true);
     }
 
     @ReactMethod
@@ -366,41 +435,13 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
 
     @ReactMethod
     public void getConfig(Callback success, Callback error) {
-        ConfigurationDAO dao = DAOFactory.createConfigurationDAO(getContext());
+        if (mConfig == null) {
+            error.invoke("Plugin was not configured yet");
+            return;
+        }
         try {
-            Config config = dao.retrieveConfiguration();
-            WritableMap json = Arguments.createMap();
-            WritableMap httpHeaders = Arguments.createMap();
-            json.putDouble("stationaryRadius", config.getStationaryRadius());
-            json.putInt("distanceFilter", config.getDistanceFilter());
-            json.putInt("desiredAccuracy", config.getDesiredAccuracy());
-            json.putBoolean("debug", config.isDebugging());
-            json.putString("notificationTitle", config.getNotificationTitle());
-            json.putString("notificationText", config.getNotificationText());
-            json.putString("notificationIconLarge", config.getLargeNotificationIcon());
-            json.putString("notificationIconSmall", config.getSmallNotificationIcon());
-            json.putString("notificationIconColor", config.getNotificationIconColor());
-            json.putBoolean("stopOnTerminate", config.getStopOnTerminate());
-            json.putBoolean("startOnBoot", config.getStartOnBoot());
-            json.putBoolean("startForeground", config.getStartForeground());
-            json.putInt("locationProvider", config.getLocationProvider());
-            json.putInt("interval", config.getInterval());
-            json.putInt("fastestInterval", config.getFastestInterval());
-            json.putInt("activitiesInterval", config.getActivitiesInterval());
-            json.putBoolean("stopOnStillActivity", config.getStopOnStillActivity());
-            json.putString("url", config.getUrl());
-            json.putString("syncUrl", config.getSyncUrl());
-            json.putInt("syncThreshold", config.getSyncThreshold());
-            // httpHeaders
-            Iterator<Map.Entry<String, String>> it = config.getHttpHeaders().entrySet().iterator();
-            while (it.hasNext()) {
-                Map.Entry<String, String> pair = it.next();
-                httpHeaders.putString(pair.getKey(), pair.getValue());
-            }
-            json.putMap("httpHeaders", httpHeaders);
-            json.putInt("maxLocations", config.getMaxLocations());
-
-            success.invoke(json);
+            ReadableMap out = ConfigMapper.configToMap(mConfig);
+            success.invoke(out);
         } catch (Exception e) {
             log.error("Error getting config: {}", e.getMessage());
             error.invoke("Error getting config: " + e.getMessage());
@@ -426,15 +467,29 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
         success.invoke(logEntriesArray);
     }
 
-    private void sendEvent(ReactContext reactContext, String eventName, @Nullable WritableMap params) {
-        reactContext
-                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                .emit(eventName, params);
+    protected Config getStoredConfig() throws JSONException {
+        ConfigurationDAO dao = DAOFactory.createConfigurationDAO(getReactApplicationContext());
+        return dao.retrieveConfiguration();
     }
 
-    public boolean hasPermissions() {
-        //TODO: implement
+    private void sendEvent(String eventName, Object params) {
+        getReactApplicationContext()
+            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+            .emit(eventName, params);
+    }
+
+    public boolean hasPermissions(String[] permissions) {
+        for (String perm: permissions) {
+            if (ContextCompat.checkSelfPermission(getReactApplicationContext(), perm) != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
+        }
         return true;
+    }
+
+    public void requestPermissions(String[] permissions) {
+        log.debug("Requesting permissions");
+        ActivityCompat.requestPermissions(getCurrentActivity(), permissions, PERMISSIONS_REQUEST);
     }
 
     protected void startAndBindBackgroundService() {
@@ -443,84 +498,75 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     }
 
     protected void startBackgroundService() {
-        if (mIsServiceRunning) { return; }
+        if (LocationService.isRunning()) return;
 
-        final Activity currentActivity = this.getCurrentActivity();
-        Intent locationServiceIntent = new Intent(currentActivity, LocationService.class);
+        log.info("Starting bg service");
+        Context context = getReactApplicationContext();
+        Intent locationServiceIntent = new Intent(context, LocationService.class);
         locationServiceIntent.putExtra("config", mConfig);
         locationServiceIntent.addFlags(Intent.FLAG_FROM_BACKGROUND);
         // start service to keep service running even if no clients are bound to it
-        currentActivity.startService(locationServiceIntent);
-        mIsServiceRunning = true;
+        context.startService(locationServiceIntent);
+        sendEvent(START_EVENT, null);
     }
 
     protected void stopBackgroundService() {
-        if (!mIsServiceRunning) { return; }
+        if (!LocationService.isRunning()) return;
 
         log.info("Stopping bg service");
-        final Activity currentActivity = this.getCurrentActivity();
-        currentActivity.stopService(new Intent(currentActivity, LocationService.class));
-        mIsServiceRunning = false;
+        Context context = getReactApplicationContext();
+        context.stopService(new Intent(context, LocationService.class));
+        sendEvent(STOP_EVENT, null);
     }
 
     void doBindService() {
         // Establish a connection with the service.  We use an explicit
         // class name because there is no reason to be able to let other
         // applications replace our component.
-        if (mIsBound) { return; }
+        if (mIsBound) return;
 
+        log.debug("Binding to service");
         mMessenger = new Messenger(new IncomingHandler());
 
-        final Activity currentActivity = this.getCurrentActivity();
-        Intent locationServiceIntent = new Intent(currentActivity, LocationService.class);
-        locationServiceIntent.putExtra("config", mConfig);
-        currentActivity.bindService(locationServiceIntent, mConnection, Context.BIND_IMPORTANT);
+        final Context context = getReactApplicationContext();
+        Intent locationServiceIntent = new Intent(context, LocationService.class);
+//        locationServiceIntent.putExtra("config", config);
+        context.bindService(locationServiceIntent, mConnection, Context.BIND_IMPORTANT);
     }
 
     void doUnbindService () {
-        if (mIsBound) {
-            // If we have received the service, and hence registered with
-            // it, then now is the time to unregister.
-            if (mService != null) {
-                try {
-                    Message msg = Message.obtain(null,
-                            LocationService.MSG_UNREGISTER_CLIENT);
-                    msg.replyTo = mMessenger;
-                    msg.arg1 = MESSENGER_CLIENT_ID;
-                    mService.send(msg);
-                } catch (RemoteException e) {
-                    // There is nothing special we need to do if the service
-                    // has crashed.
-                }
+        if (mIsBound == false) return;
 
-                // Detach our existing connection.
-                final Activity currentActivity = this.getCurrentActivity();
-
-                if (currentActivity != null) { //workaround for issue RN #9791
-                    // not unbinding from service will cause ServiceConnectionLeaked
-                    // but there is not much we can do about it now
-                    currentActivity.unbindService(mConnection);
-                }
-
-                mIsBound = false;
+        log.debug("Unbinding from service");
+        // If we have received the service, and hence registered with
+        // it, then now is the time to unregister.
+        if (mService != null) {
+            try {
+                Message msg = Message.obtain(null,
+                        LocationService.MSG_UNREGISTER_CLIENT);
+                msg.replyTo = mMessenger;
+                msg.arg1 = MESSENGER_CLIENT_ID;
+                mService.send(msg);
+            } catch (RemoteException e) {
+                // There is nothing special we need to do if the service
+                // has crashed.
             }
+
+            // Detach our existing connection.
+            final Context context = getReactApplicationContext();
+
+            if (context != null) { //workaround for issue RN #9791
+                // not unbinding from service will cause ServiceConnectionLeaked
+                // but there is not much we can do about it now
+                context.unbindService(mConnection);
+            }
+
+            mIsBound = false;
         }
     }
 
-    protected Activity getActivity() {
-        return this.getCurrentActivity();
-    }
-
-    protected Application getApplication() {
-        return getActivity().getApplication();
-    }
-
-    protected Context getContext() {
-        return getActivity().getApplicationContext();
-    }
-
     public void persistConfiguration(Config config) throws NullPointerException {
-        ConfigurationDAO dao = DAOFactory.createConfigurationDAO(getContext());
+        ConfigurationDAO dao = DAOFactory.createConfigurationDAO(getReactApplicationContext());
         dao.persistConfiguration(config);
     }
 
