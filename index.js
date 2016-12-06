@@ -12,7 +12,7 @@ var BackgroundGeolocation = {
     'start',
     'stop',
     'error',
-    'authorizationChange',
+    'authorization',
     'foreground',
     'background'
   ],
@@ -32,6 +32,11 @@ var BackgroundGeolocation = {
     MEDIUM: 100,
     LOW: 1000,
     PASSIVE: 10000
+  },
+
+  auth: {
+    DENIED: 0,
+    AUTHORIZED: 1
   },
 
   configure: function(config, successFn, errorFn) {

@@ -96,20 +96,14 @@ class BgTracking extends Component {
       console.log('[INFO] BackgroundGeolocation service has been stopped');
     });
 
-    BackgroundGeolocation.on('mode_change', (enabled) => {
-      console.log('[INFO] BackgroundGeolocation location is enabled: ' + enabled);
-      Alert.alert('Location is disabled', 'Would you like to open location settings?', [
-        { text: 'Yes', onPress: () => BackgroundGeolocation.showLocationSettings() },
-        { text: 'No', onPress: () => console.log('No Pressed'), style: 'cancel' }
-      ]);
-    });
-
-    BackgroundGeolocation.on('permissions_denied', (enabled) => {
-      console.log('[INFO] BackgroundGeolocation needs permissions');
-      Alert.alert('Not authorized for location updates', 'Would you like to open app settings?', [
-        { text: 'Yes', onPress: () => BackgroundGeolocation.showAppSettings() },
-        { text: 'No', onPress: () => console.log('No Pressed'), style: 'cancel' }
-      ]);
+    BackgroundGeolocation.on('authorization', (status) => {
+      console.log('[INFO] BackgroundGeolocation authorization status: ' + status);
+      if (status !== BackgroundGeolocation.auth.AUTHORIZED) {
+        Alert.alert('Location services are disabled', 'Would you like to open location settings?', [
+          { text: 'Yes', onPress: () => BackgroundGeolocation.showLocationSettings() },
+          { text: 'No', onPress: () => console.log('No Pressed'), style: 'cancel' }
+        ]);
+      }
     });
 
     BackgroundGeolocation.on('background', () => {
@@ -122,8 +116,8 @@ class BgTracking extends Component {
 
     BackgroundGeolocation.checkStatus(status => {
       console.log('[INFO] BackgroundGeolocation service is running', status.isRunning);
-      console.log('[INFO] BackgroundGeolocation service has permissions': status.hasPermissions);
-      console.log('[INFO] BackgroundGeolocation location services are on': status.locationModeOn);
+      console.log('[INFO] BackgroundGeolocation service has permissions', status.hasPermissions);
+      console.log('[INFO] BackgroundGeolocation auth status: ' + status.authorization);
 
       // you don't need to check status before start (this is just the example)
       if (!status.isRunning) {
@@ -324,7 +318,7 @@ Check status of the service
 |----------------------------|-----------|------------------------------------------------------|
 | `isRunning`                | `Boolean` | true/false (true if service is running)              |
 | `hasPermissions`           | `Boolean` | true/false (true if service has permissions)         |
-| `locationModeOn`           | `Boolean` | true/false (true if location mode is on)             |
+| `authorization`            | `Number`  | BackgroundGeolocation.auth.{AUTHORIZED|DENIED}       |
 
 ### showAppSettings()
 Platform: Android >= 6, iOS >= 8.0
@@ -429,15 +423,14 @@ eventSubscription.remove();
 Note: Components should unregister all event listeners in `componentWillUnmount` method,
 individually, or with `removeAllListeners`
 
-| Name                | Callback param | Platform | Description                                                                     |
-|---------------------|--------------- |----------|----------------------------------------|
-| `location`          | `Location`     | all      | on location update                     |
-| `stationary`        | `Location`     | all      | on device entered stationary mode      |
-| `error`             | `{ message }`  | all      | on plugin error                        |
-| `mode_change`       | `{ enabled }`  | all      | on user toggle location service        |
-| `permissions_denied`|                | all      | user denied permissions options        |
-| `foreground`        |                | android  | app entered foreground state (visible) |
-| `background`        |                | android  | app entered background state           |
+| Name                | Callback param      | Platform | Description                                                                     |
+|---------------------|---------------------|----------|----------------------------------------|
+| `location`          | `Location`          | all      | on location update                     |
+| `stationary`        | `Location`          | all      | on device entered stationary mode      |
+| `error`             | `{ code, message }` | all      | on plugin error                        |
+| `authorization`     | `status`            | all      | on user toggle location service        |
+| `foreground`        |                     | android  | app entered foreground state (visible) |
+| `background`        |                     | android  | app entered background state           |
 
 
 ## HTTP locations posting
