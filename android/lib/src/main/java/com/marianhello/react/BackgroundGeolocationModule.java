@@ -2,7 +2,6 @@ package com.marianhello.react;
 
 import android.Manifest;
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -59,13 +58,14 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     public static final String START_EVENT = "start";
     public static final String STOP_EVENT = "stop";
     public static final String ERROR_EVENT = "error";
-    public static final String LOCATION_MODE_EVENT = "mode_change";
+    public static final String AUTHORIZATION_EVENT = "authorization";
     public static final String FOREGROUND_EVENT = "foreground";
     public static final String BACKGROUND_EVENT = "background";
-    public static final String PERMISSIONS_DENIED_EVENT = "permissions_denied";
     public static final String[] PERMISSIONS = { Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION };
     private static final int PERMISSIONS_REQUEST = 1;
-    private static final Integer MESSENGER_CLIENT_ID = 666;
+    private static final int MESSENGER_CLIENT_ID = 666;
+    private static final int AUTHORIZATION_AUTHORIZED = 1;
+    private static final int AUTHORIZATION_DENIED = 0;
 
     /** Messenger for communicating with the service. */
     private Messenger mService = null;
@@ -85,16 +85,6 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
         LoggerManager.enableDBLogging();
         log = LoggerManager.getLogger(BackgroundGeolocationModule.class);
         log.info("Initializing plugin");
-
-        try {
-            mConfig = getStoredConfig();
-            if (mConfig == null) {
-                log.info("Plugin configured using default config");
-                mConfig = new Config(); // use default config
-            }
-        } catch(JSONException e) {
-            log.warn("Cannot configure plugin due json parse exception: {}", e.getMessage());
-        }
     }
 
     @Override
@@ -142,14 +132,14 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
                 if (grantResults.length == 0) {
                     // permission denied
                     log.info("User denied requested permissions");
-                    sendEvent(PERMISSIONS_DENIED_EVENT, null);
+                    sendEvent(AUTHORIZATION_EVENT, AUTHORIZATION_DENIED);
                     return;
                 }
                 for (int grant : grantResults) {
                     if (grant != PackageManager.PERMISSION_GRANTED) {
                         // permission denied
                         log.info("User denied requested permissions");
-                        sendEvent(PERMISSIONS_DENIED_EVENT, null);
+                        sendEvent(AUTHORIZATION_EVENT, AUTHORIZATION_DENIED);
                         return;
                     }
                 }
@@ -259,10 +249,9 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     private BroadcastReceiver locationModeChangeReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            log.debug("Received MODE_CHANGED_ACTION action");
+            log.debug("Received AUTHORIZATION_EVENT");
             try {
-                boolean isLocationEnabled = isLocationEnabled(context);
-                sendEvent(LOCATION_MODE_EVENT, isLocationEnabled);
+                sendEvent(AUTHORIZATION_EVENT, getAuthorizationStatus());
             } catch (SettingNotFoundException e) {
                 WritableMap out = Arguments.createMap();
                 out.putString("message", "Error occured while determining location mode");
@@ -294,7 +283,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
         try {
             Config config = ConfigMapper.mapToConfig(options);
             persistConfiguration(config);
-            this.mConfig = config;
+            mConfig = config;
             success.invoke(true);
         } catch (NullPointerException e) {
             log.error("Configuration error: {}", e.getMessage());
@@ -305,11 +294,12 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     @ReactMethod
     public void start() {
         if (mConfig == null) {
-            log.warn("Attempt to start unconfigured service");
-            WritableMap out = Arguments.createMap();
-            out.putString("message", "Plugin not configured. Please call configure method first.");
-            sendEvent(ERROR_EVENT, out);
-            return;
+            log.warn("Attempt to start unconfigured service. Will use default.");
+            mConfig = new Config();
+            // WritableMap out = Arguments.createMap();
+            // out.putString("message", "Plugin not configured. Please call configure method first.");
+            // sendEvent(ERROR_EVENT, out);
+            // return;
         }
         if (hasPermissions(PERMISSIONS)) {
             log.debug("Permissions granted");
@@ -348,7 +338,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
             WritableMap out = Arguments.createMap();
             out.putBoolean("isRunning", LocationService.isRunning());
             out.putBoolean("hasPermissions", hasPermissions(PERMISSIONS));
-            out.putBoolean("locationServicesEnabled", isLocationEnabled(getReactApplicationContext()));
+            out.putInt("authorization", getAuthorizationStatus());
             success.invoke(out);
         } catch (SettingNotFoundException e) {
             log.error("Location service checked failed: {}", e.getMessage());
@@ -474,8 +464,8 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
 
     private void sendEvent(String eventName, Object params) {
         getReactApplicationContext()
-            .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-            .emit(eventName, params);
+                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit(eventName, params);
     }
 
     public boolean hasPermissions(String[] permissions) {
@@ -568,6 +558,11 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     public void persistConfiguration(Config config) throws NullPointerException {
         ConfigurationDAO dao = DAOFactory.createConfigurationDAO(getReactApplicationContext());
         dao.persistConfiguration(config);
+    }
+
+    public int getAuthorizationStatus() throws SettingNotFoundException {
+        boolean enabled = isLocationEnabled(getReactApplicationContext());
+        return enabled ? AUTHORIZATION_AUTHORIZED : AUTHORIZATION_DENIED;
     }
 
     public static boolean isLocationEnabled(Context context) throws SettingNotFoundException {
