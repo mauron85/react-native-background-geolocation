@@ -12,8 +12,7 @@ var BackgroundGeolocation = {
     'start',
     'stop',
     'error',
-    'mode_change',
-    'permissions_denied',
+    'authorizationChange',
     'foreground',
     'background'
   ],
@@ -111,6 +110,27 @@ var BackgroundGeolocation = {
     successFn = successFn || emptyFn;
     errorFn = errorFn || emptyFn;
     RNBackgroundGeolocation.getLogEntries(limit, successFn, errorFn);
+  },
+
+  startTask: function(callbackFn) {
+    if (typeof callbackFn !== 'function') {
+      throw 'RNBackgroundGeolocation: startTask requires callback function';
+    }
+
+    if (typeof RNBackgroundGeolocation.startTask === 'function') {
+      RNBackgroundGeolocation.startTask(callbackFn);
+    } else {
+      // android does not need background tasks so we invoke callbackFn directly
+      callbackFn(-1);
+    }
+  },
+
+  endTask: function(taskKey) {
+    if (typeof RNBackgroundGeolocation.endTask === 'function') {
+      RNBackgroundGeolocation.endTask(taskKey);
+    } else {
+      // noop
+    }
   },
 
   on: function(event, callbackFn) {
