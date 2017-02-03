@@ -24,7 +24,7 @@
     desiredAccuracy = 100;
     isDebugging = NO;
     activityType = @"OTHER";
-    stopOnTerminate = NO;
+    stopOnTerminate = YES;
     saveBatteryOnBackground = YES;
     maxLocations = 10000;
     syncThreshold = 100;
