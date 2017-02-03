@@ -4,8 +4,7 @@
         <meta-data android:name="com.google.android.gms.version" android:value="@integer/google_play_services_version" />
         <service
             android:name="com.marianhello.bgloc.sync.SyncService"
-            android:exported="true"
-            android:process=":sync">
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.content.SyncAdapter"/>
             </intent-filter>

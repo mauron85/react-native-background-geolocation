@@ -141,7 +141,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements Uploadin
         }
     }
 
-    private boolean uploadLocations(File file, String url, HashMap httpHeaders) {
+    private boolean uploadLocations(File file, String url, HashMap<String, String> httpHeaders) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(getContext());
         builder.setOngoing(true);
         builder.setContentTitle("Syncing locations");
@@ -150,7 +150,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements Uploadin
         notifyManager.notify(NOTIFICATION_ID, builder.build());
 
         try {
-            int responseCode = HttpPostService.postFile(url, file, httpHeaders, this);
+            int responseCode = HttpPostService.postFile(url, file, httpHeaders);
             if (responseCode == HttpURLConnection.HTTP_OK) {
                 builder.setContentText("Sync completed");
             } else {
@@ -158,7 +158,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements Uploadin
             }
 
             return responseCode == HttpURLConnection.HTTP_OK;
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.warn("Error uploading locations: {}", e.getMessage());
             builder.setContentText("Sync failed: " + e.getMessage());
         } finally {
@@ -168,7 +168,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements Uploadin
             builder.setProgress(0, 0, false);
             builder.setAutoCancel(true);
             notifyManager.notify(NOTIFICATION_ID, builder.build());
-            
+
             Handler h = new Handler(Looper.getMainLooper());
             long delayInMilliseconds = 5000;
             h.postDelayed(new Runnable() {
