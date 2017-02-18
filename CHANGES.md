@@ -1,5 +1,9 @@
 ## Changelog
 
+### [0.2.0-alpha.6] - 2017-02-18
+#### Fixed
+- iOS RN 0.40 compatibility
+
 ### [0.2.0-alpha.5] - 2016-09-15
 #### Fixed
 - Android fix issue #10

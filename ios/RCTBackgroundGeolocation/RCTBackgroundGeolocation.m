@@ -7,9 +7,21 @@
 //
 
 #import "RCTBackgroundGeolocation.h"
+#if __has_include("RCTLog.h")
 #import "RCTLog.h"
+#else
+#import <React/RCTLog.h>
+#endif
+#if __has_include("RCTBridge.h")
 #import "RCTBridge.h"
+#else
+#import <React/RCTBridge.h>
+#endif
+#if __has_include("RCTEventDispatcher.h")
 #import "RCTEventDispatcher.h"
+#else
+#import <React/RCTEventDispatcher.h>
+#endif
 #import "Logging.h"
 
 @implementation RCTBackgroundGeolocation
