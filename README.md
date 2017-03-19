@@ -31,6 +31,16 @@ compatible with this module.
 
 If you are using an older version of React Native with this module some features may be buggy.
 
+If you are using react-native-maps or another lib that requires react-native-maps such as Exponent.js or airbnb's react-native-maps then aditionally to the instalation steps described here, you must also change `node_modules/react-native-mauron85-background-geolocation/android/lib/build.gradle` in order to `gms:play-services-locations` match the same version used by those libraries. (in this case `9.8.0`)
+
+```
+dependencies {
+    ...
+    compile 'com.google.android.gms:play-services-location:9.8.0'
+    ...
+}
+```
+
 ## Submitting issues
 
 All new issues should follow instructions in [ISSUE_TEMPLATE.md](https://raw.githubusercontent.com/mauron85/react-native-background-geolocation/master/ISSUE_TEMPLATE.md).
