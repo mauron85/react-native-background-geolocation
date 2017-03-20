@@ -12,10 +12,10 @@
 #else
 #import <React/RCTLog.h>
 #endif
-#if __has_include("RCTBridge.h")
-#import "RCTBridge.h"
-#else
+#if __has_include(<React/RCTBridge.h>)
 #import <React/RCTBridge.h>
+#else
+#import "RCTBridge.h"
 #endif
 #if __has_include("RCTEventDispatcher.h")
 #import "RCTEventDispatcher.h"
