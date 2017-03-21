@@ -1,5 +1,9 @@
 ## Changelog
 
+### [0.2.0-alpha.7] - 2017-03-21
+#### Fixed
+- iOS fixing build issue #44
+
 ### [0.2.0-alpha.6] - 2017-02-18
 #### Fixed
 - iOS RN 0.40 compatibility
