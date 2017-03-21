@@ -1,6 +1,7 @@
 package com.marianhello.react;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
@@ -11,6 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
@@ -88,6 +90,20 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     @Override
     public void onHostResume() {
         log.info("App will be resumed");
+
+        if(!mIsServiceRunning) { //check if service is actually still running
+            ActivityManager manager = (ActivityManager) getReactApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
+            for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+                if (LocationService.class.getName().equals(service.service.getClassName())) {
+                    mIsServiceRunning = true;
+                }
+            }
+        }
+
+        //bind if it's running already
+        if(mIsServiceRunning) {
+            doBindService();
+        }
     }
 
     @Override
@@ -112,6 +128,10 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
      * Handler of incoming messages from service.
      */
     class IncomingHandler extends Handler {
+        public IncomingHandler(Looper looper) {
+            super(looper);
+        }
+
         @Override
         public void handleMessage(Message msg) {
             switch (msg.what) {
@@ -426,6 +446,11 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
         success.invoke(logEntriesArray);
     }
 
+    @ReactMethod
+    public void isRunning(Callback success, Callback error) {
+      success.invoke(this.mIsServiceRunning);
+    }
+
     private void sendEvent(ReactContext reactContext, String eventName, @Nullable WritableMap params) {
         reactContext
                 .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
@@ -469,7 +494,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
         // applications replace our component.
         if (mIsBound) { return; }
 
-        mMessenger = new Messenger(new IncomingHandler());
+        mMessenger = new Messenger(new IncomingHandler(Looper.getMainLooper()));
 
         final Activity currentActivity = this.getCurrentActivity();
         Intent locationServiceIntent = new Intent(currentActivity, LocationService.class);
