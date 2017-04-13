@@ -81,16 +81,16 @@
     [jsonData writeToFile:jsonUrl.path atomically:NO];
     uint64_t bytesTotalForThisFile = [[[NSFileManager defaultManager] attributesOfItemAtPath:jsonUrl.path error:nil] fileSize];
     
-    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:url]];
-    [request setHTTPMethod:@"POST"];
-    [request setValue:[NSString stringWithFormat:@"%llu", bytesTotalForThisFile] forHTTPHeaderField:@"Content-Length"];
-    [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
-    
-    NSURLSessionTask *task = [urlSession uploadTaskWithRequest:request fromFile:jsonUrl];
-    task.taskDescription = fileName;
-    [tasks addObject:task];
-    DDLogInfo(@"Started upload for %@ as task %zu/%@/%@", jsonUrl.lastPathComponent, (unsigned long)task.taskIdentifier, task.taskDescription, task);
-    [task resume];
+//    NSMutableURLRequest *request = [[NSMutableURLRequest alloc] initWithURL:[NSURL URLWithString:url]];
+//    [request setHTTPMethod:@"POST"];
+//    [request setValue:[NSString stringWithFormat:@"%llu", bytesTotalForThisFile] forHTTPHeaderField:@"Content-Length"];
+//    [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+//    
+//    NSURLSessionTask *task = [urlSession uploadTaskWithRequest:request fromFile:jsonUrl];
+//    task.taskDescription = fileName;
+//    [tasks addObject:task];
+//    DDLogInfo(@"Started upload for %@ as task %zu/%@/%@", jsonUrl.lastPathComponent, (unsigned long)task.taskIdentifier, task.taskDescription, task);
+//    [task resume];
     
 }
 
