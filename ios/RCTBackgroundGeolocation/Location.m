@@ -211,27 +211,44 @@ enum {
         return NO;
     }
     
-    NSString *jsonStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+
+    NSError *jsonError = nil;
+    NSLog(@"%@", locations);
+
+    NSString *lonStr = [NSString stringWithFormat:@"%@",locations[0][@"longitude"]];
+    NSString *latStr = [NSString stringWithFormat:@"%@",locations[0][@"latitude"]];
+    
+    NSString *jsonStr = [NSString stringWithFormat:@"{\"longitude\":\"%@\", \"latitude\":\"%@\"}\n", lonStr, latStr];
+    NSData *jsonData = [jsonStr dataUsingEncoding:NSUTF8StringEncoding];
+    
+    NSString *requestJson = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:url]];
+    
     [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+    [request setValue:@"application/json" forHTTPHeaderField: @"Accept"];
     [request setHTTPMethod:@"POST"];
+    
     if (httpHeaders != nil) {
         for(id key in httpHeaders) {
             id value = [httpHeaders objectForKey:key];
             [request addValue:value forHTTPHeaderField:key];
         }
     }
-    [request setHTTPBody:[jsonStr dataUsingEncoding:NSUTF8StringEncoding]];
     
+    [request setHTTPBody:[requestJson dataUsingEncoding:NSUTF8StringEncoding]];
+
+
     // Create url connection and fire request
     NSHTTPURLResponse* urlResponse = nil;
     [NSURLConnection sendSynchronousRequest:request returningResponse:&urlResponse error:outError];
-    
-    if (*outError == nil && [urlResponse statusCode] == 200) {
+
+    if (*outError == nil && [urlResponse statusCode] == 201) {
+        NSLog(@">>>>>>>>> SENT");
+        NSLog(jsonStr);
         return YES;
     }
-    
-    return NO;    
+    NSLog(@"Issue");
+    return NO;
 }
 
 -(id) copyWithZone: (NSZone *) zone
