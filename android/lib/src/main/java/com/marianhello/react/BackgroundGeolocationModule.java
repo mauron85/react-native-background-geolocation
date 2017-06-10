@@ -239,6 +239,8 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
         if (options.hasKey("activitiesInterval")) config.setActivitiesInterval(options.getInt("activitiesInterval"));
         if (options.hasKey("stopOnStillActivity")) config.setStopOnStillActivity(options.getBoolean("stopOnStillActivity"));
         if (options.hasKey("url")) config.setUrl(options.getString("url"));
+        if (options.hasKey("syncUrl")) config.setSyncUrl(options.getString("syncUrl"));
+        if (options.hasKey("syncThreshold")) config.setSyncThreshold(options.getInt("syncThreshold"));
         if (options.hasKey("httpHeaders")) {
             HashMap httpHeaders = new HashMap<String, String>();
             ReadableMap rm = options.getMap("httpHeaders");
