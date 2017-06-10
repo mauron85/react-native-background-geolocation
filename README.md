@@ -460,7 +460,7 @@ function printIosLogs(logEntries) {
 ```
 
 ### Debugging sounds
-| *ios*                               | *android*                         |                         |
+| Event                               | *ios*                             | *android*               |
 |-------------------------------------|-----------------------------------|-------------------------|
 | Exit stationary region              | Calendar event notification sound | dialtone beep-beep-beep |
 | Geolocation recorded                | SMS sent sound                    | tt short beep           |
