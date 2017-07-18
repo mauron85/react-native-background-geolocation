@@ -101,10 +101,14 @@ RCT_EXPORT_METHOD(finish:(int)taskId)
     [locationManager finish];
 }
 
-RCT_EXPORT_METHOD(isLocationEnabled:(RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(isLocationEnabled:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #isLocationEnabled");
-    callback(@[@([locationManager isLocationEnabled])]);
+    if (@([locationManager isLocationEnabled])) {
+      success(@[[NSNull null]]);
+    } else {
+      failure(@[@"Location not enabled"]);
+    }
 }
 
 RCT_EXPORT_METHOD(showAppSettings)
