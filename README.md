@@ -24,10 +24,10 @@ Due to the rapid changes being made in the React Native ecosystem, this module w
 only latest version of React Native. Older versions will only be supported, if they're
 compatible with this module.
 
-| Required peerDependencies  | Version |
-|----------------------------|---------|
-| React Native               | >=0.33  |
-| React                      | >=15.3.1|
+| Module           | React Native      |
+|------------------|-------------------|
+| 0.1.0 - 0.2.0    | 0.33              |
+| 0.3.0            | >=0.47            |
 
 If you are using an older version of React Native with this module some features may be buggy.
 

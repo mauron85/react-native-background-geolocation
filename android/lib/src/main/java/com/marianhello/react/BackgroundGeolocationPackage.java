@@ -18,12 +18,12 @@ public class BackgroundGeolocationPackage implements ReactPackage {
 
   @Override
   public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
-    List<NativeModule> modules = new ArrayList<NativeModule>();
-    modules.add(new BackgroundGeolocationModule(reactContext));
-    return modules;
+      List<NativeModule> modules = new ArrayList<NativeModule>();
+      modules.add(new BackgroundGeolocationModule(reactContext));
+      return modules;
   }
 
-  @Override
+  // Deprecated RN 0.47
   public List<Class<? extends JavaScriptModule>> createJSModules() {
       return Collections.emptyList();
   }
