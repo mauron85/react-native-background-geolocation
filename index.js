@@ -120,6 +120,12 @@ var BackgroundGeolocation = {
     }
 
     return DeviceEventEmitter.addListener(event, callbackFn);
+  },
+
+  removeAllListeners: function() {
+    this.events.forEach(function (e) {
+      DeviceEventEmitter.removeAllListeners(e);
+    });
   }
 };
 
