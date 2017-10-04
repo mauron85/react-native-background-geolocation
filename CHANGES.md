@@ -1,5 +1,9 @@
 ## Changelog
 
+### [0.3.1] - 2017-10-04
+#### Fixed
+- (tpisto) iOS compile error in React Native 0.48.x (fixes #108)
+
 ### [0.3.0-alpha.1] - 2017-08-15
 #### Fixed
 - RN 0.47 compatibility (fixes #95)
