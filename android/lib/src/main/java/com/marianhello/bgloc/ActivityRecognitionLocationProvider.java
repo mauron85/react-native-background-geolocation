@@ -17,15 +17,17 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.ActivityRecognition;
 import com.google.android.gms.location.ActivityRecognitionResult;
 import com.google.android.gms.location.DetectedActivity;
-import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationCallback;
+import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.FusedLocationProviderClient;
 import com.marianhello.logging.LoggerManager;
 
 import java.util.ArrayList;
 
 public class ActivityRecognitionLocationProvider extends AbstractLocationProvider implements GoogleApiClient.ConnectionCallbacks,
-    GoogleApiClient.OnConnectionFailedListener, LocationListener {
+    GoogleApiClient.OnConnectionFailedListener {
 
     private static final String TAG = ActivityRecognitionLocationProvider.class.getSimpleName();
     private static final String P_NAME = " com.marianhello.bgloc";
@@ -34,6 +36,9 @@ public class ActivityRecognitionLocationProvider extends AbstractLocationProvide
     private PowerManager.WakeLock wakeLock;
     private GoogleApiClient googleApiClient;
     private PendingIntent detectedActivitiesPI;
+    private FusedLocationProviderClient mFusedLocationClient;
+    private LocationCallback mLocationCallback;
+    private Context contextForFusedLocationClient;
 
     private Boolean startRecordingOnConnect = true;
     private Boolean isTracking = false;
@@ -45,6 +50,7 @@ public class ActivityRecognitionLocationProvider extends AbstractLocationProvide
     public ActivityRecognitionLocationProvider(LocationService locationService) {
         super(locationService);
         PROVIDER_ID = 1;
+        this.contextForFusedLocationClient = locationService;
     }
 
     public void onCreate() {
@@ -60,40 +66,57 @@ public class ActivityRecognitionLocationProvider extends AbstractLocationProvide
         Intent detectedActivitiesIntent = new Intent(DETECTED_ACTIVITY_UPDATE);
         detectedActivitiesPI = PendingIntent.getBroadcast(locationService, 9002, detectedActivitiesIntent, PendingIntent.FLAG_UPDATE_CURRENT);
         registerReceiver(detectedActivitiesReceiver, new IntentFilter(DETECTED_ACTIVITY_UPDATE));
-    }
 
-    @Override
-    public void onLocationChanged(Location location) {
-        log.debug("Location change: {}", location.toString());
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(contextForFusedLocationClient);
 
-        // ignore un-accurate location updates
-        if(location.getAccuracy() > config.getStationaryRadius()){
-            log.debug("Location accurasy is not enough! acy={}", location.getAccuracy());
-            if (config.isDebugging()) {
-                Toast.makeText(locationService, "Ignoring low accuracy GPS point, acy: " + location.getAccuracy() , Toast.LENGTH_SHORT).show();
-            }
-            return;
-        }
+        mLocationCallback = new LocationCallback() {
+            @Override
+            public void onLocationResult(LocationResult locationResult) {
 
-        if (lastActivity.getType() == DetectedActivity.STILL) {
-            handleStationary(location);
-            return;
-        }
+                // TODO: try these batch location results....
+                // for (Location location : locationResult.getLocations()) {
+                //     // Update UI with location data
+                //     // ...
+                // }
 
-        if (lastLocation == null && config.isDebugging()) {
-            startTone(Tone.BEEP);
-            Toast.makeText(locationService, "acy:" + location.getAccuracy() + ", v:" + location.getSpeed() + ", df:" + config.getDistanceFilter(), Toast.LENGTH_SHORT).show();
-            log.debug( "acy:" + location.getAccuracy() + ", v:" + location.getSpeed() + ", df:" + config.getDistanceFilter());
-        }
+                // Returns the most recent location available in this result, or null if no locations are available. https://stackoverflow.com/a/38645101/3332429 
+                Location location = locationResult.getLastLocation();
+                if(location == null){
+                    return;
+                }
 
-        if (config.isDebugging() && lastLocation != null) {
-            startTone(Tone.BEEP);
-            Toast.makeText(locationService, "acy:" + location.getAccuracy() + ", dst:" + location.distanceTo(lastLocation) + ", v:" + location.getSpeed() + ", df:" + config.getDistanceFilter(), Toast.LENGTH_SHORT).show();
-            log.debug( "acy:" + location.getAccuracy() + ", dst:" + location.distanceTo(lastLocation) + ", v:" + location.getSpeed() + ", df:" + config.getDistanceFilter());
-        }
+                log.debug("Location change: {}", location.toString());
 
-        lastLocation = location;
-        handleLocation(location);
+                // ignore un-accurate location updates
+                if(location.getAccuracy() > config.getStationaryRadius()){
+                    log.debug("Location accurasy is not enough! acy={}", location.getAccuracy());
+                    if (config.isDebugging()) {
+                        Toast.makeText(locationService, "Ignoring low accuracy GPS point, acy: " + location.getAccuracy() , Toast.LENGTH_SHORT).show();
+                    }
+                    return;
+                }
+
+                if (lastActivity.getType() == DetectedActivity.STILL) {
+                    handleStationary(location);
+                    return;
+                }
+
+                if (lastLocation == null && config.isDebugging()) {
+                    startTone(Tone.BEEP);
+                    Toast.makeText(locationService, "acy:" + location.getAccuracy() + ", v:" + location.getSpeed() + ", df:" + config.getDistanceFilter(), Toast.LENGTH_SHORT).show();
+                    log.debug( "acy:" + location.getAccuracy() + ", v:" + location.getSpeed() + ", df:" + config.getDistanceFilter());
+                }
+
+                if (config.isDebugging() && lastLocation != null) {
+                    startTone(Tone.BEEP);
+                    Toast.makeText(locationService, "acy:" + location.getAccuracy() + ", dst:" + location.distanceTo(lastLocation) + ", v:" + location.getSpeed() + ", df:" + config.getDistanceFilter(), Toast.LENGTH_SHORT).show();
+                    log.debug( "acy:" + location.getAccuracy() + ", dst:" + location.distanceTo(lastLocation) + ", v:" + location.getSpeed() + ", df:" + config.getDistanceFilter());
+                }
+
+                lastLocation = location;
+                handleLocation(location);
+            };
+        };
     }
 
     public void startRecording() {
@@ -119,7 +142,7 @@ public class ActivityRecognitionLocationProvider extends AbstractLocationProvide
                 .setInterval(config.getInterval()) 
                 .setSmallestDisplacement(config.getDistanceFilter());  // set distance Filter like setting
         try {
-            LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
+            mFusedLocationClient.requestLocationUpdates(locationRequest, mLocationCallback, null);
             isTracking = true;
             log.debug("Start tracking with priority={} fastestInterval={} interval={} activitiesInterval={} stopOnStillActivity={}", priority, config.getFastestInterval(), config.getInterval(), config.getActivitiesInterval(), config.getStopOnStillActivity());
         } catch (SecurityException e) {
@@ -131,7 +154,7 @@ public class ActivityRecognitionLocationProvider extends AbstractLocationProvide
     public void stopTracking() {
         if (!isTracking) { return; }
         log.debug("STOP Tracking");
-        LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
+        mFusedLocationClient.removeLocationUpdates(mLocationCallback);
         isTracking = false;
     }
 
