@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.PowerManager;
 import android.util.Log;
 import android.widget.Toast;
+import android.view.Gravity;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -65,22 +66,30 @@ public class ActivityRecognitionLocationProvider extends AbstractLocationProvide
     public void onLocationChanged(Location location) {
         log.debug("Location change: {}", location.toString());
 
-        if (lastActivity.getType() == DetectedActivity.STILL) {
-            handleStationary(location);
-            stopTracking();
+        // ignore un-accurate location updates
+        if(location.getAccuracy() > config.getStationaryRadius()){
+            log.debug("Location accurasy is not enough! acy={}", location.getAccuracy());
+            if (config.isDebugging()) {
+                Toast.makeText(locationService, "Ignoring low accuracy GPS point, acy: " + location.getAccuracy() , Toast.LENGTH_SHORT).show();
+            }
             return;
         }
 
-        if (config.isDebugging()) {
-            Toast.makeText(locationService, "acy:" + location.getAccuracy() + ",v:" + location.getSpeed() + ",df:" + config.getDistanceFilter(), Toast.LENGTH_LONG).show();
+        if (lastActivity.getType() == DetectedActivity.STILL) {
+            handleStationary(location);
+            return;
         }
 
-        // if (lastLocation != null && location.distanceTo(lastLocation) < config.getDistanceFilter()) {
-        //     return;
-        // }
-
-        if (config.isDebugging()) {
+        if (lastLocation == null && config.isDebugging()) {
             startTone(Tone.BEEP);
+            Toast.makeText(locationService, "acy:" + location.getAccuracy() + ", v:" + location.getSpeed() + ", df:" + config.getDistanceFilter(), Toast.LENGTH_SHORT).show();
+            log.debug( "acy:" + location.getAccuracy() + ", v:" + location.getSpeed() + ", df:" + config.getDistanceFilter());
+        }
+
+        if (config.isDebugging() && lastLocation != null) {
+            startTone(Tone.BEEP);
+            Toast.makeText(locationService, "acy:" + location.getAccuracy() + ", dst:" + location.distanceTo(lastLocation) + ", v:" + location.getSpeed() + ", df:" + config.getDistanceFilter(), Toast.LENGTH_SHORT).show();
+            log.debug( "acy:" + location.getAccuracy() + ", dst:" + location.distanceTo(lastLocation) + ", v:" + location.getSpeed() + ", df:" + config.getDistanceFilter());
         }
 
         lastLocation = location;
@@ -88,7 +97,7 @@ public class ActivityRecognitionLocationProvider extends AbstractLocationProvide
     }
 
     public void startRecording() {
-        log.info("Start recording");
+        log.debug("Start recording");
         this.startRecordingOnConnect = true;
         attachRecorder();
     }
@@ -102,13 +111,13 @@ public class ActivityRecognitionLocationProvider extends AbstractLocationProvide
 
     public void startTracking() {
         if (isTracking) { return; }
-
+        log.debug("START Tracking");
         Integer priority = translateDesiredAccuracy(config.getDesiredAccuracy());
         LocationRequest locationRequest = LocationRequest.create()
-                .setPriority(priority) // this.accuracy
+                .setPriority(priority)
                 .setFastestInterval(config.getFastestInterval())
-                .setInterval(config.getInterval());
-                // .setSmallestDisplacement(config.getStationaryRadius());
+                .setInterval(config.getInterval()) 
+                .setSmallestDisplacement(config.getDistanceFilter());  // set distance Filter like setting
         try {
             LocationServices.FusedLocationApi.requestLocationUpdates(googleApiClient, locationRequest, this);
             isTracking = true;
@@ -121,7 +130,7 @@ public class ActivityRecognitionLocationProvider extends AbstractLocationProvide
 
     public void stopTracking() {
         if (!isTracking) { return; }
-
+        log.debug("STOP Tracking");
         LocationServices.FusedLocationApi.removeLocationUpdates(googleApiClient, this);
         isTracking = false;
     }
@@ -132,7 +141,7 @@ public class ActivityRecognitionLocationProvider extends AbstractLocationProvide
                 .addApi(LocationServices.API)
                 .addApi(ActivityRecognition.API)
                 .addConnectionCallbacks(this)
-                //.addOnConnectionFailedListener(this)
+                .addOnConnectionFailedListener(this)
                 .build();
         googleApiClient.connect();
     }
@@ -265,19 +274,35 @@ public class ActivityRecognitionLocationProvider extends AbstractLocationProvide
 
             log.debug("Detected activity={} confidence={}", getActivityString(lastActivity.getType()), lastActivity.getConfidence());
 
-            if (lastActivity.getType() == DetectedActivity.STILL) {
+            // get STILL activity while tracking is on -> stop tracking
+            if (lastActivity.getType() == DetectedActivity.STILL && isTracking == true) {
                 if (config.isDebugging()) {
-                    Toast.makeText(context, "Detected STILL Activity", Toast.LENGTH_SHORT).show();
+                    Toast toast = Toast.makeText(context, "Detected STILL Activity, confidence: " + lastActivity.getConfidence() , Toast.LENGTH_LONG);
+                    toast.setGravity(Gravity.TOP, 0, 0);
+                    toast.show();
+                    startTone(Tone.LONG_BEEP);
                 }
-                // stopTracking();
-                // we will delay stop tracking after position is found
-            } else {
+                stopTracking();
+
+            // get an activity other than STILL, TILTING and UNKNOWN while tracking is off -> start tracking
+            } else if(lastActivity.getType() != DetectedActivity.STILL && lastActivity.getType() != DetectedActivity.UNKNOWN && lastActivity.getType() != DetectedActivity.TILTING && isTracking == false){
                 if (config.isDebugging()) {
-                    Toast.makeText(context, "Detected ACTIVE Activity", Toast.LENGTH_SHORT).show();
+                    Toast toast = Toast.makeText(context, "Detected " + getActivityString(lastActivity.getType()) + " Activity, confidence: " + lastActivity.getConfidence() , Toast.LENGTH_LONG);
+                    toast.setGravity(Gravity.TOP, 0, 0);
+                    toast.show();
+                    startTone(Tone.DOODLY_DOO);
                 }
                 startTracking();
+
+            // get STILL or TILTING or UNKNOWN activity while tracking is off
+            // get ANY activity while tracking is on
+            } else {
+                if (config.isDebugging()) {
+                    Toast toast = Toast.makeText(context, "Detected " + getActivityString(lastActivity.getType()) + " Activity, confidence: " + lastActivity.getConfidence() , Toast.LENGTH_LONG);
+                    toast.setGravity(Gravity.TOP, 0, 0);
+                    toast.show();
+                }
             }
-            //else do nothing
         }
     };
 
