@@ -57,6 +57,10 @@ public abstract class AbstractLocationProvider implements LocationProvider {
         toneGenerator = null;
     }
 
+    public void setConfig(Config config) {
+        this.config = config;
+    }
+
     /**
      * Register broadcast reciever
      * @param receiver

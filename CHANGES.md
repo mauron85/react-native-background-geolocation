@@ -1,5 +1,13 @@
 ## Changelog
 
+### [0.4.0-alpha.1] - unreleased
+#### Added
+- Android android.hardware.location permission
+- Android methods: getValidLocations, deleteLocation, deleteAllLocations
+- Android method checkStatus check if service is running and more
+- Android 6.0 permissions
+- Android events (mode_change, permissions_denied ...)
+
 ### [0.3.1] - 2017-10-04
 #### Fixed
 - (tpisto) iOS compile error in React Native 0.48.x (fixes #108)
