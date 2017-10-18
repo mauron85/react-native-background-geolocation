@@ -361,6 +361,18 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     }
 
     @ReactMethod
+    public void deleteAllLocations(Callback success, Callback error) {
+        LocationDAO dao = DAOFactory.createLocationDAO(getContext());
+        try {
+            dao.deleteAllLocations();
+            success.invoke(locationsArray);
+        } catch (Exception e) {
+            log.error("Deleting all locations failed: {}", e.getMessage());
+            error.invoke("Deleting all locations failed.");
+        }
+    }
+
+    @ReactMethod
     public void switchMode(ReadableMap options, Callback success, Callback error) {
         //TODO: implement
         error.invoke("Not implemented yet");
