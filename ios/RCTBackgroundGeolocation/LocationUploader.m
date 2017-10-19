@@ -24,7 +24,17 @@
 {
     if(!(self = [super init])) return nil;
     
-    NSURLSessionConfiguration *conf = [NSURLSessionConfiguration backgroundSessionConfiguration:@"com.marianhello.session"];
+    NSURLSessionConfiguration *conf;
+
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >=8.0f)
+    {
+        conf = [NSURLSessionConfiguration backgroundSessionConfigurationWithIdentifier:@"com.marianhello.session"];
+    }
+    else
+    {
+        conf = [NSURLSessionConfiguration backgroundSessionConfiguration:@"com.marianhello.session"];
+    }
+    
     conf.allowsCellularAccess = YES;
     urlSession = [NSURLSession sessionWithConfiguration:conf delegate:self delegateQueue:[NSOperationQueue mainQueue]];
     
