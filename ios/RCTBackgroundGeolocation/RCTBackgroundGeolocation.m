@@ -23,11 +23,14 @@
 
 FMDBLogger *sqliteLogger;
 
-@synthesize bridge = _bridge;
 @synthesize locationManager;
 
 RCT_EXPORT_MODULE();
 
+- (NSArray<NSString *> *)supportedEvents
+{
+    return @[@"location", @"stationary", @"error"];
+}
 
 -(instancetype)init
 {
@@ -152,13 +155,13 @@ RCT_EXPORT_METHOD(deleteAllLocations:(RCTResponseSenderBlock)success failure:(RC
 -(void) sendEvent:(NSString*)name dictionary:(NSDictionary*)dictionary
 {
     NSString *event = [NSString stringWithFormat:@"%@", name];
-    [_bridge.eventDispatcher sendDeviceEventWithName:event body:dictionary];
+    [self sendEventWithName:event body:dictionary];
 }
 
 -(void) sendEvent:(NSString*)name array:(NSArray*)array
 {
     NSString *event = [NSString stringWithFormat:@"%@", name];
-    [_bridge.eventDispatcher sendDeviceEventWithName:event body:array];
+    [self sendEventWithName:event body:array];
 }
 
 - (NSString *)loggerDirectory
@@ -188,8 +191,8 @@ RCT_EXPORT_METHOD(deleteAllLocations:(RCTResponseSenderBlock)success failure:(RC
 
 - (void) onError:(NSError*)error
 {
-    RCTLogInfo(@"RCTBackgroundGeolocation onStationaryChanged");
-    [self sendEvent:@"stationary" dictionary:[error userInfo]];
+    RCTLogInfo(@"RCTBackgroundGeolocation onError");
+    [self sendEvent:@"error" dictionary:[error userInfo]];
 }
 
 @end
