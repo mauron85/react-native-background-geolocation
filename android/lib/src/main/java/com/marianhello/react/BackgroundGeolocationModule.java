@@ -242,7 +242,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
         if (options.hasKey("syncUrl")) config.setSyncUrl(options.getString("syncUrl"));
         if (options.hasKey("syncThreshold")) config.setSyncThreshold(options.getInt("syncThreshold"));
         if (options.hasKey("httpHeaders")) {
-            HashMap httpHeaders = new HashMap<String, String>();
+            HashMap httpHeaders = new HashMap<>();
             ReadableMap rm = options.getMap("httpHeaders");
             ReadableMapKeySetIterator it = rm.keySetIterator();
 
