@@ -1,5 +1,9 @@
 ## Changelog
 
+### [0.3.2] - 2017-11-01
+#### Fixed
+- iOS implementation for isLocationEnabled (PR #92)
+
 ### [0.3.1] - 2017-10-04
 #### Fixed
 - (tpisto) iOS compile error in React Native 0.48.x (fixes #108)
