@@ -151,13 +151,13 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements Uploadin
 
         try {
             int responseCode = HttpPostService.postFile(url, file, httpHeaders, this);
-            if (responseCode == HttpURLConnection.HTTP_OK) {
+            if (responseCode == HttpURLConnection.HTTP_OK || responseCode == HttpURLConnection.HTTP_CREATED) {
                 builder.setContentText("Sync completed");
             } else {
                 builder.setContentText("Sync failed due server error");
             }
 
-            return responseCode == HttpURLConnection.HTTP_OK;
+            return responseCode == HttpURLConnection.HTTP_OK || responseCode == HttpURLConnection.HTTP_CREATED;
         } catch (IOException e) {
             log.warn("Error uploading locations: {}", e.getMessage());
             builder.setContentText("Sync failed: " + e.getMessage());
