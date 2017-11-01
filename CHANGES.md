@@ -1,5 +1,9 @@
 ## Changelog
 
+### [0.3.3] - 2017-11-01
+#### Fixed
+- Android location sync should also be completed on 201 status code (PR #71)
+
 ### [0.3.2] - 2017-11-01
 #### Fixed
 - iOS implementation for isLocationEnabled (PR #92)
