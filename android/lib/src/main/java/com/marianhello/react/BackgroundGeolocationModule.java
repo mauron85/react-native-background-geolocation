@@ -407,6 +407,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
         try {
             Config config = ConfigMapper.mapToConfig(options);
             persistConfiguration(config);
+            log.debug("Service configured with: {}", config.toString());
             mConfig = config;
             success.invoke(true);
         } catch (NullPointerException e) {
