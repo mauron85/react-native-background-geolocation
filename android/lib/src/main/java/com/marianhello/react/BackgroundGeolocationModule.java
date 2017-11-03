@@ -119,7 +119,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
         unregisterLocationModeChangeReceiver();
         // Unbind from the service
         doUnbindService();
-        if (mConfig != null && mConfig.getStopOnTerminate()) {
+        if (mConfig == null || mConfig.getStopOnTerminate()) {
             stopBackgroundService();
         }
     }
@@ -279,28 +279,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     }
 
     @ReactMethod
-    public void configure(ReadableMap options, Callback success, Callback error) {
-        try {
-            Config config = ConfigMapper.mapToConfig(options);
-            persistConfiguration(config);
-            mConfig = config;
-            success.invoke(true);
-        } catch (NullPointerException e) {
-            log.error("Configuration error: {}", e.getMessage());
-            error.invoke("Configuration error: " + e.getMessage());
-        }
-    }
-
-    @ReactMethod
     public void start() {
-        if (mConfig == null) {
-            log.warn("Attempt to start unconfigured service. Will use default.");
-            mConfig = new Config();
-            // WritableMap out = Arguments.createMap();
-            // out.putString("message", "Plugin not configured. Please call configure method first.");
-            // sendEvent(ERROR_EVENT, out);
-            // return;
-        }
         if (hasPermissions(PERMISSIONS)) {
             log.debug("Permissions granted");
             startAndBindBackgroundService();
@@ -424,13 +403,26 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     }
 
     @ReactMethod
-    public void getConfig(Callback success, Callback error) {
-        if (mConfig == null) {
-            error.invoke("Plugin was not configured yet");
-            return;
-        }
+    public void configure(ReadableMap options, Callback success, Callback error) {
         try {
-            ReadableMap out = ConfigMapper.configToMap(mConfig);
+            Config config = ConfigMapper.mapToConfig(options);
+            persistConfiguration(config);
+            mConfig = config;
+            success.invoke(true);
+        } catch (NullPointerException e) {
+            log.error("Configuration error: {}", e.getMessage());
+            error.invoke("Configuration error: " + e.getMessage());
+        }
+    }
+
+    @ReactMethod
+    public void getConfig(Callback success, Callback error) {
+        Config config = mConfig;
+        try {
+            if (config == null) {
+                config = getStoredOrDefaultConfig();
+            }
+            ReadableMap out = ConfigMapper.configToMap(config);
             success.invoke(out);
         } catch (Exception e) {
             log.error("Error getting config: {}", e.getMessage());
@@ -455,6 +447,14 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
         }
 
         success.invoke(logEntriesArray);
+    }
+
+    protected Config getStoredOrDefaultConfig() throws JSONException {
+        Config config = getStoredConfig();
+        if (config == null) {
+            config = new Config();
+        }
+        return config;
     }
 
     protected Config getStoredConfig() throws JSONException {
@@ -483,16 +483,30 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     }
 
     protected void startAndBindBackgroundService() {
-        startBackgroundService();
-        doBindService();
+        try {
+            startBackgroundService();
+            doBindService();
+        } catch (Exception e) {
+            WritableMap out = Arguments.createMap();
+            out.putString("message", "Error occured while starting service");
+            out.putString("detail", e.getMessage());
+
+            sendEvent(ERROR_EVENT, out);
+        }
     }
 
-    protected void startBackgroundService() {
+    protected void startBackgroundService() throws Exception {
         if (LocationService.isRunning()) return;
 
         log.info("Starting bg service");
         Context context = getReactApplicationContext();
         Intent locationServiceIntent = new Intent(context, LocationService.class);
+
+        if (mConfig == null) {
+            log.warn("Attempt to start unconfigured service. Will use stored or default.");
+            mConfig = getStoredOrDefaultConfig();
+        }
+
         locationServiceIntent.putExtra("config", mConfig);
         locationServiceIntent.addFlags(Intent.FLAG_FROM_BACKGROUND);
         // start service to keep service running even if no clients are bound to it
