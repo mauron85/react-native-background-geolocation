@@ -135,10 +135,10 @@ RCT_EXPORT_METHOD(stopWatchingLocationMode)
     //TODO: implement
 }
 
-RCT_EXPORT_METHOD(getLocations:(RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(getLocations:(RCTResponseSenderBlock)callback failure:(RCTResponseSenderBlock)failure)
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #getLocations");
-    //TODO: implement
+    callback(@[[locationManager getLocations]]);    
 }
 
 RCT_EXPORT_METHOD(deleteLocation:(int)locationId success:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
