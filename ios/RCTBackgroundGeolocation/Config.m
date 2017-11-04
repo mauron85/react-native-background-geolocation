@@ -26,7 +26,7 @@
     distanceFilter = 500;
     desiredAccuracy = 100;
     isDebugging = NO;
-    activityType = @"OTHER";
+    activityType = @"OtherNavigation";
     stopOnTerminate = YES;
     saveBatteryOnBackground = YES;
     maxLocations = 10000;
@@ -144,7 +144,7 @@
     [dict setObject:[NSNumber numberWithInteger:stationaryRadius] forKey:@"stationaryRadius"];
     [dict setObject:[NSNumber numberWithInteger:distanceFilter] forKey:@"distanceFilter"];
     [dict setObject:[NSNumber numberWithInteger:desiredAccuracy] forKey:@"desiredAccuracy"];
-    [dict setObject:[NSNumber numberWithBool:isDebugging] forKey:@"isDebugging"];
+    [dict setObject:[NSNumber numberWithBool:isDebugging] forKey:@"debug"];
     [dict setObject:[NSNumber numberWithBool:stopOnTerminate] forKey:@"stopOnTerminate"];
     [dict setObject:[NSNumber numberWithInteger:syncThreshold] forKey:@"syncThreshold"];
     [dict setObject:[NSNumber numberWithBool:saveBatteryOnBackground] forKey:@"saveBatteryOnBackground"];
