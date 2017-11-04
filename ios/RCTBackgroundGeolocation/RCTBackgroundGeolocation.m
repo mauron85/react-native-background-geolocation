@@ -102,7 +102,7 @@ RCT_EXPORT_METHOD(stop)
 
 RCT_EXPORT_METHOD(switchMode:(NSNumber*)mode success:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
 {
-    RCTLogInfo(@"RCTBackgroundGeolocation #getLogEntries");
+    RCTLogInfo(@"RCTBackgroundGeolocation #switchMode");
     [locationManager switchMode:[mode integerValue]];
 }
 
@@ -264,19 +264,18 @@ RCT_EXPORT_METHOD(checkStatus:(RCTResponseSenderBlock)success failure:(RCTRespon
     [self sendEvent:@"error" resultAsDictionary:[error userInfo]];
 }
 
-/**@
- * Resume.  Turn background off
- */
 -(void) onResume:(NSNotification *)notification
 {
     RCTLogInfo(@"CDVBackgroundGeoLocation resumed");
     [locationManager switchMode:FOREGROUND];
+    [self sendEvent:@"foreground"];
 }
 
 -(void) onPause:(NSNotification *)notification
 {
     RCTLogInfo(@"CDVBackgroundGeoLocation paused");
     [locationManager switchMode:BACKGROUND];
+    [self sendEvent:@"background"];
 }
 
 /**@
