@@ -11,6 +11,8 @@
 
 @implementation SQLColumnType
 
+@synthesize type;
+
 + (SQLColumnType*) sqlColumnWithType:(SQLType)type
 {
     SQLColumnType *instance = [[SQLColumnType alloc] init];
@@ -20,13 +22,15 @@
 
 - (NSString*) asString
 {
-    switch (_type) {
+    switch (type) {
         case kReal:
             return @"REAL";
         case kText:
             return @"TEXT";
         case kInteger:
             return @"INTEGER";
+        case kDateTime:
+            return @"DATETIME";
     }
 }
 @end
@@ -81,7 +85,7 @@
         }
         column = nextColumn;
     }
-    [sql addObject: @");"];
+    [sql addObject: @")"];
     
     return [sql componentsJoinedByString: @SPACE_SEP];
 }

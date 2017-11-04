@@ -7,13 +7,13 @@
 //
 
 #if __has_include(<React/RCTBridgeModule.h>)
-  #import <React/RCTBridgeModule.h>
+#import <React/RCTBridgeModule.h>
 #else
-  #import "RCTBridgeModule.h"
+#import "RCTBridgeModule.h"
 #endif
 #import "LocationManager.h"
 
-@interface RCTBackgroundGeolocation : NSObject <RCTBridgeModule, LocationManagerDelegate>
+@interface RCTBackgroundGeolocation : NSObject <RCTBridgeModule, LocationDelegate>
 
 @property (nonatomic, strong) LocationManager* locationManager;
 

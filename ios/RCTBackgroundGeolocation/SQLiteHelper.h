@@ -16,7 +16,7 @@
 #define EQ_BIND "= ?"
 
 typedef NS_ENUM(NSInteger, SQLType) {
-    kReal = 0, kInteger = 1, kText = 2
+    kReal = 0, kInteger = 1, kText = 2, kDateTime = 3
 };
 
 

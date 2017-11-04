@@ -15,43 +15,44 @@ enum {
 
 @implementation Location
 
-@synthesize id, time, accuracy, altitudeAccuracy, speed, heading, altitude, latitude, longitude, provider, serviceProvider, type, isValid;
+@synthesize id, time, accuracy, altitudeAccuracy, speed, heading, altitude, latitude, longitude, provider, locationProvider, radius, isValid, recordedAt;
 
 + (instancetype) fromCLLocation:(CLLocation*)location;
 {
     Location *instance = [[Location alloc] init];
-    
+
     instance.time = location.timestamp;
     instance.accuracy = [NSNumber numberWithDouble:location.horizontalAccuracy];
     instance.altitudeAccuracy = [NSNumber numberWithDouble:location.verticalAccuracy];
     instance.speed = [NSNumber numberWithDouble:location.speed];
-    instance.heading = [NSNumber numberWithDouble:location.course];
+    instance.heading = [NSNumber numberWithDouble:location.course]; // will be deprecated
     instance.altitude = [NSNumber numberWithDouble:location.altitude];
     instance.latitude = [NSNumber numberWithDouble:location.coordinate.latitude];
     instance.longitude = [NSNumber numberWithDouble:location.coordinate.longitude];
-    
+
     return instance;
 }
 
 + (NSTimeInterval) locationAge:(CLLocation*)location
 {
-    return -[location.timestamp timeIntervalSinceNow];    
+    return -[location.timestamp timeIntervalSinceNow];
 }
 
 + (NSMutableDictionary*) toDictionary:(CLLocation*)location;
 {
     NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:10];
-    
+
     NSNumber* timestamp = [NSNumber numberWithDouble:([location.timestamp timeIntervalSince1970] * 1000)];
     [dict setObject:timestamp forKey:@"time"];
     [dict setObject:[NSNumber numberWithDouble:location.horizontalAccuracy] forKey:@"accuracy"];
     [dict setObject:[NSNumber numberWithDouble:location.verticalAccuracy] forKey:@"altitudeAccuracy"];
     [dict setObject:[NSNumber numberWithDouble:location.speed] forKey:@"speed"];
     [dict setObject:[NSNumber numberWithDouble:location.course] forKey:@"heading"];
+    [dict setObject:[NSNumber numberWithDouble:location.course] forKey:@"bearing"];
     [dict setObject:[NSNumber numberWithDouble:location.altitude] forKey:@"altitude"];
     [dict setObject:[NSNumber numberWithDouble:location.coordinate.latitude] forKey:@"latitude"];
     [dict setObject:[NSNumber numberWithDouble:location.coordinate.longitude] forKey:@"longitude"];
-    
+
     return dict;
 }
 
@@ -61,7 +62,7 @@ enum {
     if (self != nil) {
         [self commonInit];
     }
-    
+
     return self;
 }
 
@@ -85,26 +86,28 @@ enum {
 
     // id is solely for internal purposes like deleteLocation method!!!
     if (id != nil) [dict setObject:id forKey:@"id"];
-    
+
     return dict;
 }
 
 - (NSMutableDictionary*) toDictionary
 {
     NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:10];
-    
+
     if (time != nil) [dict setObject:[NSNumber numberWithDouble:([time timeIntervalSince1970] * 1000)] forKey:@"time"];
     if (accuracy != nil) [dict setObject:accuracy forKey:@"accuracy"];
     if (altitudeAccuracy != nil) [dict setObject:altitudeAccuracy forKey:@"altitudeAccuracy"];
     if (speed != nil) [dict setObject:speed forKey:@"speed"];
-    if (heading != nil) [dict setObject:heading forKey:@"heading"];
+    if (heading != nil) [dict setObject:heading forKey:@"heading"]; // @deprecated
+    if (heading != nil) [dict setObject:heading forKey:@"bearing"];
     if (altitude != nil) [dict setObject:altitude forKey:@"altitude"];
     if (latitude != nil) [dict setObject:latitude forKey:@"latitude"];
     if (longitude != nil) [dict setObject:longitude forKey:@"longitude"];
     if (provider != nil) [dict setObject:provider forKey:@"provider"];
-    if (serviceProvider != nil) [dict setObject:serviceProvider forKey:@"service_provider"];
-    if (type != nil) [dict setObject:type forKey:@"location_type"];
-    
+    if (locationProvider != nil) [dict setObject:locationProvider forKey:@"locationProvider"];
+    if (radius != nil) [dict setObject:radius forKey:@"radius"];
+    if (recordedAt != nil) [dict setObject:[NSNumber numberWithDouble:([recordedAt timeIntervalSince1970] * 1000)] forKey:@"recordedAt"];
+
     return dict;
 }
 
@@ -127,11 +130,11 @@ enum {
     double dlambda = (a_lon - b_lon) * (M_PI / 180.0);
     double mean_t = (a_lat + b_lat) * (M_PI / 180.0) / 2.0;
     double cos_meant = cosf(mean_t);
-    
+
     return sqrtf((EarthRadius * EarthRadius) * (dtheta * dtheta + cos_meant * cos_meant * dlambda * dlambda));
 }
 
-/** 
+/**
  * Determines whether instance is better then Location reading
  * @param location  The new Location that you want to evaluate
  * Note: code taken from https://developer.android.com/guide/topics/location/strategies.html
@@ -148,7 +151,7 @@ enum {
     BOOL isSignificantlyNewer = timeDelta > TWO_MINUTES;
     BOOL isSignificantlyOlder = timeDelta < -TWO_MINUTES;
     BOOL isNewer = timeDelta > 0;
-    
+
     // If it's been more than two minutes since the current location, use the new location
     // because the user has likely moved
     if (isSignificantlyNewer) {
@@ -157,13 +160,13 @@ enum {
     } else if (isSignificantlyOlder) {
         return NO;
     }
-    
+
     // Check whether the new location fix is more or less accurate
     NSInteger accuracyDelta = [self.accuracy integerValue] - [location.accuracy integerValue];
     BOOL isLessAccurate = accuracyDelta > 0;
     BOOL isMoreAccurate = accuracyDelta < 0;
     BOOL isSignificantlyLessAccurate = accuracyDelta > 200;
-    
+
     // Check if the old and new location are from the same provider
     BOOL isFromSameProvider = YES; //TODO: check
 
@@ -179,10 +182,10 @@ enum {
     return NO;
 }
 
-- (BOOL) isBeyond:(Location*)location radius:(NSInteger)radius
+- (BOOL) isBeyond:(Location*)location radius:(NSInteger)definedRadius
 {
     double pointDistance = [self distanceFromLocation:location];
-    return (pointDistance - [self.accuracy doubleValue] - [location.accuracy doubleValue]) > radius;
+    return (pointDistance - [self.accuracy doubleValue] - [location.accuracy doubleValue]) > definedRadius;
 }
 
 - (BOOL) hasAccuracy
@@ -199,7 +202,7 @@ enum {
 
 - (NSString *) description
 {
-    return [NSString stringWithFormat:@"Location: id=%ld time=%ld lat=%@ lon=%@ accu=%@ aaccu=%@ speed=%@ head=%@ alt=%@ type=%@", (long)id, (long)time, latitude, longitude, accuracy, altitudeAccuracy, speed, heading, altitude, type];
+    return [NSString stringWithFormat:@"Location: id=%@ time=%@ lat=%@ lon=%@ accu=%@ aaccu=%@ speed=%@ bear=%@ alt=%@", id, time, latitude, longitude, accuracy, altitudeAccuracy, speed, heading, altitude];
 }
 
 - (BOOL) postAsJSON:(NSString*)url withHttpHeaders:(NSMutableDictionary*)httpHeaders error:(NSError * __autoreleasing *)outError;
@@ -210,7 +213,7 @@ enum {
     if (!data) {
         return NO;
     }
-    
+
     NSString *jsonStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:url]];
     [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
@@ -222,16 +225,16 @@ enum {
         }
     }
     [request setHTTPBody:[jsonStr dataUsingEncoding:NSUTF8StringEncoding]];
-    
+
     // Create url connection and fire request
     NSHTTPURLResponse* urlResponse = nil;
     [NSURLConnection sendSynchronousRequest:request returningResponse:&urlResponse error:outError];
-    
+
     if (*outError == nil && [urlResponse statusCode] == 200) {
         return YES;
     }
-    
-    return NO;    
+
+    return NO;
 }
 
 -(id) copyWithZone: (NSZone *) zone
@@ -247,11 +250,11 @@ enum {
         copy.latitude = latitude;
         copy.longitude = longitude;
         copy.provider = provider;
-        copy.serviceProvider = serviceProvider;
-        copy.type = type;
+        copy.locationProvider = locationProvider;
+        copy.radius = radius;
         copy.isValid = isValid;
     }
-    
+
     return copy;
 }
 
