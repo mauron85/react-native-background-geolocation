@@ -1,5 +1,13 @@
 ## Changelog
 
+### [0.4.0-alpha.3] - unreleased
+### Fixed
+- iOS fix crash when calling getConfig before configure
+
+#### Added
+- iOS add checkStatus
+- iOS use events instead callbacks for start and stop methods
+
 ### [0.4.0-alpha.1] - unreleased
 #### Added
 - Android android.hardware.location permission
@@ -7,6 +15,14 @@
 - Android method checkStatus check if service is running and more
 - Android 6.0 permissions
 - Android events (mode_change, permissions_denied ...)
+
+### [0.3.3] - 2017-11-01
+#### Fixed
+- Android location sync should also be completed on 201 status code (PR #71)
+
+### [0.3.2] - 2017-11-01
+#### Fixed
+- iOS implementation for isLocationEnabled (PR #92)
 
 ### [0.3.1] - 2017-10-04
 #### Fixed
