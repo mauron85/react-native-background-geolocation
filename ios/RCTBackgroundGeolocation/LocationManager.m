@@ -229,6 +229,11 @@ static NSString * const Domain = @"com.marianhello";
     return NO;
 }
 
+- (BOOL) isStarted
+{
+    return isStarted;
+}
+
 - (void) showAppSettings
 {
     BOOL canGoToSettings = (UIApplicationOpenSettingsURLString != NULL);

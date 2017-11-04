@@ -187,7 +187,25 @@ RCT_EXPORT_METHOD(getConfig:(RCTResponseSenderBlock)success failure:(RCTResponse
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #getConfig");
     Config *config = [locationManager getConfig];
+    if (config == nil) {
+        config = [[Config alloc] init]; // default config
+    }
     success(@[[config toDictionary]]);
+}
+
+RCT_EXPORT_METHOD(checkStatus:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
+{
+    RCTLogInfo(@"RCTBackgroundGeolocation #checkStatus");
+    BOOL isRunning = [locationManager isStarted];
+    BOOL hasPermissions = [locationManager isLocationEnabled];
+    NSInteger authorization = 1; // TODO: check authorization
+
+    NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:3];
+    [dict setObject:[NSNumber numberWithBool:isRunning] forKey:@"isRunning"];
+    [dict setObject:[NSNumber numberWithBool:hasPermissions] forKey:@"hasPermissions"];
+    [dict setObject:[NSNumber numberWithInteger:authorization] forKey:@"authorization"];
+
+    success(@[dict]);
 }
 
 -(void) sendEvent:(NSString*)name
@@ -242,7 +260,7 @@ RCT_EXPORT_METHOD(getConfig:(RCTResponseSenderBlock)success failure:(RCTResponse
 
 - (void) onError:(NSError*)error
 {
-    RCTLogInfo(@"RCTBackgroundGeolocation onStationaryChanged");
+    RCTLogInfo(@"RCTBackgroundGeolocation onError");
     [self sendEvent:@"error" resultAsDictionary:[error userInfo]];
 }
 

@@ -27,6 +27,7 @@
 - (BOOL) stop:(NSError * __autoreleasing *)outError;
 - (BOOL) finish;
 - (BOOL) isLocationEnabled;
+- (BOOL) isStarted;
 - (void) showAppSettings;
 - (void) showLocationSettings;
 - (void) switchMode:(BGOperationMode)mode;
