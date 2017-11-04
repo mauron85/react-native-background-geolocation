@@ -1,5 +1,16 @@
 # react-native-mauron85-background-geolocation
 
+# Next version
+
+Version 0.4 will add new methods and better support for iOS.
+There are some breaking changes. For more information read [v4 documentation](https://github.com/mauron85/react-native-background-geolocation/tree/next).
+
+You can try it today:
+
+```
+npm install react-native-mauron85-background-geolocation@next
+```
+
 # Donation
 
 Please support my work and support continuous development by your donation.
