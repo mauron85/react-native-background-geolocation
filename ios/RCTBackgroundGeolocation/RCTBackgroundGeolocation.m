@@ -7,9 +7,16 @@
 //
 
 #import "RCTBackgroundGeolocation.h"
+#if __has_include("RCTLog.h")
 #import "RCTLog.h"
-#import "RCTBridge.h"
+#else
+#import <React/RCTLog.h>
+#endif
+#if __has_include("RCTEventDispatcher.h")
 #import "RCTEventDispatcher.h"
+#else
+#import <React/RCTEventDispatcher.h>
+#endif
 #import "Logging.h"
 
 #define isNull(value) value == nil || [value isKindOfClass:[NSNull class]]
@@ -67,29 +74,29 @@ RCT_EXPORT_METHOD(configure:(NSDictionary*)configDictionary success:(RCTResponse
     }
 }
 
-RCT_EXPORT_METHOD(start:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
+RCT_EXPORT_METHOD(start)
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #start");
     NSError *error = nil;
     [locationManager start:&error];
 
     if (error == nil) {
-        success(@[[NSNull null]]);
+        [self sendEvent:@"start"];
     } else {
-        failure(@[[error userInfo]]);
+        [self sendEvent:@"error" resultAsDictionary:[error userInfo]];
     }
 }
 
-RCT_EXPORT_METHOD(stop:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
+RCT_EXPORT_METHOD(stop)
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #stop");
     NSError *error = nil;
     [locationManager stop:&error];
 
     if (error == nil) {
-        success(@[[NSNull null]]);
+        [self sendEvent:@"stop"];
     } else {
-        failure(@[[error userInfo]]);
+        [self sendEvent:@"error" resultAsDictionary:[error userInfo]];
     }
 }
 
@@ -181,6 +188,12 @@ RCT_EXPORT_METHOD(getConfig:(RCTResponseSenderBlock)success failure:(RCTResponse
     RCTLogInfo(@"RCTBackgroundGeolocation #getConfig");
     Config *config = [locationManager getConfig];
     success(@[[config toDictionary]]);
+}
+
+-(void) sendEvent:(NSString*)name
+{
+    NSString *event = [NSString stringWithFormat:@"%@", name];
+    [_bridge.eventDispatcher sendDeviceEventWithName:event body:[NSNull null]];
 }
 
 -(void) sendEvent:(NSString*)name resultAsDictionary:(NSDictionary*)resultAsDictionary
