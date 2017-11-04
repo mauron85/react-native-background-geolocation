@@ -243,7 +243,7 @@ RCT_EXPORT_METHOD(checkStatus:(RCTResponseSenderBlock)success failure:(RCTRespon
 - (void) onAuthorizationChanged:(NSInteger)authStatus
 {
     RCTLogInfo(@"RCTBackgroundGeolocation onAuthorizationChanged");
-    [self sendEvent:@"authorizationChanged" resultAsNumber:[NSNumber numberWithInteger:authStatus]];
+    [self sendEvent:@"authorization" resultAsNumber:[NSNumber numberWithInteger:authStatus]];
 }
 
 - (void) onLocationChanged:(Location*)location
