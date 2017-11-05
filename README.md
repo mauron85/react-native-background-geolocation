@@ -85,12 +85,19 @@ class BgTracking extends Component {
     });
 
     BackgroundGeolocation.on('location', (location) => {
-      //handle your locations here
-      Actions.sendLocation(location);
+      // handle your locations here
+      // to perform long running operation on iOS
+      // you need to create background task
+      BackgroundGeolocation.startTask(taskKey => {
+        // execute long running task
+        // eg. ajax post location
+        // IMPORTANT: task has to be ended by endTask
+        BackgroundGeolocation.endTask(taskKey);
+      });
     });
 
     BackgroundGeolocation.on('stationary', (stationaryLocation) => {
-      //handle stationary locations here
+      // handle stationary locations here
       Actions.sendLocation(stationaryLocation);
     });
 

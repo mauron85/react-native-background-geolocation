@@ -18,6 +18,7 @@
 #import <React/RCTEventDispatcher.h>
 #endif
 #import "Logging.h"
+#import "BackgroundTaskManager.h"
 
 #define isNull(value) value == nil || [value isKindOfClass:[NSNull class]]
 
@@ -206,6 +207,17 @@ RCT_EXPORT_METHOD(checkStatus:(RCTResponseSenderBlock)success failure:(RCTRespon
     [dict setObject:[NSNumber numberWithInteger:authorization] forKey:@"authorization"];
 
     success(@[dict]);
+}
+
+RCT_EXPORT_METHOD(startTask:(RCTResponseSenderBlock)callback)
+{
+    NSUInteger taskKey = [[BackgroundTaskManager sharedTasks] beginTask];
+    callback(@[[NSNumber numberWithInteger:taskKey]]);
+}
+
+RCT_EXPORT_METHOD(endTask:(NSNumber* _Nonnull)taskKey)
+{
+    [[BackgroundTaskManager sharedTasks] endTaskWithKey:[taskKey integerValue]];
 }
 
 -(void) sendEvent:(NSString*)name
