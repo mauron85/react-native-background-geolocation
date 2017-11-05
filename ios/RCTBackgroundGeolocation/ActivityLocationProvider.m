@@ -15,7 +15,7 @@ static NSString * const Domain = @"com.marianhello";
 
 @implementation ActivityLocationProvider
 
-- (id) init
+- (instancetype) init
 {
     self = [super init];
     

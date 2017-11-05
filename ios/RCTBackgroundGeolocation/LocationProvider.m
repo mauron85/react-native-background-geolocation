@@ -14,7 +14,7 @@
 
 @synthesize delegate, distanceFilter;
 
-- (id) init
+- (instancetype) init
 {
     self = [super init];
     

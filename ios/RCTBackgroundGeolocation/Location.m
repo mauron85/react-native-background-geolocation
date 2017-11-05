@@ -56,7 +56,7 @@ enum {
     return dict;
 }
 
-- (id) init
+- (instancetype) init
 {
     self = [super init];
     if (self != nil) {

@@ -21,27 +21,26 @@
 #define acquiredLocationSound   1052
 #define locationErrorSound      1073
 
-enum BGAuthorizationStatus {
+typedef NS_ENUM(NSInteger, BGAuthorizationStatus) {
     NOT_DETERMINED = 0,
     ALLOWED,
     DENIED
 };
 
-enum BGErrorCode {
+typedef NS_ENUM(NSInteger, BGErrorCode) {
     UNKNOWN_LOCATION_PROVIDER = 1,
     NOT_IMPLEMENTED = 99
 };
 
-enum BGOperationMode {
+typedef NS_ENUM(NSInteger, BGOperationMode) {
     BACKGROUND = 0,
     FOREGROUND = 1
 };
 
-typedef NSUInteger BGOperationMode;
 
 @protocol LocationDelegate <NSObject>
 
-- (void) onAuthorizationChanged:(NSInteger)authStatus;
+- (void) onAuthorizationChanged:(BGAuthorizationStatus)authStatus;
 - (void) onLocationChanged:(Location*)location;
 - (void) onStationaryChanged:(Location*)location;
 - (void) onError:(NSError*)error;

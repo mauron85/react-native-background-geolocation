@@ -50,7 +50,7 @@ static NSString * const Domain = @"com.marianhello";
 }
 
 
-- (id) init
+- (instancetype) init
 {
     self = [super init];
 
@@ -346,7 +346,7 @@ static NSString * const Domain = @"com.marianhello";
     }
 }
 
-- (void) onAuthorizationChanged:(NSInteger)authStatus
+- (void) onAuthorizationChanged:(BGAuthorizationStatus)authStatus
 {
     [self.delegate onAuthorizationChanged:authStatus];
 }

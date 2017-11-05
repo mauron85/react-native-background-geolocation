@@ -15,7 +15,7 @@
 
 @synthesize stationaryRadius, distanceFilter, desiredAccuracy, isDebugging, activityType, stopOnTerminate, url, syncUrl, syncThreshold, httpHeaders, saveBatteryOnBackground, maxLocations, pauseLocationUpdates, locationProvider;
 
--(id) init {
+-(instancetype) init {
     self = [super init];
 
     if (self == nil) {
