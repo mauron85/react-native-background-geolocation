@@ -58,6 +58,8 @@ static NSString * const Domain = @"com.marianhello";
         return self;
     }
 
+    _config = [[Config alloc] init];
+
     reach = [Reachability reachabilityWithHostname:@"www.google.com"];
     reach.reachableBlock = ^(Reachability *_reach){
         // keep in mind this is called on a background thread
