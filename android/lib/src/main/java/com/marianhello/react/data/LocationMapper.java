@@ -28,7 +28,7 @@ public class LocationMapper {
     public static WritableMap toWriteableMapWithId(BackgroundLocation location) {
         WritableMap out = toWriteableMap(location);
         Long locationId = location.getLocationId();
-        if (locationId != null) out.putInt("locationId", Convert.safeLongToInt(locationId));
+        if (locationId != null) out.putInt("id", Convert.safeLongToInt(locationId));
 
         return out;
     }

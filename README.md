@@ -298,7 +298,7 @@ Location callback will be called with one argument - location object, which trie
 
 | Callback parameter | Type      | Description                                                            |
 |--------------------|-----------|------------------------------------------------------------------------|
-| `locationId`       | `Number`  | ID of location as stored in DB (or null)                               |
+| `id`               | `Number`  | ID of location as stored in DB (or null)                               |
 | `provider`         | `String`  | gps, network, passive or fused                                         |
 | `locationProvider` | `Number`  | Location provider                                                      |
 | `debug`            | `Boolean` | true if location recorded as part of debug                             |
@@ -361,7 +361,7 @@ Platform: iOS, Android
 Method will return all stored locations.
 This method is useful for initial rendering of user location on a map just after application launch.
 
-NOTE: Returned locations does not contain locationId.
+NOTE: Returned locations does not contain location.id.
 
 | Success callback parameter | Type    | Description                    |
 |----------------------------|---------|--------------------------------|
@@ -379,7 +379,7 @@ backgroundGeolocation.getLocations(
 Platform: iOS, Android
 
 Method will return locations, which has not been yet posted to server.
-NOTE: Locations does contain locationId.
+NOTE: Locations does contain location.id.
 
 | Success callback parameter | Type    | Description                    |
 |----------------------------|---------|--------------------------------|
