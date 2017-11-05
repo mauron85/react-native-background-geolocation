@@ -128,12 +128,14 @@ static NSString * const Domain = @"com.marianhello";
     
     [self runOnMainThread:^{
         switch (_config.locationProvider) {
+            // TODO: implement ACTIVITY_PROVIDER
+            case ACTIVITY_PROVIDER:
             case DISTANCE_FILTER_PROVIDER:
                 locationProvider = [[DistanceFilterLocationProvider alloc] init];
                 break;
-            case ACTIVITY_PROVIDER:
-                locationProvider = [[ActivityLocationProvider alloc] init];
-                break;
+//            case ACTIVITY_PROVIDER:
+//                locationProvider = [[ActivityLocationProvider alloc] init];
+//                break;
             default:
                 errorDictionary = @{ @"code": [NSNumber numberWithInt:UNKNOWN_LOCATION_PROVIDER], @"message": @UNKNOWN_LOCATION_PROVIDER_MSG };
                 error = [NSError errorWithDomain:Domain code:UNKNOWN_LOCATION_PROVIDER userInfo:errorDictionary];
