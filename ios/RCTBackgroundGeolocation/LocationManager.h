@@ -12,9 +12,6 @@
 #import "LocationDelegate.h"
 #import "Config.h"
 
-@protocol LocationManagerDelegate <NSObject>
-@end
-
 @interface LocationManager : NSObject
 
 @property (weak, nonatomic) id<LocationDelegate> delegate;

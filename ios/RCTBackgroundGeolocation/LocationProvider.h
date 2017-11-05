@@ -34,9 +34,9 @@
 
 @end
 
-@interface AbstractLocationProvider : NSObject //<LocationProvider>
+@interface AbstractLocationProvider : NSObject<LocationProvider>
 
-@property (weak, nonatomic) id<LocationDelegate, LocationManagerDelegate> delegate;
+@property (weak, nonatomic) id<LocationDelegate> delegate;
 @property NSInteger distanceFilter;
 
 - (void) notify:(NSString*)message;

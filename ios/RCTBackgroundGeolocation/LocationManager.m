@@ -27,7 +27,7 @@
 
 static NSString * const Domain = @"com.marianhello";
 
-@interface LocationManager () <LocationDelegate, LocationManagerDelegate>
+@interface LocationManager () <LocationDelegate>
 @end
 
 @implementation LocationManager {
