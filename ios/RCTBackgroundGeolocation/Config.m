@@ -31,7 +31,7 @@
     saveBatteryOnBackground = YES;
     maxLocations = 10000;
     syncThreshold = 100;
-    pauseLocationUpdates = YES;
+    pauseLocationUpdates = NO;
     locationProvider = DISTANCE_FILTER_PROVIDER;
 
     return self;
