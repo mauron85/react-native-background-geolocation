@@ -13,9 +13,6 @@
 #import "Config.h"
 
 @protocol LocationManagerDelegate <NSObject>
-
-- (void) sync:(Location*)location;
-
 @end
 
 @interface LocationManager : NSObject
@@ -25,7 +22,6 @@
 - (BOOL) configure:(Config*)config error:(NSError * __autoreleasing *)outError;
 - (BOOL) start:(NSError * __autoreleasing *)outError;
 - (BOOL) stop:(NSError * __autoreleasing *)outError;
-- (BOOL) finish;
 - (BOOL) isLocationEnabled;
 - (BOOL) isStarted;
 - (void) showAppSettings;

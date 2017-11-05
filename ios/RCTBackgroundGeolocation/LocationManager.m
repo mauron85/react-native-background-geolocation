@@ -35,19 +35,15 @@ static NSString * const Domain = @"com.marianhello";
     BOOL hasConnectivity;
 
     BGOperationMode operationMode;
-    //    BOOL shouldStart; //indicating intent to start service, but we're waiting for user permission
 
     UILocalNotification *localNotification;
 
     NSNumber *maxBackgroundHours;
-    UIBackgroundTaskIdentifier bgTask;
-    NSDate *lastBgTaskAt;
 
     // configurable options
     Config *_config;
 
     Location *stationaryLocation;
-    NSMutableArray *locationQueue;
     AbstractLocationProvider<LocationProvider> *locationProvider;
     LocationUploader *uploader;
     Reachability *reach;
@@ -80,13 +76,8 @@ static NSString * const Domain = @"com.marianhello";
     localNotification = [[UILocalNotification alloc] init];
     localNotification.timeZone = [NSTimeZone defaultTimeZone];
 
-    locationQueue = [[NSMutableArray alloc] init];
-
-    bgTask = UIBackgroundTaskInvalid;
-
     isStarted = NO;
     hasConnectivity = YES;
-    //    shouldStart = NO;
 
     return self;
 }
@@ -210,16 +201,6 @@ static NSString * const Domain = @"com.marianhello";
     }];
 }
 
-/**
- * Called by js to signify the end of a background-geolocation event
- */
-- (BOOL) finish
-{
-    DDLogInfo(@"LocationManager finish");
-    [self stopBackgroundTask];
-    return YES;
-}
-
 - (BOOL) isLocationEnabled
 {
     if ([CLLocationManager respondsToSelector:@selector(locationServicesEnabled)]) { // iOS 4.x
@@ -281,97 +262,24 @@ static NSString * const Domain = @"com.marianhello";
     return _config;
 }
 
-- (void) flushQueue
+- (void) sync:(Location *)location
 {
-    // Sanity-check the duration of last bgTask:  If greater than 30s, kill it.
-    if (bgTask != UIBackgroundTaskInvalid) {
-        if (-[lastBgTaskAt timeIntervalSinceNow] > 30.0) {
-            DDLogWarn(@"LocationManager#flushQueue has to kill an out-standing background-task!");
-            if (_config.isDebugging) {
-                [self notify:@"Outstanding bg-task was force-killed"];
+    if (hasConnectivity && [_config hasUrl]) {
+        NSError *error = nil;
+        if ([location postAsJSON:_config.url withHttpHeaders:_config.httpHeaders error:&error]) {
+            SQLiteLocationDAO* locationDAO = [SQLiteLocationDAO sharedInstance];
+            if (location.id != nil) {
+                [locationDAO deleteLocation:location.id];
             }
-            [self stopBackgroundTask];
+        } else {
+            DDLogWarn(@"LocationManager postJSON failed: error: %@", error.userInfo[@"NSLocalizedDescription"]);
+            hasConnectivity = [reach isReachable];
+            [reach startNotifier];
         }
-        return;
     }
-
-    Location *location;
-    @synchronized(self) {
-        if ([locationQueue count] < 1) {
-            return;
-        }
-        // retrieve first queued location
-        location = [locationQueue firstObject];
-        [locationQueue removeObject:location];
-    }
-
-    // Create a background-task and delegate to Javascript for syncing location
-    bgTask = [self createBackgroundTask];
-
-    [self sync:location];
-
-    if ([_config hasSyncUrl] || [_config hasUrl]) {
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
-            if (hasConnectivity && [_config hasUrl]) {
-                NSError *error = nil;
-                if ([location postAsJSON:_config.url withHttpHeaders:_config.httpHeaders error:&error]) {
-                    SQLiteLocationDAO* locationDAO = [SQLiteLocationDAO sharedInstance];
-                    if (location.id != nil) {
-                        [locationDAO deleteLocation:location.id];
-                    }
-                } else {
-                    DDLogWarn(@"LocationManager postJSON failed: error: %@", error.userInfo[@"NSLocalizedDescription"]);
-                    hasConnectivity = [reach isReachable];
-                    [reach startNotifier];
-                }
-            }
-
-            NSString *syncUrl = [_config hasSyncUrl] ? _config.syncUrl : _config.url;
-            [uploader sync:syncUrl onLocationThreshold:_config.syncThreshold];
-        });
-    }
-}
-
-- (UIBackgroundTaskIdentifier) createBackgroundTask
-{
-    lastBgTaskAt = [NSDate date];
-    return [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
-        [self stopBackgroundTask];
-    }];
-}
-
-- (void) stopBackgroundTask
-{
-    UIApplication *app = [UIApplication sharedApplication];
-    if (bgTask != UIBackgroundTaskInvalid) {
-        [app endBackgroundTask:bgTask];
-        bgTask = UIBackgroundTaskInvalid;
-    }
-    [self flushQueue];
-}
-
-/**
- * We are running in the background if this is being executed.
- * We can't assume normal network access.
- * bgTask is defined as an instance variable of type UIBackgroundTaskIdentifier
- */
-- (void) sync:(Location*)location
-{
-    DDLogInfo(@"LocationManager#sync %@", location);
-    if (_config.isDebugging) {
-        [self notify:[NSString stringWithFormat:@"Location update: %s\nSPD: %0.0f | DF: %ld | ACY: %0.0f",
-            ((operationMode == FOREGROUND) ? "FG" : "BG"),
-            [location.speed doubleValue],
-            (long) locationProvider.distanceFilter,
-            [location.accuracy doubleValue]
-        ]];
-
-        AudioServicesPlaySystemSound (locationSyncSound);
-    }
-
-    // Build a resultset for javascript callback.
-    if (self.delegate && [self.delegate respondsToSelector:@selector(onLocationChanged:)]) {
-        [self.delegate onLocationChanged:location];
+    
+    if ([_config hasSyncUrl]) {
+        [uploader sync:_config.syncUrl onLocationThreshold:_config.syncThreshold];
     }
 }
 
@@ -404,7 +312,6 @@ static NSString * const Domain = @"com.marianhello";
     if (self.delegate && [self.delegate respondsToSelector:@selector(onStationaryChanged:)]) {
         [self.delegate onStationaryChanged:location];
     }
-//    [self stopBackgroundTask];
 }
 
 - (void) onLocationChanged:(Location *)location
@@ -412,14 +319,31 @@ static NSString * const Domain = @"com.marianhello";
     DDLogDebug(@"LocationManager#onLocationChanged %@", location);
     stationaryLocation = nil;
     
-    SQLiteLocationDAO* locationDAO = [SQLiteLocationDAO sharedInstance];
-    location.id = [locationDAO persistLocation:location limitRows:_config.maxLocations];
+    if (_config.isDebugging) {
+        [self notify:[NSString stringWithFormat:@"Location update: %s\nSPD: %0.0f | DF: %ld | ACY: %0.0f",
+                      ((operationMode == FOREGROUND) ? "FG" : "BG"),
+                      [location.speed doubleValue],
+                      (long) locationProvider.distanceFilter,
+                      [location.accuracy doubleValue]
+                      ]];
+        
+        AudioServicesPlaySystemSound (locationSyncSound);
+    }
     
-    @synchronized(self) {
-        [locationQueue addObject:location];
+    SQLiteLocationDAO* locationDAO = [SQLiteLocationDAO sharedInstance];
+    // TODO: investigate location id always 0
+    location.id = [locationDAO persistLocation:location limitRows:_config.maxLocations];
+
+    if ([_config hasSyncUrl] || [_config hasUrl]) {
+        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_BACKGROUND, 0), ^{
+            [self sync:location];
+        });
     }
 
-    [self flushQueue];
+    // Delegate to main module
+    if (self.delegate && [self.delegate respondsToSelector:@selector(onLocationChanged:)]) {
+        [self.delegate onLocationChanged:location];
+    }
 }
 
 - (void) onAuthorizationChanged:(NSInteger)authStatus
