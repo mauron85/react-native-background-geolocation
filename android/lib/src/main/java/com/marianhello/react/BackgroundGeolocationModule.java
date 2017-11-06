@@ -279,7 +279,10 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
             startAndBindBackgroundService();
             success.invoke(true);
         } else {
-            //TODO: requestPermissions
+            Activity activity = getCurrentActivity();
+            if(activity == null) return;
+            String[] permissions = { Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION };
+            ActivityCompat.requestPermissions(activity, permissions, PERMISSION_REQUEST_CODE);
         }
     }
 
