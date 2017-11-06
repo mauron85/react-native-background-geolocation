@@ -12,7 +12,8 @@
 
 enum {
     DISTANCE_FILTER_PROVIDER = 0,
-    ACTIVITY_PROVIDER = 1
+    ACTIVITY_PROVIDER = 1,
+    RAW_PROVIDER = 2
 };
 
 @interface Config : NSObject

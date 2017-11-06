@@ -9,6 +9,16 @@
 #import "DistanceFilterLocationProvider.h"
 #import "Logging.h"
 
+#define SYSTEM_VERSION_EQUAL_TO(v)                  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedSame)
+#define SYSTEM_VERSION_GREATER_THAN(v)              ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedDescending)
+#define SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(v)  ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedAscending)
+#define SYSTEM_VERSION_LESS_THAN(v)                 ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] == NSOrderedAscending)
+#define SYSTEM_VERSION_LESS_THAN_OR_EQUAL_TO(v)     ([[[UIDevice currentDevice] systemVersion] compare:v options:NSNumericSearch] != NSOrderedDescending)
+
+#define LOCATION_DENIED         "User denied use of location services."
+#define LOCATION_RESTRICTED     "Application's use of location services is restricted."
+#define LOCATION_NOT_DETERMINED "User undecided on application's use of location services."
+
 static NSString * const Domain = @"com.marianhello";
 
 enum {
@@ -87,8 +97,6 @@ enum {
 
 /**
  * Turn on background geolocation
- * in case of failure it calls error callback from configure method
- * may fire two callback when location services are disabled and when authorization failed
  */
 - (BOOL) start:(NSError * __autoreleasing *)outError
 {

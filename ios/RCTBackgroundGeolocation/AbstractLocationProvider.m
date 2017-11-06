@@ -1,18 +1,18 @@
 //
-//  LocationProvider.m
+//  AbstractLocationProvider.m
 //  CDVBackgroundGeolocation
 //
 //  Created by Marian Hello on 14/09/2016.
 //  Copyright © 2016 mauron85. All rights reserved.
 //
 
-#import "LocationProvider.h"
+#import "AbstractLocationProvider.h"
 
 @implementation AbstractLocationProvider {
     UILocalNotification *localNotification;
 }
 
-@synthesize delegate, distanceFilter;
+@synthesize delegate;
 
 - (instancetype) init
 {
@@ -41,4 +41,3 @@
 }
 
 @end
-

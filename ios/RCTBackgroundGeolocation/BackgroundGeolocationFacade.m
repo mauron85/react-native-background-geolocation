@@ -1,5 +1,5 @@
 ////
-//  LocationManager
+//  BackgroundGeolocationFacade.m
 //
 //  Created by Marian Hello on 04/06/16.
 //  Version 2.0.0
@@ -13,24 +13,26 @@
 #import <UIKit/UIKit.h>
 #import <CoreLocation/CoreLocation.h>
 #import <AudioToolbox/AudioToolbox.h>
-#import "LocationManager.h"
-#import "LocationUploader.h"
+#import "BackgroundGeolocationFacade.h"
+#import "BackgroundSync.h"
 #import "SQLiteLocationDAO.h"
 #import "BackgroundTaskManager.h"
 #import "Reachability.h"
 #import "Logging.h"
 #import "ActivityLocationProvider.h"
 #import "DistanceFilterLocationProvider.h"
+#import "RawLocationProvider.h"
 
 // error messages
 #define UNKNOWN_LOCATION_PROVIDER_MSG   "Unknown location provider."
 
 static NSString * const Domain = @"com.marianhello";
+static NSString * const TAG = @"BgGeo";
 
-@interface LocationManager () <LocationDelegate>
+@interface BackgroundGeolocationFacade () <LocationDelegate>
 @end
 
-@implementation LocationManager {
+@implementation BackgroundGeolocationFacade {
     BOOL isStarted;
     BOOL hasConnectivity;
 
@@ -45,7 +47,7 @@ static NSString * const Domain = @"com.marianhello";
 
     Location *stationaryLocation;
     AbstractLocationProvider<LocationProvider> *locationProvider;
-    LocationUploader *uploader;
+    BackgroundSync *uploader;
     Reachability *reach;
 }
 
@@ -91,7 +93,7 @@ static NSString * const Domain = @"com.marianhello";
  */
 - (BOOL) configure:(Config*)config error:(NSError * __autoreleasing *)outError
 {
-    DDLogInfo(@"LocationManager configure with: %@", config);
+    DDLogInfo(@"%@ #configure: %@", TAG, config);
     _config = config;
 
     // ios 8 requires permissions to send local-notifications
@@ -103,7 +105,7 @@ static NSString * const Domain = @"com.marianhello";
     }
    
     if ([config hasSyncUrl] && uploader == nil) {
-        uploader = [[LocationUploader alloc] init];
+        uploader = [[BackgroundSync alloc] init];
     }
 
     return YES;
@@ -116,7 +118,7 @@ static NSString * const Domain = @"com.marianhello";
  */
 - (BOOL) start:(NSError * __autoreleasing *)outError
 {
-    DDLogInfo(@"LocationManager will start: %d", isStarted);
+    DDLogInfo(@"%@ #start: %d", TAG, isStarted);
 
     if (isStarted) {
         return NO;
@@ -136,6 +138,9 @@ static NSString * const Domain = @"com.marianhello";
 //            case ACTIVITY_PROVIDER:
 //                locationProvider = [[ActivityLocationProvider alloc] init];
 //                break;
+            case RAW_PROVIDER:
+                locationProvider = [[RawLocationProvider alloc] init];
+                break;
             default:
                 errorDictionary = @{ @"code": [NSNumber numberWithInt:UNKNOWN_LOCATION_PROVIDER], @"message": @UNKNOWN_LOCATION_PROVIDER_MSG };
                 error = [NSError errorWithDomain:Domain code:UNKNOWN_LOCATION_PROVIDER userInfo:errorDictionary];
@@ -170,7 +175,7 @@ static NSString * const Domain = @"com.marianhello";
  */
 - (BOOL) stop:(NSError * __autoreleasing *)outError
 {
-    DDLogInfo(@"LocationManager stop");
+    DDLogInfo(@"%@ #stop", TAG);
 
     if (!isStarted) {
         return YES;
@@ -190,7 +195,7 @@ static NSString * const Domain = @"com.marianhello";
  */
 - (void) switchMode:(BGOperationMode)mode
 {
-    DDLogInfo(@"LocationManager switchMode %lu", (unsigned long)mode);
+    DDLogInfo(@"%@ #switchMode %lu", TAG, (unsigned long)mode);
 
     operationMode = mode;
 
@@ -276,7 +281,7 @@ static NSString * const Domain = @"com.marianhello";
                 [locationDAO deleteLocation:location.id];
             }
         } else {
-            DDLogWarn(@"LocationManager postJSON failed: error: %@", error.userInfo[@"NSLocalizedDescription"]);
+            DDLogWarn(@"%@ postJSON failed: error: %@", TAG, error.userInfo[@"NSLocalizedDescription"]);
             hasConnectivity = [reach isReachable];
             [reach startNotifier];
         }
@@ -309,7 +314,7 @@ static NSString * const Domain = @"com.marianhello";
 
 - (void) onStationaryChanged:(Location *)location
 {
-    DDLogDebug(@"LocationManager#onStationaryChanged");
+    DDLogDebug(@"%@ #onStationaryChanged", TAG);
     stationaryLocation = location;
 
     // Any javascript stationaryRegion event-listeners?
@@ -320,14 +325,14 @@ static NSString * const Domain = @"com.marianhello";
 
 - (void) onLocationChanged:(Location *)location
 {
-    DDLogDebug(@"LocationManager#onLocationChanged %@", location);
+    DDLogDebug(@"%@ #onLocationChanged %@", TAG, location);
     stationaryLocation = nil;
     
     if (_config.isDebugging) {
         [self notify:[NSString stringWithFormat:@"Location update: %s\nSPD: %0.0f | DF: %ld | ACY: %0.0f",
                       ((operationMode == FOREGROUND) ? "FG" : "BG"),
                       [location.speed doubleValue],
-                      (long) locationProvider.distanceFilter,
+                      (long) nil, //locationProvider.distanceFilter,
                       [location.accuracy doubleValue]
                       ]];
         
@@ -360,6 +365,16 @@ static NSString * const Domain = @"com.marianhello";
     [self.delegate onError:error];
 }
 
+- (void) onLocationPause
+{
+    [self.delegate onLocationPause];
+}
+
+- (void) onLocationResume
+{
+    [self.delegate onLocationResume];
+}
+
 /**@
  * If you don't stopMonitoring when application terminates, the app will be awoken still when a
  * new location arrives, essentially monitoring the user's location even when they've killed the app.
@@ -368,7 +383,7 @@ static NSString * const Domain = @"com.marianhello";
 - (void) onAppTerminate
 {
     if (_config.stopOnTerminate) {
-        DDLogInfo(@"LocationManager is stopping on app terminate.");
+        DDLogInfo(@"%@ #onAppTerminate.", TAG);
         [self stop:nil];
     } else {
         [self switchMode:BACKGROUND];

@@ -9,7 +9,7 @@
 #ifndef ActivityLocationProvider_h
 #define ActivityLocationProvider_h
 
-#import "LocationProvider.h"
+#import "AbstractLocationProvider.h"
 
 @interface ActivityLocationProvider : AbstractLocationProvider<LocationProvider>
 

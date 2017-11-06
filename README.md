@@ -12,11 +12,12 @@ with battery-saving "circular region monitoring" and "stop detection".
 
 Plugin can be used for geolocation when app is running in foreground or background.
 
-On Android you can choose from two location location providers:
-* **ANDROID_DISTANCE_FILTER_PROVIDER**
-* **ANDROID_ACTIVITY_PROVIDER**
+You can choose from following location providers:
+* **DISTANCE_FILTER_PROVIDER**
+* **ACTIVITY_PROVIDER** (Android only)
+* **RAW_PROVIDER**
 
-See [Which provider should I use?](https://github.com/mauron85/react-native-background-geolocation/blob/master/PROVIDERS.md) for more information about providers.
+See [Which provider should I use?](/PROVIDERS.md) for more information about providers.
 
 ## Compatibility
 
@@ -73,7 +74,7 @@ class BgTracking extends Component {
       debug: true,
       startOnBoot: false,
       stopOnTerminate: false,
-      locationProvider: BackgroundGeolocation.provider.ANDROID_ACTIVITY_PROVIDER,
+      locationProvider: BackgroundGeolocation.ACTIVITY_PROVIDER,
       interval: 10000,
       fastestInterval: 5000,
       activitiesInterval: 10000,
@@ -115,7 +116,7 @@ class BgTracking extends Component {
 
     BackgroundGeolocation.on('authorization', (status) => {
       console.log('[INFO] BackgroundGeolocation authorization status: ' + status);
-      if (status !== BackgroundGeolocation.auth.AUTHORIZED) {
+      if (status !== BackgroundGeolocation.AUTHORIZED) {
         Alert.alert('Location services are disabled', 'Would you like to open location settings?', [
           { text: 'Yes', onPress: () => BackgroundGeolocation.showLocationSettings() },
           { text: 'No', onPress: () => console.log('No Pressed'), style: 'cancel' }
@@ -261,6 +262,7 @@ Configure options:
 
 | Parameter                 | Type              | Platform     | Description                                                                                                                                                                                                                                                                                                                                        |
 |---------------------------|-------------------|--------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `locationProvider`        | `Number`          | all          | Set location provider **@see** [PROVIDERS](/PROVIDERS.md)                                                                                                                                                                                                                                                                                          |
 | `desiredAccuracy`         | `Number`          | all          | Desired accuracy in meters. Possible values [0, 10, 100, 1000]. The lower the number, the more power devoted to GeoLocation resulting in higher accuracy readings. 1000 results in lowest power drain and least accurate readings. @see Apple docs                                                                                                 |
 | `stationaryRadius`        | `Number`          | all          | Stationary radius in meters. When stopped, the minimum distance the device must move beyond the stationary location for aggressive background-tracking to engage.                                                                                                                                                                                  |
 | `debug`                   | `Boolean`         | all          | When enabled, the plugin will emit sounds for life-cycle events of background-geolocation! See debugging sounds table.                                                                                                                                                                                                                             |
@@ -274,7 +276,6 @@ Configure options:
 | `notificationIconColor`   | `String` optional | Android      | The accent color to use for notification. Eg. **#4CAF50**.                                                                                                                                                                                                                                                                                         |
 | `notificationIconLarge`   | `String` optional | Android      | The filename of a custom notification icon. See android quirks.                                                                                                                                                                                                                                                                                    |
 | `notificationIconSmall`   | `String` optional | Android      | The filename of a custom notification icon. See android quirks.                                                                                                                                                                                                                                                                                    |
-| `locationProvider`        | `Number`          | Android      | Set location provider **@see** [wiki](https://github.com/mauron85/cordova-plugin-background-geolocation/wiki/Android-providers)                                                                                                                                                                                                                    |
 | `activityType`            | `String`          | iOS          | [AutomotiveNavigation, OtherNavigation, Fitness, Other] Presumably, this affects iOS GPS algorithm. **@see** [Apple docs](https://developer.apple.com/library/ios/documentation/CoreLocation/Reference/CLLocationManager_Class/CLLocationManager/CLLocationManager.html#//apple_ref/occ/instp/CLLocationManager/activityType) for more information |
 | `pauseLocationUpdates`    | `Boolean`         | iOS          | Pauses location updates when app is paused (default: false). **@see* [Apple docs](https://developer.apple.com/documentation/corelocation/cllocationmanager/1620553-pauseslocationupdatesautomatical?language=objc)
 | `saveBatteryOnBackground` | `Boolean`         | iOS          | Switch to less accurate significant changes and region monitory when in background (default: true)                                                                                                                                                                                                                                                 |
@@ -285,7 +286,7 @@ Configure options:
 | `maxLocations`            | `Number`          | all          | Limit maximum number of locations stored into db (default: 10000)                                                                                                                                                                                                                                                                                  |
 
 Following options are specific to provider as defined by locationProvider option
-### ANDROID_ACTIVITY_PROVIDER provider options
+#### ACTIVITY_PROVIDER provider options
 
 | Parameter             | Type      | Platform | Description                                                                                                                                                                                                                      |
 |-----------------------|-----------|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -335,7 +336,6 @@ One time check for status of location services. In case of error, fail callback 
 | `enabled`                  | `Boolean` | true/false (true when location services are enabled) |
 
 ### checkStatus(success, fail)
-Platform: Android
 
 Check status of the service
 
@@ -343,7 +343,7 @@ Check status of the service
 |----------------------------|-----------|------------------------------------------------------|
 | `isRunning`                | `Boolean` | true/false (true if service is running)              |
 | `hasPermissions`           | `Boolean` | true/false (true if service has permissions)         |
-| `authorization`            | `Number`  | BackgroundGeolocation.auth.{AUTHORIZED|DENIED}       |
+| `authorization`            | `Number`  | BackgroundGeolocation.{NOT_AUTHORIZED | AUTHORIZED}  |
 
 ### showAppSettings()
 Platform: Android >= 6, iOS >= 8.0
@@ -368,7 +368,7 @@ NOTE: Returned locations does not contain location.id.
 | `locations`                | `Array` | collection of stored locations |
 
 ```javascript
-backgroundGeolocation.getLocations(
+BackgroundGeolocation.getLocations(
   function (locations) {
     console.log(locations);
   }
@@ -391,7 +391,7 @@ Platform: iOS, Android
 Delete location with locationId.
 
 Note: Locations are not actually deleted from database to avoid gaps in locationId numbering.
-Instead locations are marked as deleted. Locations marked as deleted will not appear in output of `backgroundGeolocation.getLocations`.
+Instead locations are marked as deleted. Locations marked as deleted will not appear in output of `BackgroundGeolocation.getLocations`.
 
 ### deleteAllLocations(success, fail)
 Note: You don't need to delete all locations. Plugin manages number of locations automatically and location count never exceeds number as defined by `option.maxLocations`.
@@ -414,14 +414,14 @@ and uses `option.stationaryRadius` only.
 
 ```
 // switch to FOREGROUND mode
-backgroundGeolocation.switchMode(backgroundGeolocation.mode.FOREGROUND);
+BackgroundGeolocation.switchMode(BackgroundGeolocation.FOREGROUND_MODE);
 
 // switch to BACKGROUND mode
-backgroundGeolocation.switchMode(backgroundGeolocation.mode.BACKGROUND);
+BackgroundGeolocation.switchMode(BackgroundGeolocation.BACKGROUND_MODE);
 ```
 
 ### getLogEntries(limit, success, fail)
-Platform: Android
+Platform: Android, iOS
 
 Return all logged events. Useful for plugin debugging.
 Parameter `limit` limits number of returned entries.
@@ -460,12 +460,16 @@ individually, or with `removeAllListeners`
 
 ## HTTP locations posting
 
-All locations updates are recorded in local db at all times. When App is in foreground or background in addition to storing location in local db, location callback function is triggered. Number of location stored in db is limited by `option.maxLocations` a never exceeds this number. Instead old locations are replaced by new ones.
+All locations updates are recorded in local db at all times. When App is in foreground or background in addition to storing location in local db,
+location callback function is triggered. Number of location stored in db is limited by `option.maxLocations` a never exceeds this number.
+Instead old locations are replaced by new ones.
 
-When `option.url` is defined, each location is also immediately posted to url defined by `option.url`. If post is successful, the location is marked as deleted in local db. All failed to post locations will be coalesced and send in some time later in one single batch. Batch sync takes place only when number of failed to post locations reaches `option.syncTreshold`.
-Optionally different url for batch sync can be defined by `option.syncUrl`. If `option.syncUrl` is not set then `option.url` will be used instead.
+When `option.url` is defined, each location is also immediately posted to url defined by `option.url`.
+If post is successful, the location is marked as deleted in local db.
 
-When only `option.syncUrl` is defined. Locations are send only in single batch, when number of locations reaches `option.syncTreshold`. (No individual location will be send)
+When `option.syncUrl` is defined all failed to post locations will be coalesced and send in some time later in one single batch.
+Batch sync takes place only when number of failed to post locations reaches `option.syncTreshold`.
+Locations are send only in single batch, when number of locations reaches `option.syncTreshold`. (No individual location will be send)
 
 Request body of posted locations is always array, even when only one location is sent.
 

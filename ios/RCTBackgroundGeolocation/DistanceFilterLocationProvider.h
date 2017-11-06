@@ -10,8 +10,8 @@
 #define DistanceFilterLocationProvider_h
 
 #import <CoreLocation/CoreLocation.h>
+#import "AbstractLocationProvider.h"
 #import "Config.h"
-#import "LocationProvider.h"
 
 @interface DistanceFilterLocationProvider : AbstractLocationProvider<LocationProvider>
 

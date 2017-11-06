@@ -1,5 +1,5 @@
 //
-//  LocationManager.h
+//  BackgroundGeolocationFacade.h
 //
 //  Created by Marian Hello on 04/06/16.
 //  Version 2.0.0
@@ -9,10 +9,14 @@
 //  This is class is using code from christocracy cordova-plugin-background-geolocation plugin
 //  https://github.com/christocracy/cordova-plugin-background-geolocation
 
+#ifndef BackgroundGeolocationFacade_h
+#define BackgroundGeolocationFacade_h
+
+#import "AbstractLocationProvider.h"
 #import "LocationDelegate.h"
 #import "Config.h"
 
-@interface LocationManager : NSObject
+@interface BackgroundGeolocationFacade : NSObject
 
 @property (weak, nonatomic) id<LocationDelegate> delegate;
 
@@ -33,3 +37,5 @@
 - (void) onAppTerminate;
 
 @end
+
+#endif /* BackgroundGeolocationFacade_h */

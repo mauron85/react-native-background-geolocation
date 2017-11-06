@@ -17,16 +17,34 @@ var BackgroundGeolocation = {
     'background'
   ],
 
+  DISTANCE_FILTER_PROVIDER: 0,
+  ACTIVITY_PROVIDER: 1,
+  RAW_PROVIDER: 2,
+
+  BACKGROUND_MODE: 0,
+  FOREGROUND_MODE: 1,
+
+  NOT_AUTHORIZED: 0,
+  AUTHORIZED: 1,
+
+  HIGH_ACCURACY: 0,
+  MEDIUM_ACCURACY: 100,
+  LOW_ACCURACY: 1000,
+  PASSIVE_ACCURACY: 10000,
+
+  // @Deprecated
   provider: {
     ANDROID_DISTANCE_FILTER_PROVIDER: 0,
     ANDROID_ACTIVITY_PROVIDER: 1
   },
 
+  // @Deprecated
   mode: {
     BACKGROUND: 0,
     FOREGROUND: 1
   },
 
+  // @Deprecated
   accuracy: {
     HIGH: 0,
     MEDIUM: 100,
@@ -34,6 +52,7 @@ var BackgroundGeolocation = {
     PASSIVE: 10000
   },
 
+  // @Deprecated
   auth: {
     DENIED: 0,
     AUTHORIZED: 1

@@ -27,7 +27,7 @@
 FMDBLogger *sqliteLogger;
 
 @synthesize bridge = _bridge;
-@synthesize locationManager;
+@synthesize facade;
 
 RCT_EXPORT_MODULE();
 
@@ -48,12 +48,13 @@ RCT_EXPORT_MODULE();
         
         [DDLog addLogger:sqliteLogger withLevel:DDLogLevelDebug];
 
-        locationManager = [[LocationManager alloc] init];
-        locationManager.delegate = self;
+        facade = [[BackgroundGeolocationFacade alloc] init];
+        facade.delegate = self;
         
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onPause:) name:UIApplicationDidEnterBackgroundNotification object:nil];
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onResume:) name:UIApplicationWillEnterForegroundNotification object:nil];
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onFinishLaunching:) name:UIApplicationDidFinishLaunchingNotification object:nil];        
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onAppPause:) name:UIApplicationDidEnterBackgroundNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onAppResume:) name:UIApplicationWillEnterForegroundNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onFinishLaunching:) name:UIApplicationDidFinishLaunchingNotification object:nil];
+        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onAppTerminate:) name:UIApplicationWillTerminateNotification object:nil];
     }
 
     return self;
@@ -68,7 +69,7 @@ RCT_EXPORT_METHOD(configure:(NSDictionary*)configDictionary success:(RCTResponse
     Config* config = [Config fromDictionary:configDictionary];
     NSError *error = nil;
     
-    if ([locationManager configure:config error:&error]) {
+    if ([facade configure:config error:&error]) {
         success(@[[NSNull null]]);
     } else {
         failure(@[@"Configuration error"]);
@@ -79,7 +80,7 @@ RCT_EXPORT_METHOD(start)
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #start");
     NSError *error = nil;
-    [locationManager start:&error];
+    [facade start:&error];
 
     if (error == nil) {
         [self sendEvent:@"start"];
@@ -92,7 +93,7 @@ RCT_EXPORT_METHOD(stop)
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #stop");
     NSError *error = nil;
-    [locationManager stop:&error];
+    [facade stop:&error];
 
     if (error == nil) {
         [self sendEvent:@"stop"];
@@ -104,32 +105,32 @@ RCT_EXPORT_METHOD(stop)
 RCT_EXPORT_METHOD(switchMode:(NSNumber*)mode success:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #switchMode");
-    [locationManager switchMode:[mode integerValue]];
+    [facade switchMode:[mode integerValue]];
 }
 
 RCT_EXPORT_METHOD(isLocationEnabled:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #isLocationEnabled");
-    success(@[@([locationManager isLocationEnabled])]);
+    success(@[@([facade isLocationEnabled])]);
 }
 
 RCT_EXPORT_METHOD(showAppSettings)
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #showAppSettings");
-    [locationManager showAppSettings];
+    [facade showAppSettings];
 }
 
 RCT_EXPORT_METHOD(showLocationSettings)
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #showLocationSettings");
-    [locationManager showLocationSettings];
+    [facade showLocationSettings];
 }
 
 RCT_EXPORT_METHOD(getLocations:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #getLocations");
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        NSArray *locations = [locationManager getLocations];
+        NSArray *locations = [facade getLocations];
         NSMutableArray* dictionaryLocations = [[NSMutableArray alloc] initWithCapacity:[locations count]];
         for (Location* location in locations) {
             [dictionaryLocations addObject:[location toDictionary]];
@@ -142,7 +143,7 @@ RCT_EXPORT_METHOD(getValidLocations:(RCTResponseSenderBlock)success failure:(RCT
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #getValidLocations");
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        NSArray *locations = [locationManager getValidLocations];
+        NSArray *locations = [facade getValidLocations];
         NSMutableArray* dictionaryLocations = [[NSMutableArray alloc] initWithCapacity:[locations count]];
         for (Location* location in locations) {
             [dictionaryLocations addObject:[location toDictionary]];
@@ -155,7 +156,7 @@ RCT_EXPORT_METHOD(deleteLocation:(int)locationId success:(RCTResponseSenderBlock
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #deleteLocation");
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [locationManager deleteLocation:[NSNumber numberWithInt:locationId]];
+        [facade deleteLocation:[NSNumber numberWithInt:locationId]];
     });
 }
 
@@ -163,7 +164,7 @@ RCT_EXPORT_METHOD(deleteAllLocations:(RCTResponseSenderBlock)success failure:(RC
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #deleteAllLocations");
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [locationManager deleteAllLocations];
+        [facade deleteAllLocations];
     });
 }
 
@@ -181,7 +182,7 @@ RCT_EXPORT_METHOD(getLogEntries:(int)limit success:(RCTResponseSenderBlock)succe
 RCT_EXPORT_METHOD(getConfig:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #getConfig");
-    Config *config = [locationManager getConfig];
+    Config *config = [facade getConfig];
     if (config == nil) {
         config = [[Config alloc] init]; // default config
     }
@@ -191,8 +192,8 @@ RCT_EXPORT_METHOD(getConfig:(RCTResponseSenderBlock)success failure:(RCTResponse
 RCT_EXPORT_METHOD(checkStatus:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #checkStatus");
-    BOOL isRunning = [locationManager isStarted];
-    BOOL hasPermissions = [locationManager isLocationEnabled];
+    BOOL isRunning = [facade isStarted];
+    BOOL hasPermissions = [facade isLocationEnabled];
     NSInteger authorization = 1; // TODO: check authorization
 
     NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:3];
@@ -270,17 +271,29 @@ RCT_EXPORT_METHOD(endTask:(NSNumber* _Nonnull)taskKey)
     [self sendEvent:@"error" resultAsDictionary:[error userInfo]];
 }
 
--(void) onResume:(NSNotification *)notification
+- (void) onLocationPause
 {
-    RCTLogInfo(@"CDVBackgroundGeoLocation resumed");
-    [locationManager switchMode:FOREGROUND];
+    RCTLogInfo(@"RCTBackgroundGeoLocation location updates paused");
+    [self sendEvent:@"stop"];
+}
+
+- (void) onLocationResume
+{
+    RCTLogInfo(@"RCTBackgroundGeoLocation location updates resumed");
+    [self sendEvent:@"start"];
+}
+
+-(void) onAppResume:(NSNotification *)notification
+{
+    RCTLogInfo(@"RCTBackgroundGeoLocation resumed");
+    [facade switchMode:FOREGROUND];
     [self sendEvent:@"foreground"];
 }
 
--(void) onPause:(NSNotification *)notification
+-(void) onAppPause:(NSNotification *)notification
 {
-    RCTLogInfo(@"CDVBackgroundGeoLocation paused");
-    [locationManager switchMode:BACKGROUND];
+    RCTLogInfo(@"RCTBackgroundGeoLocation paused");
+    [facade switchMode:BACKGROUND];
     [self sendEvent:@"background"];
 }
 
@@ -292,15 +305,15 @@ RCT_EXPORT_METHOD(endTask:(NSNumber* _Nonnull)taskKey)
     NSDictionary *dict = [notification userInfo];
     
     if ([dict objectForKey:UIApplicationLaunchOptionsLocationKey]) {
-        DDLogInfo(@"CDVBackgroundGeolocation started by system on location event.");
+        DDLogInfo(@"RCTBackgroundGeolocation started by system on location event.");
         //        [manager switchOperationMode:BACKGROUND];
     }
 }
 
--(void) onAppTerminate
+-(void) onAppTerminate:(NSNotification *)notification
 {
-    DDLogInfo(@"CDVBackgroundGeoLocation appTerminate");
-    [locationManager onAppTerminate];
+    DDLogInfo(@"RCTBackgroundGeoLocation appTerminate");
+    [facade onAppTerminate];
 }
 
 @end
