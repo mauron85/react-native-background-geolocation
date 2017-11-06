@@ -16,12 +16,17 @@
 
 - (instancetype) init
 {
-    self = [super init];
+    if( [self class] == [AbstractLocationProvider class])
+    {
+        NSAssert(false, @"You cannot init this class directly. Instead, use a subclass e.g. DistanceFilterLocationProvider.h");
+        return nil;
+    }
     
+    self = [super init];
     if (self == nil) {
         return self;
     }
-
+    
     localNotification = [[UILocalNotification alloc] init];
     localNotification.timeZone = [NSTimeZone defaultTimeZone];
     
@@ -36,3 +41,4 @@
 }
 
 @end
+
