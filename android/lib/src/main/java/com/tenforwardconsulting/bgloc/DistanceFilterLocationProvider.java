@@ -27,6 +27,7 @@ import android.os.PowerManager;
 import android.widget.Toast;
 
 import com.marianhello.bgloc.AbstractLocationProvider;
+import com.marianhello.bgloc.Config;
 import com.marianhello.bgloc.LocationService;
 import com.marianhello.logging.LoggerManager;
 
@@ -78,7 +79,7 @@ public class DistanceFilterLocationProvider extends AbstractLocationProvider imp
 
     public DistanceFilterLocationProvider(LocationService context) {
         super(context);
-        PROVIDER_ID = 0;
+        PROVIDER_ID = Config.DISTANCE_FILTER_PROVIDER;
     }
 
     @Override
