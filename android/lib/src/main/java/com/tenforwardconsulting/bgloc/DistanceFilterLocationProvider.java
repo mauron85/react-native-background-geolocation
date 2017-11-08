@@ -183,23 +183,20 @@ public class DistanceFilterLocationProvider extends AbstractLocationProvider imp
     * 1000:  least aggressive, least accurate, best for battery.
     */
     private Integer translateDesiredAccuracy(Integer accuracy) {
-        switch (accuracy) {
-            case 1000:
-                accuracy = Criteria.ACCURACY_LOW;
-                break;
-            case 100:
-                accuracy = Criteria.ACCURACY_MEDIUM;
-                break;
-            case 10:
-                accuracy = Criteria.ACCURACY_HIGH;
-                break;
-            case 0:
-                accuracy = Criteria.ACCURACY_HIGH;
-                break;
-            default:
-                accuracy = Criteria.ACCURACY_MEDIUM;
+        if (accuracy >= 1000) {
+            return Criteria.ACCURACY_LOW;
         }
-        return accuracy;
+        if (accuracy >= 100) {
+            return Criteria.ACCURACY_MEDIUM;
+        }
+        if (accuracy >= 10) {
+            return Criteria.ACCURACY_HIGH;
+        }
+        if (accuracy >= 0) {
+            return Criteria.ACCURACY_HIGH;
+        }
+
+        return Criteria.ACCURACY_MEDIUM;
     }
 
     /**
