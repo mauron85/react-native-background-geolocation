@@ -473,26 +473,11 @@ Locations are send only in single batch, when number of locations reaches `optio
 
 Request body of posted locations is always array, even when only one location is sent.
 
-### Example of express (nodejs) server
-```javascript
-var express    = require('express');
-var bodyParser = require('body-parser');
+### Example of backend server
 
-var app = express();
+[Background-geolocation-server](https://github.com/mauron85/background-geolocation-server) is a backend server written in nodejs.
+There are instructions how to run it and simulate locations on Android, iOS Simulator and Genymotion.
 
-// parse application/json
-app.use(bodyParser.json({ type : '*/*' })); // force json
-
-app.post('/locations', function(request, response){
-    console.log('Headers:\n', request.headers);
-    console.log('Body:\n', request.body);
-    console.log('------------------------------');
-    response.sendStatus(200);
-});
-
-app.listen(3000);
-console.log('Server started...');
-```
 ## Debugging
 
 See [DEBUGGING.md](/DEBUGGING.md)
