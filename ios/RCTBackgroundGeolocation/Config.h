@@ -10,6 +10,12 @@
 
 #import <CoreLocation/CoreLocation.h>
 
+enum {
+    DISTANCE_FILTER_PROVIDER = 0,
+    ACTIVITY_PROVIDER = 1,
+    RAW_PROVIDER = 2
+};
+
 @interface Config : NSObject
 
 @property NSInteger stationaryRadius;
@@ -24,12 +30,15 @@
 @property NSMutableDictionary* httpHeaders;
 @property BOOL saveBatteryOnBackground;
 @property NSInteger maxLocations;
+@property BOOL pauseLocationUpdates;
+@property NSInteger locationProvider;
 
 + (instancetype) fromDictionary:(NSDictionary*)config;
 - (CLActivityType) decodeActivityType;
 - (NSInteger) decodeDesiredAccuracy;
 - (BOOL) hasUrl;
 - (BOOL) hasSyncUrl;
+- (NSDictionary*) toDictionary;
 
 @end;
 

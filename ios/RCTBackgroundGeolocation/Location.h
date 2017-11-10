@@ -22,9 +22,10 @@
 @property (nonatomic, retain) NSNumber *latitude;
 @property (nonatomic, retain) NSNumber *longitude;
 @property (nonatomic, retain) NSString *provider;
-@property (nonatomic, retain) NSNumber *serviceProvider;
-@property (nonatomic, retain) NSString *type;
+@property (nonatomic, retain) NSNumber *locationProvider;
+@property (nonatomic, retain) NSNumber *radius; //only for stationary locations
 @property (nonatomic) BOOL isValid;
+@property (nonatomic, retain) NSDate *recordedAt;
 
 + (instancetype) fromCLLocation:(CLLocation*)location;
 + (NSTimeInterval) locationAge:(CLLocation*)location;

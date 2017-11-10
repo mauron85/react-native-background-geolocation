@@ -102,6 +102,10 @@ public class LocationService extends Service {
     /** foreground operation mode of location provider */
     public static final int FOREGROUND_MODE = 1;
 
+
+    /** indicate if service is running */
+    private static Boolean isRunning = false;
+
     private static final int ONE_MINUTE = 1000 * 60;
     private static final int FIVE_MINUTES = 1000 * 60 * 5;
 
@@ -191,6 +195,8 @@ public class LocationService extends Service {
             handlerThread.quit(); //sorry
         }
         unregisterReceiver(connectivityChangeReceiver);
+
+        isRunning = false;
         super.onDestroy();
     }
 
@@ -241,15 +247,15 @@ public class LocationService extends Service {
             NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
             builder.setContentTitle(config.getNotificationTitle());
             builder.setContentText(config.getNotificationText());
-            if (config.getSmallNotificationIcon() != null) {
+            if (config.hasSmallNotificationIcon()) {
                 builder.setSmallIcon(getDrawableResource(config.getSmallNotificationIcon()));
             } else {
                 builder.setSmallIcon(android.R.drawable.ic_menu_mylocation);
             }
-            if (config.getLargeNotificationIcon() != null) {
+            if (config.hasLargeNotificationIcon()) {
                 builder.setLargeIcon(BitmapFactory.decodeResource(getApplication().getResources(), getDrawableResource(config.getLargeNotificationIcon())));
             }
-            if (config.getNotificationIconColor() != null) {
+            if (config.hasNotificationIconColor()) {
                 builder.setColor(this.parseNotificationIconColor(config.getNotificationIconColor()));
             }
 
@@ -267,6 +273,7 @@ public class LocationService extends Service {
         }
 
         provider.startRecording();
+        isRunning = true;
 
         //We want this service to continue running until it is explicitly stopped
         return START_STICKY;
@@ -327,7 +334,7 @@ public class LocationService extends Service {
         location.setBatchStartMillis(System.currentTimeMillis() + ONE_MINUTE); // prevent sync of not yet posted location
         persistLocation(location);
 
-        if (config.hasUrl() || config.hasSyncUrl()) {
+        if (config.hasSyncUrl()) {
             Long locationsCount = dao.locationsForSyncCount(System.currentTimeMillis());
             log.debug("Location to sync: {} threshold: {}", locationsCount, config.getSyncThreshold());
             if (locationsCount >= config.getSyncThreshold()) {
@@ -496,5 +503,9 @@ public class LocationService extends Service {
                 (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
         return activeNetwork != null && activeNetwork.isConnectedOrConnecting();
+    }
+
+    public static boolean isRunning() {
+        return LocationService.isRunning;
     }
 }

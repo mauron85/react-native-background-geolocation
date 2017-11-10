@@ -43,7 +43,7 @@ public class ActivityRecognitionLocationProvider extends AbstractLocationProvide
 
     public ActivityRecognitionLocationProvider(LocationService locationService) {
         super(locationService);
-        PROVIDER_ID = 1;
+        PROVIDER_ID = Config.ACTIVITY_PROVIDER;
     }
 
     public void onCreate() {

@@ -1,6 +1,5 @@
 //
-//  LocationUploader.m
-//  CDVBackgroundGeolocation
+//  BackgroundSync.m
 //
 //  Created by Marian Hello on 07/07/16.
 //  Copyright © 2016 mauron85. All rights reserved.
@@ -8,17 +7,17 @@
 
 #import "UIKit/UIKit.h"
 #import "Logging.h"
-#import "LocationUploader.h"
+#import "BackgroundSync.h"
 #import "SQLiteLocationDAO.h"
 
-@interface LocationUploader ()  <NSURLSessionDelegate, NSURLSessionTaskDelegate>
+@interface BackgroundSync ()  <NSURLSessionDelegate, NSURLSessionTaskDelegate>
 {
     NSURLSession *urlSession;
     NSMutableArray *tasks;
 }
 @end
 
-@implementation LocationUploader
+@implementation BackgroundSync
 
 - (instancetype) init
 {

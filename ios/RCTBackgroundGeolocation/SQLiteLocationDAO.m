@@ -26,7 +26,7 @@
     dispatch_once(&onceToken, ^{
         instance = [[self alloc] init];
     });
-    
+
     return instance;
 }
 
@@ -53,8 +53,9 @@
     @COMMA_SEP @LC_COLUMN_NAME_LONGITUDE
     @COMMA_SEP @LC_COLUMN_NAME_PROVIDER
     @COMMA_SEP @LC_COLUMN_NAME_LOCATION_PROVIDER
-    @" FROM " @LC_TABLE_NAME @" WHERE " @LC_COLUMN_NAME_VALID @" = 1 ORDER BY " @LC_COLUMN_NAME_TIME;
-    
+    @COMMA_SEP @LC_COLUMN_NAME_RECORDED_AT
+    @" FROM " @LC_TABLE_NAME @" WHERE " @LC_COLUMN_NAME_VALID @" = 1 ORDER BY " @LC_COLUMN_NAME_RECORDED_AT;
+
     [queue inDatabase:^(FMDatabase *database) {
         FMResultSet *rs = [database executeQuery:sql];
         while([rs next]) {
@@ -69,8 +70,10 @@
             location.latitude = [NSNumber numberWithDouble:[rs doubleForColumnIndex:6]];
             location.longitude = [NSNumber numberWithDouble:[rs doubleForColumnIndex:7]];
             location.provider = [rs stringForColumnIndex:8];
-            location.serviceProvider = [NSNumber numberWithInt:[rs intForColumnIndex:9]];
-            
+            location.locationProvider = [NSNumber numberWithInt:[rs intForColumnIndex:9]];
+            NSTimeInterval recordedAt = [rs longForColumnIndex:11];
+            location.recordedAt = [NSDate dateWithTimeIntervalSince1970:recordedAt];
+
             [locations addObject:location];
         }
         // TODO
@@ -78,14 +81,14 @@
 
         [rs close];
     }];
-    
+
     return locations;
 }
 
 - (NSArray<Location*>*) getAllLocations
 {
     __block NSMutableArray* locations = [[NSMutableArray alloc] init];
-    
+
     NSString *sql = @"SELECT "
     @LC_COLUMN_NAME_ID
     @COMMA_SEP @LC_COLUMN_NAME_TIME
@@ -98,8 +101,9 @@
     @COMMA_SEP @LC_COLUMN_NAME_PROVIDER
     @COMMA_SEP @LC_COLUMN_NAME_LOCATION_PROVIDER
     @COMMA_SEP @LC_COLUMN_NAME_VALID
-    @" FROM " @LC_TABLE_NAME @" ORDER BY " @LC_COLUMN_NAME_TIME;
-    
+    @COMMA_SEP @LC_COLUMN_NAME_RECORDED_AT
+    @" FROM " @LC_TABLE_NAME @" ORDER BY " @LC_COLUMN_NAME_RECORDED_AT;
+
     [queue inDatabase:^(FMDatabase *database) {
         FMResultSet *rs = [database executeQuery:sql];
         while([rs next]) {
@@ -114,24 +118,26 @@
             location.latitude = [NSNumber numberWithDouble:[rs doubleForColumnIndex:6]];
             location.longitude = [NSNumber numberWithDouble:[rs doubleForColumnIndex:7]];
             location.provider = [rs stringForColumnIndex:8];
-            location.serviceProvider = [NSNumber numberWithInt:[rs intForColumnIndex:9]];
+            location.locationProvider = [NSNumber numberWithInt:[rs intForColumnIndex:9]];
             location.isValid = [rs intForColumnIndex:10] == 1 ? YES : NO;
-            
+            NSTimeInterval recordedAt = [rs longForColumnIndex:11];
+            location.recordedAt = [NSDate dateWithTimeIntervalSince1970:recordedAt];
+
             [locations addObject:location];
         }
         // TODO
         // NSLog(@"Retrieving locations failed code: %d: message: %s", sqlite3_errcode(database), sqlite3_errmsg(database));
-        
+
         [rs close];
     }];
-    
+
     return locations;
 }
 
 - (NSArray<Location*>*) getLocationsForSync
 {
     __block NSMutableArray* locations = [[NSMutableArray alloc] init];
-    
+
     [queue inTransaction:^(FMDatabase *database, BOOL *rollback) {
         NSString *sql = @"SELECT "
         @LC_COLUMN_NAME_ID
@@ -144,7 +150,7 @@
         @COMMA_SEP @LC_COLUMN_NAME_LONGITUDE
         @COMMA_SEP @LC_COLUMN_NAME_PROVIDER
         @COMMA_SEP @LC_COLUMN_NAME_LOCATION_PROVIDER
-        @" FROM " @LC_TABLE_NAME @" WHERE " @LC_COLUMN_NAME_VALID @" = 1 ORDER BY " @LC_COLUMN_NAME_TIME;
+        @" FROM " @LC_TABLE_NAME @" WHERE " @LC_COLUMN_NAME_VALID @" = 1 ORDER BY " @LC_COLUMN_NAME_RECORDED_AT;
 
         FMResultSet *rs = [database executeQuery:sql];
         while([rs next]) {
@@ -159,8 +165,8 @@
             location.latitude = [NSNumber numberWithDouble:[rs doubleForColumnIndex:6]];
             location.longitude = [NSNumber numberWithDouble:[rs doubleForColumnIndex:7]];
             location.provider = [rs stringForColumnIndex:8];
-            location.serviceProvider = [NSNumber numberWithInt:[rs intForColumnIndex:9]];
-            
+            location.locationProvider = [NSNumber numberWithInt:[rs intForColumnIndex:9]];
+
             [locations addObject:location];
         }
         [rs close];
@@ -170,9 +176,9 @@
             NSLog(@"Deleting all location failed code: %d: message: %@", [database lastErrorCode], [database lastErrorMessage]);
         }
     }];
-    
+
     return locations;
-    
+
 }
 
 - (NSNumber*) getLocationsCount
@@ -181,21 +187,23 @@
 
     [queue inTransaction:^(FMDatabase *database, BOOL *rollback) {
         NSString *sql = @"SELECT COUNT(*) FROM " @LC_TABLE_NAME @" WHERE " @LC_COLUMN_NAME_VALID @" = 1";
-        
+
         FMResultSet *rs = [database executeQuery:sql];
         if ([rs next]) {
             rowCount = [NSNumber numberWithInt:[rs intForColumnIndex:0]];
         }
         [rs close];
     }];
-    
+
     return rowCount;
 }
 
 - (NSNumber*) persistLocation:(Location*)location intoDatabase:(FMDatabase*)database
 {
     NSNumber* locationId = nil;
-    
+    NSTimeInterval timestamp = [[NSDate date] timeIntervalSince1970];
+    NSNumber *recordedAt = [NSNumber numberWithDouble:timestamp];
+
     NSString *sql = @"INSERT INTO " @LC_TABLE_NAME @" ("
     @LC_COLUMN_NAME_TIME
     @COMMA_SEP @LC_COLUMN_NAME_ACCURACY
@@ -207,8 +215,9 @@
     @COMMA_SEP @LC_COLUMN_NAME_PROVIDER
     @COMMA_SEP @LC_COLUMN_NAME_LOCATION_PROVIDER
     @COMMA_SEP @LC_COLUMN_NAME_VALID
-    @") VALUES (?,?,?,?,?,?,?,?,?,?)";
-    
+    @COMMA_SEP @LC_COLUMN_NAME_RECORDED_AT
+    @") VALUES (?,?,?,?,?,?,?,?,?,?,?)";
+
     BOOL success = [database executeUpdate:sql,
         [NSNumber numberWithDouble:[location.time timeIntervalSince1970]],
         location.accuracy,
@@ -218,34 +227,37 @@
         location.latitude,
         location.longitude,
         location.provider ?: [NSNull null],
-        location.serviceProvider ?: [NSNull null],
-        location.isValid == YES ? @(1) : @(0)
+        location.locationProvider ?: [NSNull null],
+        location.isValid == YES ? @(1) : @(0),
+        recordedAt
     ];
-    
+
     if (success) {
         locationId = [NSNumber numberWithLongLong:[database lastInsertRowId]];
     } else {
         NSLog(@"Inserting location %@ failed code: %d: message: %@", location.time, [database lastErrorCode], [database lastErrorMessage]);
     }
-    
+
     return locationId;
 }
 
 - (NSNumber*) persistLocation:(Location*)location
 {
     __block NSNumber* locationId = nil;
-    
+
     [queue inDatabase:^(FMDatabase *database) {
         locationId = [self persistLocation:location intoDatabase:database];
     }];
-    
+
     return locationId;
 }
 
 - (NSNumber*) persistLocation:(Location*)location limitRows:(NSInteger)maxRows
 {
     __block NSNumber *locationId;
-    
+    NSTimeInterval timestamp = [[NSDate date] timeIntervalSince1970];
+    NSNumber *recordedAt = [NSNumber numberWithDouble:timestamp];
+
     [queue inDatabase:^(FMDatabase *database) {
         NSInteger rowCount = 0;
         NSString *sql = @"SELECT COUNT(*) FROM " @LC_TABLE_NAME;
@@ -255,13 +267,13 @@
             rowCount = [rs intForColumnIndex:0];
         }
         [rs close];
-        
+
         if (rowCount < maxRows) {
             locationId = [self persistLocation:location intoDatabase:database];
             return;
         } else if (rowCount > maxRows) {
             sql = [NSString stringWithFormat:@"DELETE FROM %1$@ WHERE %2$@ IN (SELECT %2$@ FROM %1$@ ORDER BY %3$@ LIMIT %4$ld);VACUUM;",
-                   @LC_TABLE_NAME, @LC_COLUMN_NAME_ID, @LC_COLUMN_NAME_TIME, (rowCount - maxRows)];
+                   @LC_TABLE_NAME, @LC_COLUMN_NAME_ID, @LC_COLUMN_NAME_RECORDED_AT, (rowCount - maxRows)];
             if (![database executeStatements:sql]) {
                 NSLog(@"%@ failed code: %d: message: %@", sql, [database lastErrorCode], [database lastErrorMessage]);
             }
@@ -278,7 +290,9 @@
         @COMMA_SEP @LC_COLUMN_NAME_PROVIDER @EQ_BIND
         @COMMA_SEP @LC_COLUMN_NAME_LOCATION_PROVIDER @EQ_BIND
         @COMMA_SEP @LC_COLUMN_NAME_VALID @EQ_BIND
-        @" WHERE " @LC_COLUMN_NAME_TIME @" = (SELECT min(" @LC_COLUMN_NAME_TIME @") FROM " @LC_TABLE_NAME @")";
+        @COMMA_SEP @LC_COLUMN_NAME_RECORDED_AT @EQ_BIND
+        @" WHERE " @LC_COLUMN_NAME_RECORDED_AT @" = (SELECT min(" @LC_COLUMN_NAME_RECORDED_AT @") FROM " @LC_TABLE_NAME @")"
+        @" ORDER BY " @LC_COLUMN_NAME_VALID @" LIMIT 1";
 
         BOOL success = [database executeUpdate:sql,
             [NSNumber numberWithDouble:[location.time timeIntervalSince1970]],
@@ -289,10 +303,11 @@
             location.latitude,
             location.longitude,
             location.provider ?: [NSNull null],
-            location.serviceProvider ?: [NSNull null],
-            location.isValid == YES ? @(1) : @(0)
+            location.locationProvider ?: [NSNull null],
+            location.isValid == YES ? @(1) : @(0),
+            recordedAt
         ];
-        
+
         if (success) {
             locationId = [NSNumber numberWithLongLong:[database lastInsertRowId]];
         } else {
@@ -300,7 +315,7 @@
         }
 
     }];
-    
+
     return locationId;
 }
 
@@ -308,16 +323,16 @@
 {
     __block BOOL success;
     NSString *sql = @"UPDATE " @LC_TABLE_NAME @" SET " @LC_COLUMN_NAME_VALID @" = 0 WHERE " @LC_COLUMN_NAME_ID @" = ?";
-    
+
     [queue inDatabase:^(FMDatabase *database) {
         if (![database executeUpdate:sql, locationId]) {
             NSLog(@"Delete location %@ failed code: %d: message: %@", locationId, [database lastErrorCode], [database lastErrorMessage]);
             success = NO;
         }
-        
+
         success = YES;
     }];
-    
+
     return success;
 }
 
@@ -325,7 +340,7 @@
 {
     __block BOOL success;
     NSString *sql = @"UPDATE " @LC_TABLE_NAME @" SET " @LC_COLUMN_NAME_VALID @" = 0";
-    
+
     [queue inDatabase:^(FMDatabase *database) {
         if ([database executeUpdate:sql]) {
             success = YES;
@@ -341,7 +356,7 @@
 - (BOOL) clearDatabase
 {
     __block BOOL success;
-    
+
     [queue inDatabase:^(FMDatabase *database) {
         NSString *sql = [NSString stringWithFormat: @"DROP TABLE %@", @LC_TABLE_NAME];
         if (![database executeStatements:sql]) {
@@ -354,7 +369,7 @@
         }
         success = YES;
     }];
-    
+
     return success;
 }
 

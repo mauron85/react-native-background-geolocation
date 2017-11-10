@@ -27,6 +27,7 @@ import android.os.PowerManager;
 import android.widget.Toast;
 
 import com.marianhello.bgloc.AbstractLocationProvider;
+import com.marianhello.bgloc.Config;
 import com.marianhello.bgloc.LocationService;
 import com.marianhello.logging.LoggerManager;
 
@@ -78,7 +79,7 @@ public class DistanceFilterLocationProvider extends AbstractLocationProvider imp
 
     public DistanceFilterLocationProvider(LocationService context) {
         super(context);
-        PROVIDER_ID = 0;
+        PROVIDER_ID = Config.DISTANCE_FILTER_PROVIDER;
     }
 
     @Override
@@ -182,23 +183,20 @@ public class DistanceFilterLocationProvider extends AbstractLocationProvider imp
     * 1000:  least aggressive, least accurate, best for battery.
     */
     private Integer translateDesiredAccuracy(Integer accuracy) {
-        switch (accuracy) {
-            case 1000:
-                accuracy = Criteria.ACCURACY_LOW;
-                break;
-            case 100:
-                accuracy = Criteria.ACCURACY_MEDIUM;
-                break;
-            case 10:
-                accuracy = Criteria.ACCURACY_HIGH;
-                break;
-            case 0:
-                accuracy = Criteria.ACCURACY_HIGH;
-                break;
-            default:
-                accuracy = Criteria.ACCURACY_MEDIUM;
+        if (accuracy >= 1000) {
+            return Criteria.ACCURACY_LOW;
         }
-        return accuracy;
+        if (accuracy >= 100) {
+            return Criteria.ACCURACY_MEDIUM;
+        }
+        if (accuracy >= 10) {
+            return Criteria.ACCURACY_HIGH;
+        }
+        if (accuracy >= 0) {
+            return Criteria.ACCURACY_HIGH;
+        }
+
+        return Criteria.ACCURACY_MEDIUM;
     }
 
     /**

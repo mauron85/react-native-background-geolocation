@@ -728,7 +728,7 @@ public class BackgroundLocation implements Parcelable {
      */
     public JSONObject toJSONObjectWithId() throws JSONException {
         JSONObject json = this.toJSONObject();
-        json.put("locationId", locationId);
+        json.put("id", locationId);
         return json;
     }
 }

@@ -1,17 +1,16 @@
 //
-//  LocationUploader.h
-//  CDVBackgroundGeolocation
+//  BackgroundSync.h
 //
 //  Created by Marian Hello on 07/07/16.
 //  Copyright © 2016 mauron85. All rights reserved.
 //
 
-#ifndef LocationUploader_h
-#define LocationUploader_h
+#ifndef BackgroundSync_h
+#define BackgroundSync_h
 
 #import <Foundation/Foundation.h>
 
-@interface LocationUploader : NSObject
+@interface BackgroundSync : NSObject
 
 - (instancetype) init;
 - (NSString*) status;
@@ -20,4 +19,4 @@
 
 @end
 
-#endif /* LocationUploader_h */
+#endif /* BackgroundSync_h */

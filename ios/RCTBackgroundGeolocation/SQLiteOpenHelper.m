@@ -133,7 +133,7 @@ static int const OPEN_READWRITE = SQLITE_OPEN_CREATE|SQLITE_OPEN_READWRITE|SQLIT
         [queue inDatabase:^(FMDatabase *database) {
             if ([database executeStatements:[SQLiteHelper createTableSqlStatement:metaTableName columns:columns]]) {
                 NSString *sql = [NSString stringWithFormat: @"INSERT INTO %@ (id,db_version,created,last_updated) VALUES (1,%d,datetime(),null)", metaTableName, 0];
-                if ([database executeUpdate:sql]) {
+                if (![database executeUpdate:sql]) {
                     NSLog(@"%@ failed code: %d: message: %@", sql, [database lastErrorCode], [database lastErrorMessage]);
                 }
             } else {
@@ -220,14 +220,18 @@ static int const OPEN_READWRITE = SQLITE_OPEN_CREATE|SQLITE_OPEN_READWRITE|SQLIT
     __block NSInteger dbVersion = -1;
     NSString *sql =[NSString stringWithFormat: @"SELECT db_version FROM %@", metaTableName];
     [queue inDatabase:^(FMDatabase *database) {
-        FMResultSet *rs = [database executeQuery:sql];
-        while ([rs next]) {
-            dbVersion = [rs intForColumnIndex:0];
+        database.logsErrors = NO;
+        NSError *lastError;
+        FMResultSet *rs = [database executeQuery:sql values:nil error:&lastError];
+        if (rs != nil) {
+            while ([rs next]) {
+                dbVersion = [rs intForColumnIndex:0];
+            }
+            [rs close];
+        } else {
+            NSLog(@"Determining db version returned error (ok for first run): %@", [lastError localizedDescription]);
         }
-        // TODO error handling
-        // NSLog(@"Retrieving meta data failed code: %d: message: %s", sqlite3_errcode(database), sqlite3_errmsg(database));
-        
-        [rs close];
+        database.logsErrors = YES;
     }];
     
     return dbVersion;

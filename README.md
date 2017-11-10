@@ -23,11 +23,23 @@ with battery-saving "circular region monitoring" and "stop detection".
 
 Plugin can be used for geolocation when app is running in foreground or background.
 
-On Android you can choose from two location location providers:
-* **ANDROID_DISTANCE_FILTER_PROVIDER**
-* **ANDROID_ACTIVITY_PROVIDER**
+You can choose from following location providers:
+* **DISTANCE_FILTER_PROVIDER**
+* **ACTIVITY_PROVIDER** (Android only)
+* **RAW_PROVIDER**
 
-See [Which provider should I use?](https://github.com/mauron85/react-native-background-geolocation/blob/master/PROVIDERS.md) for more information about providers.
+See [Which provider should I use?](/PROVIDERS.md) for more information about providers.
+
+## Breaking changes
+
+### 0.4.x:
+
+* start method doesn't accept callback (use .on("start") event)
+* stop method doesn't accept callback (use .on("stop") event)
+* for background syncing syncUrl option is required. In version 0.3.x if syncUrl was not set url was used.
+* plugin constants are in directly BackgroundGeolocation namespace. (check index.js)
+* location property locationId renamed to just id
+* iOS pauseLocationUpdates now default to false (becuase iOS docs now states that you need to restart manually if you set it to true)
 
 ## Compatibility
 
@@ -38,7 +50,7 @@ compatible with this module.
 | Module           | React Native      |
 |------------------|-------------------|
 | 0.1.0 - 0.2.0    | 0.33              |
-| 0.3.0            | >=0.47            |
+| >=0.3.0          | >=0.47            |
 
 If you are using an older version of React Native with this module some features may be buggy.
 
@@ -69,10 +81,11 @@ Repository [react-native-background-geolocation-example](https://github.com/maur
 
 ```javascript
 import React, { Component } from 'react';
+import { Alert } from 'react-native';
 import BackgroundGeolocation from 'react-native-mauron85-background-geolocation';
 
 class BgTracking extends Component {
-  componentWillMount() {
+  componentDidMount() {
     BackgroundGeolocation.configure({
       desiredAccuracy: 10,
       stationaryRadius: 50,
@@ -83,7 +96,7 @@ class BgTracking extends Component {
       debug: true,
       startOnBoot: false,
       stopOnTerminate: false,
-      locationProvider: BackgroundGeolocation.provider.ANDROID_ACTIVITY_PROVIDER,
+      locationProvider: BackgroundGeolocation.ACTIVITY_PROVIDER,
       interval: 10000,
       fastestInterval: 5000,
       activitiesInterval: 10000,
@@ -95,12 +108,19 @@ class BgTracking extends Component {
     });
 
     BackgroundGeolocation.on('location', (location) => {
-      //handle your locations here
-      Actions.sendLocation(location);
+      // handle your locations here
+      // to perform long running operation on iOS
+      // you need to create background task
+      BackgroundGeolocation.startTask(taskKey => {
+        // execute long running task
+        // eg. ajax post location
+        // IMPORTANT: task has to be ended by endTask
+        BackgroundGeolocation.endTask(taskKey);
+      });
     });
 
     BackgroundGeolocation.on('stationary', (stationaryLocation) => {
-      //handle stationary locations here
+      // handle stationary locations here
       Actions.sendLocation(stationaryLocation);
     });
 
@@ -108,9 +128,50 @@ class BgTracking extends Component {
       console.log('[ERROR] BackgroundGeolocation error:', error);
     });
 
-    BackgroundGeolocation.start(() => {
-      console.log('[DEBUG] BackgroundGeolocation started successfully');    
+    BackgroundGeolocation.on('start', () => {
+      console.log('[INFO] BackgroundGeolocation service has been started');
     });
+
+    BackgroundGeolocation.on('stop', () => {
+      console.log('[INFO] BackgroundGeolocation service has been stopped');
+    });
+
+    BackgroundGeolocation.on('authorization', (status) => {
+      console.log('[INFO] BackgroundGeolocation authorization status: ' + status);
+      if (status !== BackgroundGeolocation.AUTHORIZED) {
+        Alert.alert('Location services are disabled', 'Would you like to open location settings?', [
+          { text: 'Yes', onPress: () => BackgroundGeolocation.showLocationSettings() },
+          { text: 'No', onPress: () => console.log('No Pressed'), style: 'cancel' }
+        ]);
+      }
+    });
+
+    BackgroundGeolocation.on('background', () => {
+      console.log('[INFO] App is in background');
+    });
+
+    BackgroundGeolocation.on('foreground', () => {
+      console.log('[INFO] App is in foreground');
+    });
+
+    BackgroundGeolocation.checkStatus(status => {
+      console.log('[INFO] BackgroundGeolocation service is running', status.isRunning);
+      console.log('[INFO] BackgroundGeolocation service has permissions', status.hasPermissions);
+      console.log('[INFO] BackgroundGeolocation auth status: ' + status.authorization);
+
+      // you don't need to check status before start (this is just the example)
+      if (!status.isRunning) {
+        BackgroundGeolocation.start(); //triggers start on start event
+      }
+    });
+
+    // you can also just start without checking for status
+    // BackgroundGeolocation.start();
+  }
+
+  componentWillUnmount() {
+    // unregister all event listeners
+    BackgroundGeolocation.events.forEach(event => BackgroundGeolocation.removeAllListeners(event));
   }
 }
 
@@ -201,8 +262,15 @@ You will need to ensure that you have installed the following items through the 
 2. add `./node_modules/react-native-mauron85-background-geolocation/ios/RCTBackgroundGeolocation.xcodeproj`
 3. In the XCode project navigator, select your project, select the `Build Phases` tab and in the `Link Binary With Libraries` section add **libRCTBackgroundGeolocation.a**
 4. add `UIBackgroundModes` **location** to `Info.plist`
+
+For iOS before version 11:
+
 5. add `NSLocationAlwaysUsageDescription` **App requires background tracking** to `Info.plist`
 
+For iOS 11:
+
+5. add `NSLocationWhenInUseUsageDescription` **App requires background tracking** to `Info.plist`
+6. add `NSLocationAlwaysAndWhenInUseUsageDescription` **App requires background tracking** to `Info.plist`
 
 ## API
 
@@ -216,6 +284,7 @@ Configure options:
 
 | Parameter                 | Type              | Platform     | Description                                                                                                                                                                                                                                                                                                                                        |
 |---------------------------|-------------------|--------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `locationProvider`        | `Number`          | all          | Set location provider **@see** [PROVIDERS](/PROVIDERS.md)                                                                                                                                                                                                                                                                                          |
 | `desiredAccuracy`         | `Number`          | all          | Desired accuracy in meters. Possible values [0, 10, 100, 1000]. The lower the number, the more power devoted to GeoLocation resulting in higher accuracy readings. 1000 results in lowest power drain and least accurate readings. @see Apple docs                                                                                                 |
 | `stationaryRadius`        | `Number`          | all          | Stationary radius in meters. When stopped, the minimum distance the device must move beyond the stationary location for aggressive background-tracking to engage.                                                                                                                                                                                  |
 | `debug`                   | `Boolean`         | all          | When enabled, the plugin will emit sounds for life-cycle events of background-geolocation! See debugging sounds table.                                                                                                                                                                                                                             |
@@ -229,17 +298,17 @@ Configure options:
 | `notificationIconColor`   | `String` optional | Android      | The accent color to use for notification. Eg. **#4CAF50**.                                                                                                                                                                                                                                                                                         |
 | `notificationIconLarge`   | `String` optional | Android      | The filename of a custom notification icon. See android quirks.                                                                                                                                                                                                                                                                                    |
 | `notificationIconSmall`   | `String` optional | Android      | The filename of a custom notification icon. See android quirks.                                                                                                                                                                                                                                                                                    |
-| `locationProvider`        | `Number`          | Android      | Set location provider **@see** [wiki](https://github.com/mauron85/cordova-plugin-background-geolocation/wiki/Android-providers)                                                                                                                                                                                                                    |
 | `activityType`            | `String`          | iOS          | [AutomotiveNavigation, OtherNavigation, Fitness, Other] Presumably, this affects iOS GPS algorithm. **@see** [Apple docs](https://developer.apple.com/library/ios/documentation/CoreLocation/Reference/CLLocationManager_Class/CLLocationManager/CLLocationManager.html#//apple_ref/occ/instp/CLLocationManager/activityType) for more information |
+| `pauseLocationUpdates`    | `Boolean`         | iOS          | Pauses location updates when app is paused (default: false). **@see* [Apple docs](https://developer.apple.com/documentation/corelocation/cllocationmanager/1620553-pauseslocationupdatesautomatical?language=objc)
+| `saveBatteryOnBackground` | `Boolean`         | iOS          | Switch to less accurate significant changes and region monitory when in background (default: true)                                                                                                                                                                                                                                                 |
 | `url`                     | `String`          | all          | Server url where to send HTTP POST with recorded locations **@see** [HTTP locations posting](#http-locations-posting)                                                                                                                                                                                                                              |
 | `syncUrl`                 | `String`          | all          | Server url where to send fail to post locations **@see** [HTTP locations posting](#http-locations-posting)                                                                                                                                                                                                                                         |
 | `syncThreshold`           | `Number`          | all          | Specifies how many previously failed locations will be sent to server at once (default: 100)                                                                                                                                                                                                                                                       |
 | `httpHeaders`             | `Object`          | all          | Optional HTTP headers sent along in HTTP request                                                                                                                                                                                                                                                                                                   |
-| `saveBatteryOnBackground` | `Boolean`         | iOS          | Switch to less accurate significant changes and region monitory when in background (default)                                                                                                                                                                                                                                                       |
 | `maxLocations`            | `Number`          | all          | Limit maximum number of locations stored into db (default: 10000)                                                                                                                                                                                                                                                                                  |
 
 Following options are specific to provider as defined by locationProvider option
-### ANDROID_ACTIVITY_PROVIDER provider options
+#### ACTIVITY_PROVIDER provider options
 
 | Parameter             | Type      | Platform | Description                                                                                                                                                                                                                      |
 |-----------------------|-----------|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -252,7 +321,7 @@ Location callback will be called with one argument - location object, which trie
 
 | Callback parameter | Type      | Description                                                            |
 |--------------------|-----------|------------------------------------------------------------------------|
-| `locationId`       | `Number`  | ID of location as stored in DB (or null)                               |
+| `id`               | `Number`  | ID of location as stored in DB (or null)                               |
 | `provider`         | `String`  | gps, network, passive or fused                                         |
 | `locationProvider` | `Number`  | Location provider                                                      |
 | `debug`            | `Boolean` | true if location recorded as part of debug                             |
@@ -277,6 +346,9 @@ Platform: iOS, Android
 Stop background geolocation.
 
 ### isLocationEnabled(success, fail)
+Deprecated: This method is deprecated and will be removed in next major version.
+Use `checkStatus` as replacement.
+
 Platform: iOS, Android
 
 One time check for status of location services. In case of error, fail callback will be executed.
@@ -284,6 +356,16 @@ One time check for status of location services. In case of error, fail callback 
 | Success callback parameter | Type      | Description                                          |
 |----------------------------|-----------|------------------------------------------------------|
 | `enabled`                  | `Boolean` | true/false (true when location services are enabled) |
+
+### checkStatus(success, fail)
+
+Check status of the service
+
+| Success callback parameter | Type      | Description                                          |
+|----------------------------|-----------|------------------------------------------------------|
+| `isRunning`                | `Boolean` | true/false (true if service is running)              |
+| `hasPermissions`           | `Boolean` | true/false (true if service has permissions)         |
+| `authorization`            | `Number`  | BackgroundGeolocation.{NOT_AUTHORIZED | AUTHORIZED}  |
 
 ### showAppSettings()
 Platform: Android >= 6, iOS >= 8.0
@@ -295,41 +377,51 @@ Platform: iOS, Android
 
 Show system settings to allow configuration of current location sources.
 
-### watchLocationMode(success, fail)
-Platform: iOS, Android
-
-Method can be used to detect user changes in location services settings.
-If user enable or disable location services then success callback will be executed.
-In case or error (SettingNotFoundException) fail callback will be executed.
-
-| Success callback parameter | Type      | Description                                          |
-|----------------------------|-----------|------------------------------------------------------|
-| `enabled`                  | `Boolean` | true/false (true when location services are enabled) |
-
-### stopWatchingLocationMode()
-Platform: iOS, Android
-
-Stop watching for location mode changes.
-
 ### getLocations(success, fail)
 Platform: iOS, Android
 
 Method will return all stored locations.
 This method is useful for initial rendering of user location on a map just after application launch.
 
-NOTE: Returned locations does not contain locationId.
+NOTE: Returned locations does not contain location.id.
 
 | Success callback parameter | Type    | Description                    |
 |----------------------------|---------|--------------------------------|
 | `locations`                | `Array` | collection of stored locations |
 
 ```javascript
-backgroundGeolocation.getLocations(
+BackgroundGeolocation.getLocations(
   function (locations) {
     console.log(locations);
   }
 );
 ```
+
+### getValidLocations(success, fail)
+Platform: iOS, Android
+
+Method will return locations, which has not been yet posted to server.
+NOTE: Locations does contain location.id.
+
+| Success callback parameter | Type    | Description                    |
+|----------------------------|---------|--------------------------------|
+| `locations`                | `Array` | collection of stored locations |
+
+### deleteLocation(locationId, success, fail)
+Platform: iOS, Android
+
+Delete location with locationId.
+
+Note: Locations are not actually deleted from database to avoid gaps in locationId numbering.
+Instead locations are marked as deleted. Locations marked as deleted will not appear in output of `BackgroundGeolocation.getLocations`.
+
+### deleteAllLocations(success, fail)
+Note: You don't need to delete all locations. Plugin manages number of locations automatically and location count never exceeds number as defined by `option.maxLocations`.
+
+Platform: iOS, Android
+
+Delete all stored locations.
+
 ### switchMode(modeId, success, fail)
 Platform: iOS
 
@@ -344,50 +436,70 @@ and uses `option.stationaryRadius` only.
 
 ```
 // switch to FOREGROUND mode
-backgroundGeolocation.switchMode(backgroundGeolocation.mode.FOREGROUND);
+BackgroundGeolocation.switchMode(BackgroundGeolocation.FOREGROUND_MODE);
 
 // switch to BACKGROUND mode
-backgroundGeolocation.switchMode(backgroundGeolocation.mode.BACKGROUND);
+BackgroundGeolocation.switchMode(BackgroundGeolocation.BACKGROUND_MODE);
 ```
 
 ### getLogEntries(limit, success, fail)
-Platform: Android
+Platform: Android, iOS
 
 Return all logged events. Useful for plugin debugging.
 Parameter `limit` limits number of returned entries.
 **@see [Debugging](#debugging)** for more information.
 
+### removeAllListeners(event)
+
+Unregister all event listeners for given event
+
+## Events
+
+Event listeners can registered with:
+
+```
+const eventSubscription = BackgroundGeolocation.on('event', callbackFn);
+```
+
+And unregistered:
+
+```
+eventSubscription.remove();
+```
+
+Note: Components should unregister all event listeners in `componentWillUnmount` method,
+individually, or with `removeAllListeners`
+
+| Name                | Callback param      | Platform | Description                                                                     |
+|---------------------|---------------------|----------|----------------------------------------|
+| `location`          | `Location`          | all      | on location update                     |
+| `stationary`        | `Location`          | all      | on device entered stationary mode      |
+| `error`             | `{ code, message }` | all      | on plugin error                        |
+| `authorization`     | `status`            | all      | on user toggle location service        |
+| `foreground`        |                     | android  | app entered foreground state (visible) |
+| `background`        |                     | android  | app entered background state           |
+
+
 ## HTTP locations posting
 
-All locations updates are recorded in local db at all times. When App is in foreground or background in addition to storing location in local db, location callback function is triggered. Number of location stored in db is limited by `option.maxLocations` a never exceeds this number. Instead old locations are replaced by new ones.
+All locations updates are recorded in local db at all times. When App is in foreground or background in addition to storing location in local db,
+location callback function is triggered. Number of location stored in db is limited by `option.maxLocations` a never exceeds this number.
+Instead old locations are replaced by new ones.
 
-When `option.url` is defined, each location is also immediately posted to url defined by `option.url`. If post is successful, the location is marked as deleted in local db. All failed to post locations will be coalesced and send in some time later in one single batch. Batch sync takes place only when number of failed to post locations reaches `option.syncTreshold`.
-Optionally different url for batch sync can be defined by `option.syncUrl`. If `option.syncUrl` is not set then `option.url` will be used instead.
+When `option.url` is defined, each location is also immediately posted to url defined by `option.url`.
+If post is successful, the location is marked as deleted in local db.
 
-When only `option.syncUrl` is defined. Locations are send only in single batch, when number of locations reaches `option.syncTreshold`. (No individual location will be send)
+When `option.syncUrl` is defined all failed to post locations will be coalesced and send in some time later in one single batch.
+Batch sync takes place only when number of failed to post locations reaches `option.syncTreshold`.
+Locations are send only in single batch, when number of locations reaches `option.syncTreshold`. (No individual location will be send)
 
 Request body of posted locations is always array, even when only one location is sent.
 
-### Example of express (nodejs) server
-```javascript
-var express    = require('express');
-var bodyParser = require('body-parser');
+### Example of backend server
 
-var app = express();
+[Background-geolocation-server](https://github.com/mauron85/background-geolocation-server) is a backend server written in nodejs.
+There are instructions how to run it and simulate locations on Android, iOS Simulator and Genymotion.
 
-// parse application/json
-app.use(bodyParser.json({ type : '*/*' })); // force json
-
-app.post('/locations', function(request, response){
-    console.log('Headers:\n', request.headers);
-    console.log('Body:\n', request.body);
-    console.log('------------------------------');
-    response.sendStatus(200);
-});
-
-app.listen(3000);
-console.log('Server started...');
-```
 ## Debugging
 
 See [DEBUGGING.md](/DEBUGGING.md)

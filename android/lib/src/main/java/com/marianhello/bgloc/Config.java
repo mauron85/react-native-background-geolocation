@@ -27,8 +27,9 @@ import java.util.Iterator;
  */
 public class Config implements Parcelable
 {
-    public static final int ANDROID_DISTANCE_FILTER_PROVIDER = 0;
-    public static final int ANDROID_ACTIVITY_PROVIDER = 1;
+    public static final int DISTANCE_FILTER_PROVIDER = 0;
+    public static final int ACTIVITY_PROVIDER = 1;
+    public static final int RAW_PROVIDER = 2;
 
     // actual values should be read from strings.xml
     public static final String ACCOUNT_TYPE_RESOURCE = "account_type";
@@ -40,10 +41,10 @@ public class Config implements Parcelable
     private Boolean debug = false;
     private String notificationTitle = "Background tracking";
     private String notificationText = "ENABLED";
-    private String notificationIconLarge;
-    private String notificationIconSmall;
-    private String notificationIconColor;
-    private Integer locationProvider = ANDROID_DISTANCE_FILTER_PROVIDER;
+    private String notificationIconLarge = "";
+    private String notificationIconSmall = "";
+    private String notificationIconColor = "";
+    private Integer locationProvider = DISTANCE_FILTER_PROVIDER;
     private Integer interval = 600000; //milliseconds
     private Integer fastestInterval = 120000; //milliseconds
     private Integer activitiesInterval = 10000; //milliseconds
@@ -51,8 +52,8 @@ public class Config implements Parcelable
     private Boolean startOnBoot = false;
     private Boolean startForeground = true;
     private Boolean stopOnStillActivity = true;
-    private String url;
-    private String syncUrl;
+    private String url = "";
+    private String syncUrl = "";
     private Integer syncThreshold = 100;
     private HashMap httpHeaders = new HashMap<String, String>();
     private Integer maxLocations = 10000;
@@ -161,12 +162,18 @@ public class Config implements Parcelable
         this.debug = debug;
     }
 
+    public Boolean hasNotificationIconColor() {
+        return notificationIconColor != null && !notificationIconColor.isEmpty();
+    }
+
     public String getNotificationIconColor() {
         return notificationIconColor;
     }
 
     public void setNotificationIconColor(String notificationIconColor) {
-        if (!"null".equals(notificationIconColor)) {
+        if ("null".equals(notificationIconColor)) {
+            this.notificationIconColor = "";
+        } else {
             this.notificationIconColor = notificationIconColor;
         }
     }
@@ -176,7 +183,11 @@ public class Config implements Parcelable
     }
 
     public void setNotificationTitle(String notificationTitle) {
-        this.notificationTitle = notificationTitle;
+        if ("null".equals(notificationTitle)) {
+            this.notificationTitle = "";
+        } else {
+            this.notificationTitle = notificationTitle;
+        }
     }
 
     public String getNotificationText() {
@@ -184,7 +195,15 @@ public class Config implements Parcelable
     }
 
     public void setNotificationText(String notificationText) {
-        this.notificationText = notificationText;
+        if ("null".equals(notificationText)) {
+            this.notificationText = "";
+        } else{
+            this.notificationText = notificationText;
+        }
+    }
+
+    public Boolean hasLargeNotificationIcon() {
+        return notificationIconLarge != null && !notificationIconLarge.isEmpty();
     }
 
     public String getLargeNotificationIcon () {
@@ -192,7 +211,15 @@ public class Config implements Parcelable
     }
 
     public void setLargeNotificationIcon (String icon) {
-        this.notificationIconLarge = icon;
+        if ("null".equals(icon)) {
+            this.notificationIconLarge = "";
+        } else{
+            this.notificationIconLarge = icon;
+        }
+    }
+
+    public Boolean hasSmallNotificationIcon() {
+        return notificationIconSmall != null && !notificationIconSmall.isEmpty();
     }
 
     public String getSmallNotificationIcon () {
@@ -200,7 +227,11 @@ public class Config implements Parcelable
     }
 
     public void setSmallNotificationIcon (String icon) {
-        this.notificationIconSmall = icon;
+        if ("null".equals(icon)) {
+            this.notificationIconSmall = "";
+        } else{
+            this.notificationIconSmall = icon;
+        }
     }
 
     public Boolean getStopOnTerminate() {
@@ -220,7 +251,7 @@ public class Config implements Parcelable
     }
 
     public Boolean getStartForeground() {
-        return this.startForeground;
+        return startForeground;
     }
 
     public void setStartForeground(Boolean startForeground) {
@@ -228,7 +259,7 @@ public class Config implements Parcelable
     }
 
     public Integer getLocationProvider() {
-        return this.locationProvider;
+        return locationProvider;
     }
 
     public void setLocationProvider(Integer locationProvider) {
@@ -267,16 +298,24 @@ public class Config implements Parcelable
         this.stopOnStillActivity = stopOnStillActivity;
     }
 
+    public Boolean hasUrl() {
+        return url != null && !url.isEmpty();
+    }
+
     public String getUrl() {
-        return this.url;
+        return url;
     }
 
     public void setUrl(String url) {
-        this.url = url;
+        if ("null".equals(url)) {
+            this.url = "";
+        } else{
+            this.url = url;
+        }
     }
 
-    public Boolean hasUrl() {
-        return this.url != null && !this.url.isEmpty();
+    public Boolean hasSyncUrl() {
+        return syncUrl != null && !syncUrl.isEmpty();
     }
 
     public String getSyncUrl() {
@@ -284,11 +323,11 @@ public class Config implements Parcelable
     }
 
     public void setSyncUrl(String syncUrl) {
-        this.syncUrl = syncUrl;
-    }
-
-    public Boolean hasSyncUrl() {
-        return this.syncUrl != null && !this.syncUrl.isEmpty();
+        if ("null".equals(syncUrl)) {
+            this.syncUrl = "";
+        } else{
+            this.syncUrl = syncUrl;
+        }
     }
 
     public Integer getSyncThreshold() {
@@ -300,7 +339,7 @@ public class Config implements Parcelable
     }
 
     public HashMap<String, String> getHttpHeaders() {
-        return this.httpHeaders;
+        return httpHeaders;
     }
 
     public void setHttpHeaders(HashMap httpHeaders) {

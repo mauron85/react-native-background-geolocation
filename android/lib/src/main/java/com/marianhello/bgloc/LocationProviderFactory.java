@@ -30,11 +30,14 @@ public class LocationProviderFactory {
     public LocationProvider getInstance (Integer locationProvider) {
         LocationProvider provider;
         switch (locationProvider) {
-            case Config.ANDROID_DISTANCE_FILTER_PROVIDER:
+            case Config.DISTANCE_FILTER_PROVIDER:
                 provider = new DistanceFilterLocationProvider(context);
                 break;
-            case Config.ANDROID_ACTIVITY_PROVIDER:
+            case Config.ACTIVITY_PROVIDER:
                 provider = new ActivityRecognitionLocationProvider(context);
+                break;
+            case Config.RAW_PROVIDER:
+                provider = new RawLocationProvider(context);
                 break;
             default:
                 throw new IllegalArgumentException("Provider not found");
