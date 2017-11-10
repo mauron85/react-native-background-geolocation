@@ -1,20 +1,25 @@
 ## Changelog
 
-### [0.4.0-alpha.3] - unreleased
+### [0.4.0-rc.1] - 2017-11-10
+
 ### Fixed
 - iOS fix crash when calling getConfig before configure
 
 #### Added
-- iOS add checkStatus
-- iOS use events instead callbacks for start and stop methods
+- checkStatus if service is running
+- events [start, stop, authorization, background, foreground]
+- implement all methods for both platforms
+- new RAW_LOCATION_PROVIDER
 
-### [0.4.0-alpha.1] - unreleased
-#### Added
-- Android android.hardware.location permission
-- Android methods: getValidLocations, deleteLocation, deleteAllLocations
-- Android method checkStatus check if service is running and more
-- Android 6.0 permissions
-- Android events (mode_change, permissions_denied ...)
+#### Changed
+
+- start and stop methods doesn't accept callback (use event listeners instead)
+- for background syncing syncUrl option is required
+- on Android DISTANCE_FILTER_PROVIDER now accept arbitrary values (before only 10, 100, 1000)
+- all plugin constants are in directly BackgroundGeolocation namespace. (check index.js)
+- plugin can be started without executing configure (stored settings or defaults will be used)
+- location property locationId renamed to just id
+- iOS pauseLocationUpdates now default to false (becuase iOS docs now states that you need to restart manually if you set it to true)
 
 ### [0.3.3] - 2017-11-01
 #### Fixed

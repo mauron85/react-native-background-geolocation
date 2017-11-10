@@ -19,6 +19,17 @@ You can choose from following location providers:
 
 See [Which provider should I use?](/PROVIDERS.md) for more information about providers.
 
+## Breaking changes
+
+### 0.4.x:
+
+* start method doesn't accept callback (use .on("start") event)
+* stop method doesn't accept callback (use .on("stop") event)
+* for background syncing syncUrl option is required. In version 0.3.x if syncUrl was not set url was used.
+* plugin constants are in directly BackgroundGeolocation namespace. (check index.js)
+* location property locationId renamed to just id
+* iOS pauseLocationUpdates now default to false (becuase iOS docs now states that you need to restart manually if you set it to true)
+
 ## Compatibility
 
 Due to the rapid changes being made in the React Native ecosystem, this module will support
@@ -28,7 +39,7 @@ compatible with this module.
 | Module           | React Native      |
 |------------------|-------------------|
 | 0.1.0 - 0.2.0    | 0.33              |
-| 0.3.0            | >=0.47            |
+| >=0.3.0          | >=0.47            |
 
 If you are using an older version of React Native with this module some features may be buggy.
 
