@@ -111,15 +111,7 @@ RCT_EXPORT_METHOD(switchMode:(NSNumber*)mode success:(RCTResponseSenderBlock)suc
 RCT_EXPORT_METHOD(isLocationEnabled:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #isLocationEnabled");
-<<<<<<< HEAD
-    if ([locationManager isLocationEnabled]) {
-      success(@[[NSNull null]]);
-    } else {
-      failure(@[@"Location not enabled"]);
-    }
-=======
     success(@[@([facade isLocationEnabled])]);
->>>>>>> next
 }
 
 RCT_EXPORT_METHOD(showAppSettings)
