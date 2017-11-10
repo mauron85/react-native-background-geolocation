@@ -20,6 +20,7 @@
 - plugin can be started without executing configure (stored settings or defaults will be used)
 - location property locationId renamed to just id
 - iOS pauseLocationUpdates now default to false (becuase iOS docs now states that you need to restart manually if you set it to true)
+- iOS finish method replaced with startTask and endTask
 
 ### [0.3.3] - 2017-11-01
 #### Fixed
