@@ -1,5 +1,13 @@
 ## Changelog
 
+### [0.4.0-rc.2] - 2017-11-13
+
+### Fixed
+- Android ConfigMapper mapToConfig missing config props (fixes #122)
+
+### Added
+- Android return location id for getLocations
+
 ### [0.4.0-rc.1] - 2017-11-10
 
 ### Fixed
