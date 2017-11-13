@@ -355,7 +355,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
         try {
             Collection<BackgroundLocation> locations = dao.getAllLocations();
             for (BackgroundLocation location : locations) {
-                locationsArray.pushMap(LocationMapper.toWriteableMap(location));
+                locationsArray.pushMap(LocationMapper.toWriteableMapWithId(location));
             }
             success.invoke(locationsArray);
         } catch (Exception e) {
