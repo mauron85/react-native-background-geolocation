@@ -264,7 +264,7 @@ For iOS 11:
 
 ## API
 
-### configure(success, fail, options)
+### configure(options, success, fail)
 
 | Parameter | Type          | Platform | Description                                                                     |
 |-----------|---------------|----------|---------------------------------------------------------------------------------|
