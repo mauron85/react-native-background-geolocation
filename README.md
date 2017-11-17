@@ -80,7 +80,6 @@ class BgTracking extends Component {
       desiredAccuracy: 10,
       stationaryRadius: 50,
       distanceFilter: 50,
-      locationTimeout: 30,
       notificationTitle: 'Background tracking',
       notificationText: 'enabled',
       debug: true,
