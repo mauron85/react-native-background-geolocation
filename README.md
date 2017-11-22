@@ -465,6 +465,8 @@ individually, or with `removeAllListeners`
 | `stationary`        | `Location`          | all      | on device entered stationary mode      |
 | `error`             | `{ code, message }` | all      | on plugin error                        |
 | `authorization`     | `status`            | all      | on user toggle location service        |
+| `start`             |                     | all      | geolocation has been started           |
+| `stop`              |                     | all      | geolocation has been stopped           |
 | `foreground`        |                     | android  | app entered foreground state (visible) |
 | `background`        |                     | android  | app entered background state           |
 
