@@ -288,7 +288,7 @@ static NSString * const TAG = @"BgGeo";
     }
     
     if ([_config hasSyncUrl]) {
-        [uploader sync:_config.syncUrl onLocationThreshold:_config.syncThreshold];
+        [uploader sync:_config.syncUrl onLocationThreshold:_config.syncThreshold headers:_config.httpHeaders];
     }
 }
 

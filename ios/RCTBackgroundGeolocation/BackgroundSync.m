@@ -54,7 +54,7 @@
     }
 }
 
-- (void) sync:(NSString*)url onLocationThreshold:(NSInteger)threshold;
+- (void) sync:(NSString*)url onLocationThreshold:(NSInteger)threshold headers:(NSMutableDictionary*)headers;
 {
     SQLiteLocationDAO* locationDAO = [SQLiteLocationDAO sharedInstance];
     NSNumber *locationsCount = [locationDAO getLocationsCount];
@@ -84,6 +84,13 @@
     [request setHTTPMethod:@"POST"];
     [request setValue:[NSString stringWithFormat:@"%llu", bytesTotalForThisFile] forHTTPHeaderField:@"Content-Length"];
     [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+
+     if (headers != nil) {
+        for(id key in headers) {
+            id value = [headers objectForKey:key];
+            [request addValue:value forHTTPHeaderField:key];
+        }
+    }
     
     NSURLSessionTask *task = [urlSession uploadTaskWithRequest:request fromFile:jsonUrl];
     task.taskDescription = fileName;
