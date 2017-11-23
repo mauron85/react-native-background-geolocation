@@ -1,27 +1,18 @@
 //
 //  Logging.h
-//  CDVBackgroundGeolocation
+//  BackgroundGeolocation
 //
-//  Created by Marian Hello on 02/07/16.
-//  Copyright © 2016 mauron85. All rights reserved.
+//  Created by Marian Hello on 10/11/2017.
+//  Copyright © 2017 mauron85. All rights reserved.
 //
 
 #ifndef Logging_h
 #define Logging_h
 
-#define LOG_LEVEL_DEF ddLogLevel
 #import "CocoaLumberjack.h"
-#import "FMDBLogger.h"
 
 // we will override this global level later
 // https://github.com/CocoaLumberjack/CocoaLumberjack/issues/469
 static const DDLogLevel ddLogLevel = DDLogLevelAll;
-
-
-@interface LogReader : NSObject
-
-+ (NSArray*) getEntries:(NSString*)dbPath limit:(NSInteger)limit;
-
-@end
 
 #endif /* Logging_h */

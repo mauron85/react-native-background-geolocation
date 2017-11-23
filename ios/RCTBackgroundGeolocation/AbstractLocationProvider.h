@@ -11,6 +11,7 @@
 
 #import <UIKit/UIKit.h>
 #import <AudioToolbox/AudioToolbox.h>
+#import "BackgroundGeolocationFacade.h"
 #import "LocationDelegate.h"
 #import "Config.h"
 
@@ -27,11 +28,6 @@
 typedef NS_ENUM(NSInteger, BGErrorCode) {
     UNKNOWN_LOCATION_PROVIDER = 1,
     NOT_IMPLEMENTED = 99
-};
-
-typedef NS_ENUM(NSInteger, BGOperationMode) {
-    BACKGROUND = 0,
-    FOREGROUND = 1
 };
 
 @protocol LocationProvider <NSObject>

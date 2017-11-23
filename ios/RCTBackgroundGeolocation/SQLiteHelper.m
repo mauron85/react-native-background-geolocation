@@ -85,7 +85,7 @@
         }
         column = nextColumn;
     }
-    [sql addObject: @")"];
+    [sql addObject: @");"];
     
     return [sql componentsJoinedByString: @SPACE_SEP];
 }

@@ -1,5 +1,5 @@
 //
-//  Logging.m
+//  LogReader.m
 //  CDVBackgroundGeolocation
 //
 //  Created by Marian Hello on 02/07/16.
@@ -8,8 +8,8 @@
 
 #import <Foundation/Foundation.h>
 #import <sqlite3.h>
-#import "Logging.h"
 #import "FMDB.h"
+#import "LogReader.h"
 
 @implementation LogReader : NSObject
 

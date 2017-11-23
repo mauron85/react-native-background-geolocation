@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		418BB25C1FC720D0000E6471 /* LogReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 418BB25B1FC720D0000E6471 /* LogReader.m */; };
+		418BB25D1FC720F1000E6471 /* LogReader.h in Sources */ = {isa = PBXBuildFile; fileRef = 418BB25A1FC720CF000E6471 /* LogReader.h */; };
 		418F754A1D02DC3D0045FEA0 /* RCTBackgroundGeolocation.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = 418F75491D02DC3D0045FEA0 /* RCTBackgroundGeolocation.h */; };
 		418F754C1D02DC3D0045FEA0 /* RCTBackgroundGeolocation.m in Sources */ = {isa = PBXBuildFile; fileRef = 418F754B1D02DC3D0045FEA0 /* RCTBackgroundGeolocation.m */; };
 		4198B2401FB0D4EB00DCC96D /* LocationController.h in Sources */ = {isa = PBXBuildFile; fileRef = 4198B21F1FB08D7700DCC96D /* LocationController.h */; };
@@ -41,7 +43,6 @@
 		4198B25D1FB0D4EB00DCC96D /* BackgroundSync.h in Sources */ = {isa = PBXBuildFile; fileRef = 41E82E781D5E351900F65575 /* BackgroundSync.h */; };
 		4198B25E1FB0D4EB00DCC96D /* BackgroundSync.m in Sources */ = {isa = PBXBuildFile; fileRef = 41E82E791D5E351900F65575 /* BackgroundSync.m */; };
 		4198B25F1FB0D4EB00DCC96D /* Logging.h in Sources */ = {isa = PBXBuildFile; fileRef = 41E82E7A1D5E351900F65575 /* Logging.h */; };
-		4198B2601FB0D4EB00DCC96D /* Logging.m in Sources */ = {isa = PBXBuildFile; fileRef = 41E82E7B1D5E351900F65575 /* Logging.m */; };
 		4198B2611FB0D4EB00DCC96D /* Reachability.h in Sources */ = {isa = PBXBuildFile; fileRef = 41E82E7C1D5E351900F65575 /* Reachability.h */; };
 		4198B2621FB0D4EB00DCC96D /* Reachability.m in Sources */ = {isa = PBXBuildFile; fileRef = 41E82E7D1D5E351900F65575 /* Reachability.m */; };
 		4198B2631FB0D4EB00DCC96D /* SQLiteHelper.h in Sources */ = {isa = PBXBuildFile; fileRef = 41E82E7E1D5E351900F65575 /* SQLiteHelper.h */; };
@@ -75,6 +76,8 @@
 		41399A081D941BC7005D6B5D /* LocationDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LocationDelegate.h; sourceTree = "<group>"; };
 		41399A091D941BC7005D6B5D /* AbstractLocationProvider.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AbstractLocationProvider.h; sourceTree = "<group>"; };
 		41399A0A1D941BC7005D6B5D /* AbstractLocationProvider.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AbstractLocationProvider.m; sourceTree = "<group>"; };
+		418BB25A1FC720CF000E6471 /* LogReader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = LogReader.h; sourceTree = "<group>"; };
+		418BB25B1FC720D0000E6471 /* LogReader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = LogReader.m; sourceTree = "<group>"; };
 		418F75461D02DC3D0045FEA0 /* libRCTBackgroundGeolocation.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRCTBackgroundGeolocation.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		418F75491D02DC3D0045FEA0 /* RCTBackgroundGeolocation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTBackgroundGeolocation.h; sourceTree = "<group>"; };
 		418F754B1D02DC3D0045FEA0 /* RCTBackgroundGeolocation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCTBackgroundGeolocation.m; sourceTree = "<group>"; };
@@ -103,7 +106,6 @@
 		41E82E781D5E351900F65575 /* BackgroundSync.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BackgroundSync.h; sourceTree = "<group>"; };
 		41E82E791D5E351900F65575 /* BackgroundSync.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BackgroundSync.m; sourceTree = "<group>"; };
 		41E82E7A1D5E351900F65575 /* Logging.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Logging.h; sourceTree = "<group>"; };
-		41E82E7B1D5E351900F65575 /* Logging.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Logging.m; sourceTree = "<group>"; };
 		41E82E7C1D5E351900F65575 /* Reachability.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Reachability.h; sourceTree = "<group>"; };
 		41E82E7D1D5E351900F65575 /* Reachability.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Reachability.m; sourceTree = "<group>"; };
 		41E82E7E1D5E351900F65575 /* SQLiteHelper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SQLiteHelper.h; sourceTree = "<group>"; };
@@ -185,7 +187,8 @@
 			isa = PBXGroup;
 			children = (
 				41E82E7A1D5E351900F65575 /* Logging.h */,
-				41E82E7B1D5E351900F65575 /* Logging.m */,
+				418BB25A1FC720CF000E6471 /* LogReader.h */,
+				418BB25B1FC720D0000E6471 /* LogReader.m */,
 				41E82E681D5E351900F65575 /* CocoaLumberjack.h */,
 				41E82E691D5E351900F65575 /* CocoaLumberjack.m */,
 				41E82E6E1D5E351900F65575 /* FMDBLogger.h */,
@@ -282,6 +285,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				418BB25D1FC720F1000E6471 /* LogReader.h in Sources */,
+				418BB25C1FC720D0000E6471 /* LogReader.m in Sources */,
 				4198B2401FB0D4EB00DCC96D /* LocationController.h in Sources */,
 				4198B2411FB0D4EB00DCC96D /* LocationController.m in Sources */,
 				4198B2421FB0D4EB00DCC96D /* AbstractLocationProvider.h in Sources */,
@@ -314,7 +319,6 @@
 				4198B25D1FB0D4EB00DCC96D /* BackgroundSync.h in Sources */,
 				4198B25E1FB0D4EB00DCC96D /* BackgroundSync.m in Sources */,
 				4198B25F1FB0D4EB00DCC96D /* Logging.h in Sources */,
-				4198B2601FB0D4EB00DCC96D /* Logging.m in Sources */,
 				4198B2611FB0D4EB00DCC96D /* Reachability.h in Sources */,
 				4198B2621FB0D4EB00DCC96D /* Reachability.m in Sources */,
 				4198B2631FB0D4EB00DCC96D /* SQLiteHelper.h in Sources */,

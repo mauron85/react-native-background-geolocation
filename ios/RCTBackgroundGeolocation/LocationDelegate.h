@@ -10,7 +10,13 @@
 #define LocationDelegate_h
 
 #import "Location.h"
-#import "LocationController.h"
+//#import "LocationController.h"
+
+typedef NS_ENUM(NSInteger, BGAuthorizationStatus) {
+    NOT_DETERMINED = 0,
+    ALLOWED,
+    DENIED
+};
 
 @protocol LocationDelegate <NSObject>
 

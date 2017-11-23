@@ -17,14 +17,11 @@
 #else
 #import <React/RCTEventDispatcher.h>
 #endif
-#import "Logging.h"
 #import "BackgroundTaskManager.h"
 
 #define isNull(value) value == nil || [value isKindOfClass:[NSNull class]]
 
 @implementation RCTBackgroundGeolocation
-
-FMDBLogger *sqliteLogger;
 
 @synthesize bridge = _bridge;
 @synthesize facade;
@@ -36,18 +33,6 @@ RCT_EXPORT_MODULE();
 {
     self = [super init];
     if (self) {
-        [DDLog addLogger:[DDASLLogger sharedInstance] withLevel:DDLogLevelInfo];
-        [DDLog addLogger:[DDTTYLogger sharedInstance] withLevel:DDLogLevelDebug];
-        
-        sqliteLogger = [[FMDBLogger alloc] initWithLogDirectory:[self loggerDirectory]];
-        sqliteLogger.saveThreshold     = 1;
-        sqliteLogger.saveInterval      = 0;
-        sqliteLogger.maxAge            = 60 * 60 * 24 * 7; //  7 days
-        sqliteLogger.deleteInterval    = 60 * 60 * 24;     //  1 day
-        sqliteLogger.deleteOnEverySave = NO;
-        
-        [DDLog addLogger:sqliteLogger withLevel:DDLogLevelDebug];
-
         facade = [[BackgroundGeolocationFacade alloc] init];
         facade.delegate = self;
         
@@ -173,8 +158,7 @@ RCT_EXPORT_METHOD(getLogEntries:(int)limit success:(RCTResponseSenderBlock)succe
     RCTLogInfo(@"RCTBackgroundGeolocation #getLogEntries");
 //    limit = isNull(limit) ? [NSNumber numberWithInt:0] : limit;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        NSString *path = [[self loggerDirectory] stringByAppendingPathComponent:@"log.sqlite"];
-        NSArray *logs = [LogReader getEntries:path limit:(NSInteger)limit];
+        NSArray *logs = [facade getLogEntries:limit];
         success(@[logs]);
     });
 }
@@ -305,14 +289,14 @@ RCT_EXPORT_METHOD(endTask:(NSNumber* _Nonnull)taskKey)
     NSDictionary *dict = [notification userInfo];
     
     if ([dict objectForKey:UIApplicationLaunchOptionsLocationKey]) {
-        DDLogInfo(@"RCTBackgroundGeolocation started by system on location event.");
+        RCTLogInfo(@"RCTBackgroundGeolocation started by system on location event.");
         //        [manager switchOperationMode:BACKGROUND];
     }
 }
 
 -(void) onAppTerminate:(NSNotification *)notification
 {
-    DDLogInfo(@"RCTBackgroundGeoLocation appTerminate");
+    RCTLogInfo(@"RCTBackgroundGeoLocation appTerminate");
     [facade onAppTerminate];
 }
 

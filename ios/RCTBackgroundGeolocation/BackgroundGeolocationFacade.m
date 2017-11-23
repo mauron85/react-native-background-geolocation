@@ -18,7 +18,9 @@
 #import "SQLiteLocationDAO.h"
 #import "BackgroundTaskManager.h"
 #import "Reachability.h"
+#import "FMDBLogger.h"
 #import "Logging.h"
+#import "LogReader.h"
 #import "ActivityLocationProvider.h"
 #import "DistanceFilterLocationProvider.h"
 #import "RawLocationProvider.h"
@@ -28,6 +30,8 @@
 
 static NSString * const Domain = @"com.marianhello";
 static NSString * const TAG = @"BgGeo";
+
+FMDBLogger *sqliteLogger;
 
 @interface BackgroundGeolocationFacade () <LocationDelegate>
 @end
@@ -59,6 +63,19 @@ static NSString * const TAG = @"BgGeo";
     if (self == nil) {
         return self;
     }
+
+    
+    [DDLog addLogger:[DDASLLogger sharedInstance] withLevel:DDLogLevelInfo];
+    [DDLog addLogger:[DDTTYLogger sharedInstance] withLevel:DDLogLevelDebug];
+    
+    sqliteLogger = [[FMDBLogger alloc] initWithLogDirectory:[self loggerDirectory]];
+    sqliteLogger.saveThreshold     = 1;
+    sqliteLogger.saveInterval      = 0;
+    sqliteLogger.maxAge            = 60 * 60 * 24 * 7; //  7 days
+    sqliteLogger.deleteInterval    = 60 * 60 * 24;     //  1 day
+    sqliteLogger.deleteOnEverySave = NO;
+    
+    [DDLog addLogger:sqliteLogger withLevel:DDLogLevelDebug];
 
     _config = [[Config alloc] init];
 
@@ -271,6 +288,13 @@ static NSString * const TAG = @"BgGeo";
     return _config;
 }
 
+- (NSArray*) getLogEntries:(NSInteger)limit
+{
+    NSString *path = [[self loggerDirectory] stringByAppendingPathComponent:@"log.sqlite"];
+    NSArray *logs = [LogReader getEntries:path limit:(NSInteger)limit];
+    return logs;
+}
+
 - (void) sync:(Location *)location
 {
     if (hasConnectivity && [_config hasUrl]) {
@@ -288,7 +312,7 @@ static NSString * const TAG = @"BgGeo";
     }
     
     if ([_config hasSyncUrl]) {
-        [uploader sync:_config.syncUrl onLocationThreshold:_config.syncThreshold];
+        [uploader sync:_config.syncUrl onLocationThreshold:_config.syncThreshold withHttpHeaders:_config.httpHeaders];
     }
 }
 
@@ -310,6 +334,14 @@ static NSString * const TAG = @"BgGeo";
         // dispatch to main queue
         dispatch_sync(dispatch_get_main_queue(), completionHandle);
     }
+}
+
+- (NSString *)loggerDirectory
+{
+    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
+    NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : NSTemporaryDirectory();
+
+    return [basePath stringByAppendingPathComponent:@"SQLiteLogger"];
 }
 
 - (void) onStationaryChanged:(Location *)location

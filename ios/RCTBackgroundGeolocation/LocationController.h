@@ -7,12 +7,7 @@
 
 #import <UIKit/UIKit.h>
 #import <CoreLocation/CoreLocation.h>
-
-typedef NS_ENUM(NSInteger, BGAuthorizationStatus) {
-    NOT_DETERMINED = 0,
-    ALLOWED,
-    DENIED
-};
+#import "LocationDelegate.h"
 
 // protocol for sending location updates to another view controller
 @protocol LocationControllerDelegate

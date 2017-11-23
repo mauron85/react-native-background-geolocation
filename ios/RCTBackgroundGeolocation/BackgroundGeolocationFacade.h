@@ -12,9 +12,14 @@
 #ifndef BackgroundGeolocationFacade_h
 #define BackgroundGeolocationFacade_h
 
-#import "AbstractLocationProvider.h"
 #import "LocationDelegate.h"
+#import "Location.h"
 #import "Config.h"
+
+typedef NS_ENUM(NSInteger, BGOperationMode) {
+    BACKGROUND = 0,
+    FOREGROUND = 1
+};
 
 @interface BackgroundGeolocationFacade : NSObject
 
@@ -34,6 +39,7 @@
 - (BOOL) deleteLocation:(NSNumber*)locationId;
 - (BOOL) deleteAllLocations;
 - (Config*) getConfig;
+- (NSArray*) getLogEntries:(NSInteger)limit;
 - (void) onAppTerminate;
 
 @end
