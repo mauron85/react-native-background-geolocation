@@ -1,5 +1,8 @@
 ## Changelog
 
+### [0.4.0] - 2017-12-13
+release
+
 ### [0.4.0-rc.3] - 2017-11-23
 ### Added
 - iOS send http headers on background sync
