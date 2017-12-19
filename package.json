@@ -1,6 +1,6 @@
 {
   "name": "react-native-mauron85-background-geolocation",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "optimized background location tracking",
   "main": "index.js",
   "scripts": {
@@ -30,6 +30,6 @@
   },
   "homepage": "https://github.com/mauron85/react-native-background-geolocation#readme",
   "peerDependencies": {
-    "react-native": "^0.49.0"
+    "react-native": ">0.49.0"
   }
 }
