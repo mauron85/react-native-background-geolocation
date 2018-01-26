@@ -7,10 +7,12 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v4.util.TimeUtils;
 
-import org.json.JSONObject;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 public class BackgroundLocation implements Parcelable {
+    public static final String BUNDLE_KEY = "location";
+
     private Long locationId = null;
     private Integer locationProvider = null;
     private Long batchStartMillis = null;
@@ -67,7 +69,7 @@ public class BackgroundLocation implements Parcelable {
      * @param radius radius of stationary region
      */
     public BackgroundLocation(Integer locationProvider, Location location, float radius) {
-        this(null, location);
+        this(locationProvider, location);
         setRadius(radius);
     }
 
@@ -706,6 +708,7 @@ public class BackgroundLocation implements Parcelable {
     public JSONObject toJSONObject() throws JSONException {
         JSONObject json = new JSONObject();
         json.put("provider", provider);
+        json.put("locationProvider", locationProvider);
         json.put("time", time);
         json.put("latitude", latitude);
         json.put("longitude", longitude);
@@ -714,7 +717,6 @@ public class BackgroundLocation implements Parcelable {
         if (hasAltitude) json.put("altitude", altitude);
         if (hasBearing) json.put("bearing", bearing);
         if (hasRadius) json.put("radius", radius);
-        json.put("locationProvider", locationProvider);
 
         return json;
   	}
@@ -730,5 +732,33 @@ public class BackgroundLocation implements Parcelable {
         JSONObject json = this.toJSONObject();
         json.put("id", locationId);
         return json;
+    }
+
+    public Object getValueForKey(String key) {
+        if ("@id".equals(key)) {
+            return locationId;
+        } else if ("@provider".equals(key)) {
+            return provider;
+        } else if ("@locationProvider".equals(key)) {
+            return locationProvider;
+        } else if ("@time".equals(key)) {
+            return time;
+        } else if ("@latitude".equals(key)) {
+            return latitude;
+        } else if ("@longitude".equals(key)) {
+            return longitude;
+        } else if ("@accuracy".equals(key)) {
+            return accuracy;
+        } else if ("@speed".equals(key)) {
+            return speed;
+        } else if ("@altitude".equals(key)) {
+            return altitude;
+        } else if ("@bearing".equals(key)) {
+            return bearing;
+        } else if ("@radius".equals(key)) {
+            return radius;
+        }
+
+        return null;
     }
 }

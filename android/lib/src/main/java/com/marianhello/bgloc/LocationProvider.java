@@ -9,15 +9,16 @@ This is a new class
 
 package com.marianhello.bgloc;
 
-import android.location.Location;
-
 /**
- * DummyContentProvider
+ * LocationProvider interface
  */
 public interface LocationProvider {
 
     void onCreate();
     void onDestroy();
-    void startRecording();
-    void stopRecording();
+    void onStart();
+    void onStop();
+    void onSwitchMode(int mode);
+    void onConfigure(Config config);
+    boolean isStarted();
 }

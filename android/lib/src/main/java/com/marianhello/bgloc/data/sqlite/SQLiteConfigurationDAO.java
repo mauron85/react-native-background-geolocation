@@ -11,6 +11,7 @@ import org.json.JSONException;
 
 import com.marianhello.bgloc.Config;
 import com.marianhello.bgloc.data.ConfigurationDAO;
+import com.marianhello.bgloc.data.LocationTemplateFactory;
 import com.marianhello.bgloc.data.sqlite.SQLiteConfigurationContract.ConfigurationEntry;
 
 public class SQLiteConfigurationDAO implements ConfigurationDAO {
@@ -31,7 +32,7 @@ public class SQLiteConfigurationDAO implements ConfigurationDAO {
     Cursor cursor = null;
 
     String[] columns = {
-    	ConfigurationEntry._ID,
+      ConfigurationEntry._ID,
       ConfigurationEntry.COLUMN_NAME_RADIUS,
       ConfigurationEntry.COLUMN_NAME_DISTANCE_FILTER,
       ConfigurationEntry.COLUMN_NAME_DESIRED_ACCURACY,
@@ -53,7 +54,8 @@ public class SQLiteConfigurationDAO implements ConfigurationDAO {
       ConfigurationEntry.COLUMN_NAME_SYNC_URL,
       ConfigurationEntry.COLUMN_NAME_SYNC_THRESHOLD,
       ConfigurationEntry.COLUMN_NAME_HEADERS,
-      ConfigurationEntry.COLUMN_NAME_MAX_LOCATIONS
+      ConfigurationEntry.COLUMN_NAME_MAX_LOCATIONS,
+      ConfigurationEntry.COLUMN_NAME_TEMPLATE
     };
 
     String whereClause = null;
@@ -95,7 +97,7 @@ public class SQLiteConfigurationDAO implements ConfigurationDAO {
   }
 
   private Config hydrate(Cursor c) throws JSONException {
-    Config config = new Config();
+    Config config = Config.getDefault();
     config.setStationaryRadius(c.getFloat(c.getColumnIndex(ConfigurationEntry.COLUMN_NAME_RADIUS)));
     config.setDistanceFilter(c.getInt(c.getColumnIndex(ConfigurationEntry.COLUMN_NAME_DISTANCE_FILTER)));
     config.setDesiredAccuracy(c.getInt(c.getColumnIndex(ConfigurationEntry.COLUMN_NAME_DESIRED_ACCURACY)));
@@ -118,6 +120,7 @@ public class SQLiteConfigurationDAO implements ConfigurationDAO {
     config.setSyncThreshold(c.getInt(c.getColumnIndex(ConfigurationEntry.COLUMN_NAME_SYNC_THRESHOLD)));
     config.setHttpHeaders(new JSONObject(c.getString(c.getColumnIndex(ConfigurationEntry.COLUMN_NAME_HEADERS))));
     config.setMaxLocations(c.getInt(c.getColumnIndex(ConfigurationEntry.COLUMN_NAME_MAX_LOCATIONS)));
+    config.setTemplate(LocationTemplateFactory.fromJSONString(c.getString(c.getColumnIndex(ConfigurationEntry.COLUMN_NAME_TEMPLATE))));
 
     return config;
   }
@@ -147,6 +150,7 @@ public class SQLiteConfigurationDAO implements ConfigurationDAO {
     values.put(ConfigurationEntry.COLUMN_NAME_SYNC_THRESHOLD, config.getSyncThreshold());
     values.put(ConfigurationEntry.COLUMN_NAME_HEADERS, new JSONObject(config.getHttpHeaders()).toString());
     values.put(ConfigurationEntry.COLUMN_NAME_MAX_LOCATIONS, config.getMaxLocations());
+    values.put(ConfigurationEntry.COLUMN_NAME_TEMPLATE, config.hasTemplate() ? config.getTemplate().toString() : null);
 
     return values;
   }

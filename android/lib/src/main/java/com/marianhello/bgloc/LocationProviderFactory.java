@@ -21,29 +21,30 @@ import java.lang.IllegalArgumentException;
  */
 public class LocationProviderFactory {
 
-    private LocationService context;
+    private LocationService mLocationService;
+    private Config mConfig;
 
-    public LocationProviderFactory(LocationService context) {
-        this.context = context;
+    public LocationProviderFactory(LocationService locationService, Config config) {
+        this.mLocationService = locationService;
+        this.mConfig = config;
     };
 
     public LocationProvider getInstance (Integer locationProvider) {
         LocationProvider provider;
         switch (locationProvider) {
             case Config.DISTANCE_FILTER_PROVIDER:
-                provider = new DistanceFilterLocationProvider(context);
+                provider = new DistanceFilterLocationProvider(mLocationService, mConfig);
                 break;
             case Config.ACTIVITY_PROVIDER:
-                provider = new ActivityRecognitionLocationProvider(context);
+                provider = new ActivityRecognitionLocationProvider(mLocationService, mConfig);
                 break;
             case Config.RAW_PROVIDER:
-                provider = new RawLocationProvider(context);
+                provider = new RawLocationProvider(mLocationService, mConfig);
                 break;
             default:
                 throw new IllegalArgumentException("Provider not found");
         }
 
-        provider.onCreate();
         return provider;
     }
 }

@@ -24,12 +24,12 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.PowerManager;
-import android.widget.Toast;
 
 import com.marianhello.bgloc.AbstractLocationProvider;
 import com.marianhello.bgloc.Config;
 import com.marianhello.bgloc.LocationService;
 import com.marianhello.logging.LoggerManager;
+import com.marianhello.utils.Tone;
 
 import java.util.List;
 
@@ -60,7 +60,9 @@ public class DistanceFilterLocationProvider extends AbstractLocationProvider imp
 
     private PowerManager.WakeLock wakeLock;
 
+    private Location lastLocation;
     private Location stationaryLocation;
+    private float stationaryRadius;
     private PendingIntent stationaryAlarmPI;
     private PendingIntent stationaryLocationPollingPI;
     private long stationaryLocationPollingInterval;
@@ -68,17 +70,17 @@ public class DistanceFilterLocationProvider extends AbstractLocationProvider imp
     private PendingIntent singleUpdatePI;
     private Integer scaledDistanceFilter;
 
-    private String activity;
     private Criteria criteria;
 
     private LocationManager locationManager;
     private AlarmManager alarmManager;
-    private NotificationManager notificationManager;
 
-    private org.slf4j.Logger log;
+    private org.slf4j.Logger logger;
 
-    public DistanceFilterLocationProvider(LocationService context) {
-        super(context);
+    private boolean isStarted = false;
+
+    public DistanceFilterLocationProvider(LocationService locationService, Config config) {
+        super(locationService, config);
         PROVIDER_ID = Config.DISTANCE_FILTER_PROVIDER;
     }
 
@@ -86,29 +88,29 @@ public class DistanceFilterLocationProvider extends AbstractLocationProvider imp
     public void onCreate() {
         super.onCreate();
 
-        log = LoggerManager.getLogger(DistanceFilterLocationProvider.class);
-        log.info("Creating DistanceFilterLocationProvider");
+        logger = LoggerManager.getLogger(DistanceFilterLocationProvider.class);
+        logger.info("Creating DistanceFilterLocationProvider");
 
-        locationManager = (LocationManager) locationService.getSystemService(Context.LOCATION_SERVICE);
-        alarmManager = (AlarmManager) locationService.getSystemService(Context.ALARM_SERVICE);
+        locationManager = (LocationManager) mLocationService.getSystemService(Context.LOCATION_SERVICE);
+        alarmManager = (AlarmManager) mLocationService.getSystemService(Context.ALARM_SERVICE);
 
         // Stop-detection PI
-        stationaryAlarmPI = PendingIntent.getBroadcast(locationService, 0, new Intent(STATIONARY_ALARM_ACTION), 0);
+        stationaryAlarmPI = PendingIntent.getBroadcast(mLocationService, 0, new Intent(STATIONARY_ALARM_ACTION), 0);
         registerReceiver(stationaryAlarmReceiver, new IntentFilter(STATIONARY_ALARM_ACTION));
 
         // Stationary region PI
-        stationaryRegionPI = PendingIntent.getBroadcast(locationService, 0, new Intent(STATIONARY_REGION_ACTION), PendingIntent.FLAG_CANCEL_CURRENT);
+        stationaryRegionPI = PendingIntent.getBroadcast(mLocationService, 0, new Intent(STATIONARY_REGION_ACTION), PendingIntent.FLAG_CANCEL_CURRENT);
         registerReceiver(stationaryRegionReceiver, new IntentFilter(STATIONARY_REGION_ACTION));
 
         // Stationary location monitor PI
-        stationaryLocationPollingPI = PendingIntent.getBroadcast(locationService, 0, new Intent(STATIONARY_LOCATION_MONITOR_ACTION), 0);
+        stationaryLocationPollingPI = PendingIntent.getBroadcast(mLocationService, 0, new Intent(STATIONARY_LOCATION_MONITOR_ACTION), 0);
         registerReceiver(stationaryLocationMonitorReceiver, new IntentFilter(STATIONARY_LOCATION_MONITOR_ACTION));
 
         // One-shot PI (TODO currently unused)
-        singleUpdatePI = PendingIntent.getBroadcast(locationService, 0, new Intent(SINGLE_LOCATION_UPDATE_ACTION), PendingIntent.FLAG_CANCEL_CURRENT);
+        singleUpdatePI = PendingIntent.getBroadcast(mLocationService, 0, new Intent(SINGLE_LOCATION_UPDATE_ACTION), PendingIntent.FLAG_CANCEL_CURRENT);
         registerReceiver(singleUpdateReceiver, new IntentFilter(SINGLE_LOCATION_UPDATE_ACTION));
 
-        PowerManager pm = (PowerManager) locationService.getSystemService(Context.POWER_SERVICE);
+        PowerManager pm = (PowerManager) mLocationService.getSystemService(Context.POWER_SERVICE);
         wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, TAG);
         wakeLock.acquire();
 
@@ -120,14 +122,55 @@ public class DistanceFilterLocationProvider extends AbstractLocationProvider imp
         criteria.setCostAllowed(true);
     }
 
-    public void startRecording() {
-        log.info("Start recording");
-        scaledDistanceFilter = config.getDistanceFilter();
+    @Override
+    public void onStart() {
+        if (isStarted) {
+            return;
+        }
+
+        logger.info("Start recording");
+        scaledDistanceFilter = mConfig.getDistanceFilter();
         setPace(false);
+        isStarted = true;
     }
 
-    public void stopRecording() {
-        log.info("stopRecording not implemented yet");
+    @Override
+    public void onStop() {
+        if (!isStarted) {
+            return;
+        }
+
+        try {
+            locationManager.removeUpdates(this);
+            locationManager.removeProximityAlert(stationaryRegionPI);
+        } catch (SecurityException e) {
+            //noop
+        } finally {
+            isStarted = false;
+        }
+    }
+
+//    @Override
+//    public void onSwitchMode(int mode) {
+//        if (mode == BackgroundGeolocationFacade.BACKGROUND_MODE) {
+//            setPace(false);
+//        } else if (mode == BackgroundGeolocationFacade.FOREGROUND_MODE) {
+//            setPace(true);
+//        }
+//    }
+
+    @Override
+    public void onConfigure(Config config) {
+        mConfig = config;
+        if (isStarted) {
+            onStop();
+            onStart();
+        }
+    }
+
+    @Override
+    public boolean isStarted() {
+        return isStarted;
     }
 
     /**
@@ -135,7 +178,7 @@ public class DistanceFilterLocationProvider extends AbstractLocationProvider imp
      * @param value set true to engage "aggressive", battery-consuming tracking, false for stationary-region tracking
      */
     private void setPace(Boolean value) {
-        log.info("Setting pace: {}", value);
+        logger.info("Setting pace: {}", value);
 
         Boolean wasMoving   = isMoving;
         isMoving            = value;
@@ -146,7 +189,7 @@ public class DistanceFilterLocationProvider extends AbstractLocationProvider imp
         try {
             locationManager.removeUpdates(this);
             criteria.setAccuracy(Criteria.ACCURACY_FINE);
-            criteria.setHorizontalAccuracy(translateDesiredAccuracy(config.getDesiredAccuracy()));
+            criteria.setHorizontalAccuracy(translateDesiredAccuracy(mConfig.getDesiredAccuracy()));
             criteria.setPowerRequirement(Criteria.POWER_HIGH);
 
             if (isMoving) {
@@ -169,19 +212,19 @@ public class DistanceFilterLocationProvider extends AbstractLocationProvider imp
                     }
                 }
             } else {
-                locationManager.requestLocationUpdates(locationManager.getBestProvider(criteria, true), config.getInterval(), scaledDistanceFilter, this);
+                locationManager.requestLocationUpdates(locationManager.getBestProvider(criteria, true), mConfig.getInterval(), scaledDistanceFilter, this);
             }
         } catch (SecurityException e) {
-            log.error("Security exception: {}", e.getMessage());
+            logger.error("Security exception: {}", e.getMessage());
             this.handleSecurityException(e);
         }
     }
 
     /**
-    * Translates a number representing desired accuracy of Geolocation system from set [0, 10, 100, 1000].
-    * 0:  most aggressive, most accurate, worst battery drain
-    * 1000:  least aggressive, least accurate, best for battery.
-    */
+     * Translates a number representing desired accuracy of Geolocation system from set [0, 10, 100, 1000].
+     * 0:  most aggressive, most accurate, worst battery drain
+     * 1000:  least aggressive, least accurate, best for battery.
+     */
     private Integer translateDesiredAccuracy(Integer accuracy) {
         if (accuracy >= 1000) {
             return Criteria.ACCURACY_LOW;
@@ -212,9 +255,9 @@ public class DistanceFilterLocationProvider extends AbstractLocationProvider imp
         String bestProvider = null;
         float bestAccuracy = Float.MAX_VALUE;
         long bestTime = Long.MIN_VALUE;
-        long minTime = System.currentTimeMillis() - config.getInterval();
+        long minTime = System.currentTimeMillis() - mConfig.getInterval();
 
-        log.info("Fetching last best location: radius={} minTime={}", config.getStationaryRadius(), minTime);
+        logger.info("Fetching last best location: radius={} minTime={}", mConfig.getStationaryRadius(), minTime);
 
         try {
             // Iterate through all the providers on the system, keeping
@@ -224,7 +267,7 @@ public class DistanceFilterLocationProvider extends AbstractLocationProvider imp
             for (String provider: matchingProviders) {
                 Location location = locationManager.getLastKnownLocation(provider);
                 if (location != null) {
-                    log.debug("Test provider={} lat={} lon={} acy={} v={}m/s time={}", provider, location.getLatitude(), location.getLongitude(), location.getAccuracy(), location.getSpeed(), location.getTime());
+                    logger.debug("Test provider={} lat={} lon={} acy={} v={}m/s time={}", provider, location.getLatitude(), location.getLongitude(), location.getAccuracy(), location.getSpeed(), location.getTime());
                     float accuracy = location.getAccuracy();
                     long time = location.getTime();
                     if ((time > minTime && accuracy < bestAccuracy)) {
@@ -237,10 +280,10 @@ public class DistanceFilterLocationProvider extends AbstractLocationProvider imp
             }
 
             if (bestResult != null) {
-                log.debug("Best result found provider={} lat={} lon={} acy={} v={}m/s time={}", bestProvider, bestResult.getLatitude(), bestResult.getLongitude(), bestResult.getAccuracy(), bestResult.getSpeed(), bestResult.getTime());
+                logger.debug("Best result found provider={} lat={} lon={} acy={} v={}m/s time={}", bestProvider, bestResult.getLatitude(), bestResult.getLongitude(), bestResult.getAccuracy(), bestResult.getSpeed(), bestResult.getTime());
             }
         } catch (SecurityException e) {
-            log.error("Security exception: {}", e.getMessage());
+            logger.error("Security exception: {}", e.getMessage());
             this.handleSecurityException(e);
         }
 
@@ -248,16 +291,15 @@ public class DistanceFilterLocationProvider extends AbstractLocationProvider imp
     }
 
     public void onLocationChanged(Location location) {
-        log.debug("Location change: {} isMoving={}", location.toString(), isMoving);
+        logger.debug("Location change: {} isMoving={}", location.toString(), isMoving);
 
         if (!isMoving && !isAcquiringStationaryLocation && stationaryLocation==null) {
             // Perhaps our GPS signal was interupted, re-acquire a stationaryLocation now.
             setPace(false);
         }
 
-        if (config.isDebugging()) {
-            Toast.makeText(locationService, "mv:" + isMoving + ",acy:" + location.getAccuracy() + ",v:" + location.getSpeed() + ",df:" + scaledDistanceFilter, Toast.LENGTH_LONG).show();
-        }
+        showDebugToast( "mv:" + isMoving + ",acy:" + location.getAccuracy() + ",v:" + location.getSpeed() + ",df:" + scaledDistanceFilter);
+
         if (isAcquiringStationaryLocation) {
             if (stationaryLocation == null || stationaryLocation.getAccuracy() > location.getAccuracy()) {
                 stationaryLocation = location;
@@ -265,47 +307,39 @@ public class DistanceFilterLocationProvider extends AbstractLocationProvider imp
             if (++locationAcquisitionAttempts == MAX_STATIONARY_ACQUISITION_ATTEMPTS) {
                 isAcquiringStationaryLocation = false;
                 startMonitoringStationaryRegion(stationaryLocation);
-                if (config.isDebugging()) {
-                    startTone(Tone.LONG_BEEP);
-                }
+                handleStationary(stationaryLocation, stationaryRadius);
+                return;
             } else {
                 // Unacceptable stationary-location: bail-out and wait for another.
-                if (config.isDebugging()) {
-                    startTone(Tone.BEEP);
-                }
+                playDebugTone(Tone.BEEP);
                 return;
             }
         } else if (isAcquiringSpeed) {
             if (++locationAcquisitionAttempts == MAX_SPEED_ACQUISITION_ATTEMPTS) {
                 // Got enough samples, assume we're confident in reported speed now.  Play "woohoo" sound.
-                if (config.isDebugging()) {
-                    startTone(Tone.DOODLY_DOO);
-                }
+                playDebugTone(Tone.DOODLY_DOO);
                 isAcquiringSpeed = false;
                 scaledDistanceFilter = calculateDistanceFilter(location.getSpeed());
                 setPace(true);
             } else {
-                if (config.isDebugging()) {
-                    startTone(Tone.BEEP);
-                }
+                playDebugTone(Tone.BEEP);
                 return;
             }
         } else if (isMoving) {
-            if (config.isDebugging()) {
-                startTone(Tone.BEEP);
-            }
+            playDebugTone(Tone.BEEP);
+
             // Only reset stationaryAlarm when accurate speed is detected, prevents spurious locations from resetting when stopped.
-            if ( (location.getSpeed() >= 1) && (location.getAccuracy() <= config.getStationaryRadius()) ) {
+            if ( (location.getSpeed() >= 1) && (location.getAccuracy() <= mConfig.getStationaryRadius()) ) {
                 resetStationaryAlarm();
             }
             // Calculate latest distanceFilter, if it changed by 5 m/s, we'll reconfigure our pace.
             Integer newDistanceFilter = calculateDistanceFilter(location.getSpeed());
             if (newDistanceFilter != scaledDistanceFilter.intValue()) {
-                log.info("Updating distanceFilter: new={} old={}", newDistanceFilter, scaledDistanceFilter);
+                logger.info("Updating distanceFilter: new={} old={}", newDistanceFilter, scaledDistanceFilter);
                 scaledDistanceFilter = newDistanceFilter;
                 setPace(true);
             }
-            if (location.distanceTo(lastLocation) < config.getDistanceFilter()) {
+            if (location.distanceTo(lastLocation) < mConfig.getDistanceFilter()) {
                 return;
             }
         } else if (stationaryLocation != null) {
@@ -322,10 +356,10 @@ public class DistanceFilterLocationProvider extends AbstractLocationProvider imp
     }
 
     private Integer calculateDistanceFilter(Float speed) {
-        Double newDistanceFilter = (double) config.getDistanceFilter();
+        Double newDistanceFilter = (double) mConfig.getDistanceFilter();
         if (speed < 100) {
             float roundedDistanceFilter = (round(speed / 5) * 5);
-            newDistanceFilter = pow(roundedDistanceFilter, 2) + (double) config.getDistanceFilter();
+            newDistanceFilter = pow(roundedDistanceFilter, 2) + (double) mConfig.getDistanceFilter();
         }
         return (newDistanceFilter.intValue() < 1000) ? newDistanceFilter.intValue() : 1000;
     }
@@ -334,24 +368,26 @@ public class DistanceFilterLocationProvider extends AbstractLocationProvider imp
         try {
             locationManager.removeUpdates(this);
 
-            float stationaryRadius = config.getStationaryRadius();
-            float proximityAccuracy = (location.getAccuracy() < stationaryRadius) ? stationaryRadius : location.getAccuracy();
+            float stationaryRadius = mConfig.getStationaryRadius();
+            float proximityRadius = (location.getAccuracy() < stationaryRadius) ? stationaryRadius : location.getAccuracy();
             stationaryLocation = location;
 
-            log.info("startMonitoringStationaryRegion: lat={} lon={} acy={}", location.getLatitude(), location.getLongitude(), proximityAccuracy);
+            logger.info("startMonitoringStationaryRegion: lat={} lon={} acy={}", location.getLatitude(), location.getLongitude(), proximityRadius);
 
             // Here be the execution of the stationary region monitor
             locationManager.addProximityAlert(
                     location.getLatitude(),
                     location.getLongitude(),
-                    proximityAccuracy,
+                    proximityRadius,
                     (long)-1,
                     stationaryRegionPI
             );
 
+            this.stationaryRadius = proximityRadius;
+
             startPollingStationaryLocation(STATIONARY_LOCATION_POLLING_INTERVAL_LAZY);
         } catch (SecurityException e) {
-            log.error("Security exception: {}", e.getMessage());
+            logger.error("Security exception: {}", e.getMessage());
             this.handleSecurityException(e);
         }
     }
@@ -361,11 +397,9 @@ public class DistanceFilterLocationProvider extends AbstractLocationProvider imp
      */
     public void onExitStationaryRegion(Location location) {
         // Filter-out spurious region-exits:  must have at least a little speed to move out of stationary-region
-        if (config.isDebugging()) {
-            startTone(Tone.BEEP_BEEP_BEEP);
-        }
+        playDebugTone(Tone.BEEP_BEEP_BEEP);
 
-        log.info("Exited stationary: lat={} long={} acy={}}'",
+        logger.info("Exited stationary: lat={} long={} acy={}}'",
                 location.getLatitude(), location.getLongitude(), location.getAccuracy());
 
         try {
@@ -376,7 +410,7 @@ public class DistanceFilterLocationProvider extends AbstractLocationProvider imp
             // Engage aggressive tracking.
             this.setPace(true);
         } catch (SecurityException e) {
-            log.error("Security exception: {}", e.getMessage());
+            logger.error("Security exception: {}", e.getMessage());
             this.handleSecurityException(e);
         }
     }
@@ -391,22 +425,19 @@ public class DistanceFilterLocationProvider extends AbstractLocationProvider imp
     }
 
     public void onPollStationaryLocation(Location location) {
-        float stationaryRadius = config.getStationaryRadius();
+        float stationaryRadius = mConfig.getStationaryRadius();
         if (isMoving) {
             return;
         }
-        if (config.isDebugging()) {
-            startTone(Tone.BEEP);
-        }
+        playDebugTone(Tone.BEEP);
+
         float distance = abs(location.distanceTo(stationaryLocation) - stationaryLocation.getAccuracy() - location.getAccuracy());
 
-        if (config.isDebugging()) {
-            Toast.makeText(locationService, "Stationary exit in " + (stationaryRadius-distance) + "m", Toast.LENGTH_LONG).show();
-        }
+        showDebugToast("Stationary exit in " + (stationaryRadius-distance) + "m");
 
         // TODO http://www.cse.buffalo.edu/~demirbas/publications/proximity.pdf
         // determine if we're almost out of stationary-distance and increase monitoring-rate.
-        log.info("Distance from stationary location: {}", distance);
+        logger.info("Distance from stationary location: {}", distance);
         if (distance > stationaryRadius) {
             onExitStationaryRegion(location);
         } else if (distance > 0) {
@@ -417,28 +448,28 @@ public class DistanceFilterLocationProvider extends AbstractLocationProvider imp
     }
 
     /**
-    * Broadcast receiver for receiving a single-update from LocationManager.
-    */
+     * Broadcast receiver for receiving a single-update from LocationManager.
+     */
     private BroadcastReceiver singleUpdateReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String key = LocationManager.KEY_LOCATION_CHANGED;
             Location location = (Location)intent.getExtras().get(key);
             if (location != null) {
-                log.debug("Single location update: " + location.toString());
+                logger.debug("Single location update: " + location.toString());
                 onPollStationaryLocation(location);
             }
         }
     };
 
     /**
-    * Broadcast receiver which detects a user has stopped for a long enough time to be determined as STOPPED
-    */
+     * Broadcast receiver which detects a user has stopped for a long enough time to be determined as STOPPED
+     */
     private BroadcastReceiver stationaryAlarmReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent)
         {
-            log.info("stationaryAlarm fired");
+            logger.info("stationaryAlarm fired");
             setPace(false);
         }
     };
@@ -448,30 +479,28 @@ public class DistanceFilterLocationProvider extends AbstractLocationProvider imp
      * This is required because latest Android proximity-alerts don't seem to operate while suspended.  Regularly polling
      * the location seems to trigger the proximity-alerts while suspended.
      */
-     private BroadcastReceiver stationaryLocationMonitorReceiver = new BroadcastReceiver() {
-         @Override
-         public void onReceive(Context context, Intent intent)
-         {
-             log.info("Stationary location monitor fired");
-             if (config.isDebugging()) {
-                 startTone(Tone.DIALTONE);
-             }
+    private BroadcastReceiver stationaryLocationMonitorReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent)
+        {
+            logger.info("Stationary location monitor fired");
+            playDebugTone(Tone.DIALTONE);
 
-             criteria.setAccuracy(Criteria.ACCURACY_FINE);
-             criteria.setHorizontalAccuracy(Criteria.ACCURACY_HIGH);
-             criteria.setPowerRequirement(Criteria.POWER_HIGH);
+            criteria.setAccuracy(Criteria.ACCURACY_FINE);
+            criteria.setHorizontalAccuracy(Criteria.ACCURACY_HIGH);
+            criteria.setPowerRequirement(Criteria.POWER_HIGH);
 
-             try {
-                 locationManager.requestSingleUpdate(criteria, singleUpdatePI);
-             } catch (SecurityException e) {
-                log.error("Security exception: {}", e.getMessage());
-             }
-         }
-     };
+            try {
+                locationManager.requestSingleUpdate(criteria, singleUpdatePI);
+            } catch (SecurityException e) {
+                logger.error("Security exception: {}", e.getMessage());
+            }
+        }
+    };
 
     /**
-    * Broadcast receiver which detects a user has exit his circular stationary-region determined by the greater of stationaryLocation.getAccuracy() OR stationaryRadius
-    */
+     * Broadcast receiver which detects a user has exit his circular stationary-region determined by the greater of stationaryLocation.getAccuracy() OR stationaryRadius
+     */
     private BroadcastReceiver stationaryRegionReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -479,13 +508,13 @@ public class DistanceFilterLocationProvider extends AbstractLocationProvider imp
             Boolean entering = intent.getBooleanExtra(key, false);
 
             if (entering) {
-                log.debug("Entering stationary region");
+                logger.debug("Entering stationary region");
                 if (isMoving) {
                     setPace(false);
                 }
             }
             else {
-                log.debug("Exiting stationary region");
+                logger.debug("Exiting stationary region");
                 // There MUST be a valid, recent location if this event-handler was called.
                 Location location = getLastBestLocation();
                 if (location != null) {
@@ -497,30 +526,24 @@ public class DistanceFilterLocationProvider extends AbstractLocationProvider imp
 
     public void onProviderDisabled(String provider) {
         // TODO Auto-generated method stub
-        log.debug("Provider {} was disabled", provider);
+        logger.debug("Provider {} was disabled", provider);
     }
 
     public void onProviderEnabled(String provider) {
         // TODO Auto-generated method stub
-        log.debug("Provider {} was enabled", provider);
+        logger.debug("Provider {} was enabled", provider);
     }
 
     public void onStatusChanged(String provider, int status, Bundle extras) {
         // TODO Auto-generated method stub
-        log.debug("Provider {} status changed: {}", provider, status);
+        logger.debug("Provider {} status changed: {}", provider, status);
     }
 
     @Override
     public void onDestroy() {
-        super.onDestroy();
-        log.info("Destroying DistanceFilterLocationProvider");
+        logger.info("Destroying DistanceFilterLocationProvider");
 
-        try {
-            locationManager.removeUpdates(this);
-            locationManager.removeProximityAlert(stationaryRegionPI);
-        } catch (SecurityException e) {
-            //noop
-        }
+        this.onStop();
         alarmManager.cancel(stationaryAlarmPI);
         alarmManager.cancel(stationaryLocationPollingPI);
 
@@ -530,5 +553,6 @@ public class DistanceFilterLocationProvider extends AbstractLocationProvider imp
         unregisterReceiver(stationaryLocationMonitorReceiver);
 
         wakeLock.release();
+        super.onDestroy();
     }
 }

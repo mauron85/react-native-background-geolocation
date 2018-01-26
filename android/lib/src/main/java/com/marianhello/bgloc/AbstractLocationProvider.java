@@ -9,80 +9,80 @@ This is a new class
 
 package com.marianhello.bgloc;
 
+import android.app.Activity;
 import android.location.Location;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.BroadcastReceiver;
 import android.media.AudioManager;
 import android.media.ToneGenerator;
+import android.widget.Toast;
 
+import com.google.android.gms.location.DetectedActivity;
+import com.marianhello.bgloc.data.BackgroundActivity;
 import com.marianhello.bgloc.data.BackgroundLocation;
-import com.marianhello.cordova.JSONErrorFactory;
-
-import org.json.JSONObject;
+import com.marianhello.utils.Tone;
 
 /**
  * AbstractLocationProvider
  */
 public abstract class AbstractLocationProvider implements LocationProvider {
-    private static final int PERMISSION_DENIED_ERROR_CODE = 2;
-
-    protected static enum Tone {
-        BEEP,
-        BEEP_BEEP_BEEP,
-        LONG_BEEP,
-        DOODLY_DOO,
-        CHIRP_CHIRP_CHIRP,
-        DIALTONE
-    };
 
     protected Integer PROVIDER_ID;
-    protected LocationService locationService;
-    protected Location lastLocation;
-    protected Config config;
+    protected LocationService mLocationService;
+    protected Config mConfig;
 
     protected ToneGenerator toneGenerator;
 
-    protected AbstractLocationProvider(LocationService locationService) {
-        this.locationService = locationService;
-        this.config = locationService.getConfig();
+    protected AbstractLocationProvider(LocationService locationService, Config config) {
+        this.mLocationService = locationService;
+        this.mConfig = config;
     }
 
+    @Override
     public void onCreate() {
-        toneGenerator = new ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100);
+        toneGenerator = new android.media.ToneGenerator(AudioManager.STREAM_NOTIFICATION, 100);
     }
 
+    @Override
     public void onDestroy() {
         toneGenerator.release();
         toneGenerator = null;
     }
 
-    public void setConfig(Config config) {
-        this.config = config;
+    @Override
+    public void onConfigure(Config config) {
+        mConfig = config;
+    }
+
+    @Override
+    public void onSwitchMode(int mode) {
+        // override in child class
     }
 
     /**
      * Register broadcast reciever
      * @param receiver
      */
-    public Intent registerReceiver (BroadcastReceiver receiver, IntentFilter filter) {
-        return locationService.registerReceiver(receiver, filter);
+    protected Intent registerReceiver (BroadcastReceiver receiver, IntentFilter filter) {
+        return mLocationService.registerReceiver(receiver, filter);
     }
 
     /**
      * Unregister broadcast reciever
      * @param receiver
      */
-    public void unregisterReceiver (BroadcastReceiver receiver) {
-        locationService.unregisterReceiver(receiver);
+    protected void unregisterReceiver (BroadcastReceiver receiver) {
+        mLocationService.unregisterReceiver(receiver);
     }
 
     /**
      * Handle location as recorder by provider
      * @param location
      */
-    public void handleLocation (Location location) {
-        locationService.handleLocation(new BackgroundLocation(PROVIDER_ID, location));
+    protected void handleLocation (Location location) {
+        playDebugTone(Tone.BEEP);
+        mLocationService.handleLocation(new BackgroundLocation(PROVIDER_ID, location));
     }
 
     /**
@@ -91,8 +91,9 @@ public abstract class AbstractLocationProvider implements LocationProvider {
      * @param location
      * @param radius radius of stationary region
      */
-    public void handleStationary (Location location, float radius) {
-        locationService.handleStationary(new BackgroundLocation(PROVIDER_ID, location, radius));
+    protected void handleStationary (Location location, float radius) {
+        playDebugTone(Tone.LONG_BEEP);
+        mLocationService.handleStationary(new BackgroundLocation(PROVIDER_ID, location, radius));
     }
 
     /**
@@ -100,50 +101,39 @@ public abstract class AbstractLocationProvider implements LocationProvider {
      *
      * @param location
      */
-    public void handleStationary (Location location) {
-        locationService.handleStationary(new BackgroundLocation(PROVIDER_ID, location));
+    protected void handleStationary (Location location) {
+        playDebugTone(Tone.LONG_BEEP);
+        mLocationService.handleStationary(new BackgroundLocation(PROVIDER_ID, location));
+    }
+
+    protected void handleActivity(DetectedActivity activity) {
+        mLocationService.handleActivity(new BackgroundActivity(PROVIDER_ID, activity));
     }
 
     /**
      * Handle security exception
      * @param exception
      */
-    public void handleSecurityException (SecurityException exception) {
-        JSONObject error = JSONErrorFactory.getJSONError(PERMISSION_DENIED_ERROR_CODE, exception.getMessage());
-        locationService.handleError(error);
+    protected void handleSecurityException (SecurityException exception) {
+        PluginError error = new PluginError(PluginError.PERMISSION_DENIED_ERROR, exception.getMessage());
+        mLocationService.handleError(error);
+    }
+
+    protected void showDebugToast (String text) {
+        if (mConfig.isDebugging()) {
+            Toast.makeText(mLocationService, text, Toast.LENGTH_LONG).show();
+        }
     }
 
     /**
      * Plays debug sound
-     * @param name tone
+     * @param name toneGenerator
      */
-    protected void startTone(Tone name) {
-        if (toneGenerator == null) return;
+    protected void playDebugTone (int name) {
+        if (toneGenerator == null || !mConfig.isDebugging()) return;
 
-        int tone = 0;
         int duration = 1000;
 
-        switch (name) {
-            case BEEP:
-                tone = ToneGenerator.TONE_PROP_BEEP;
-                break;
-            case BEEP_BEEP_BEEP:
-                tone = ToneGenerator.TONE_CDMA_CONFIRM;
-                break;
-            case LONG_BEEP:
-                tone = ToneGenerator.TONE_CDMA_ABBR_ALERT;
-                break;
-            case DOODLY_DOO:
-                tone = ToneGenerator.TONE_CDMA_ALERT_NETWORK_LITE;
-                break;
-            case CHIRP_CHIRP_CHIRP:
-                tone = ToneGenerator.TONE_CDMA_ALERT_CALL_GUARD;
-                break;
-            case DIALTONE:
-                tone = ToneGenerator.TONE_SUP_RINGTONE;
-                break;
-        }
-
-        toneGenerator.startTone(tone, duration);
+        toneGenerator.startTone(name, duration);
     }
 }

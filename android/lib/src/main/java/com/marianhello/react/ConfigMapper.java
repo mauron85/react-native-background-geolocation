@@ -3,9 +3,22 @@ package com.marianhello.react;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
+import com.facebook.react.bridge.ReadableType;
 import com.facebook.react.bridge.WritableMap;
+import com.iodine.start.ArrayUtil;
+import com.iodine.start.MapUtil;
 import com.marianhello.bgloc.Config;
+import com.marianhello.bgloc.data.ArrayListLocationTemplate;
+import com.marianhello.bgloc.data.HashMapLocationTemplate;
+import com.marianhello.bgloc.data.LinkedHashSetLocationTemplate;
+import com.marianhello.bgloc.data.LocationTemplate;
+import com.marianhello.bgloc.data.LocationTemplateFactory;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -15,7 +28,7 @@ import java.util.Map;
  */
 
 public class ConfigMapper {
-    public static Config mapToConfig(ReadableMap options) {
+    public static Config fromMap(ReadableMap options) throws JSONException {
         Config config = new Config();
         if (options.hasKey("stationaryRadius")) config.setStationaryRadius((float) options.getDouble("stationaryRadius"));
         if (options.hasKey("distanceFilter")) config.setDistanceFilter(options.getInt("distanceFilter"));
@@ -51,10 +64,25 @@ public class ConfigMapper {
         }
         if (options.hasKey("maxLocations")) config.setMaxLocations(options.getInt("maxLocations"));
 
+        if (options.hasKey("postTemplate")) {
+            if (options.isNull("postTemplate")) {
+                config.setTemplate(LocationTemplateFactory.getDefault());
+            } else {
+                ReadableType type = options.getType("postTemplate");
+                Object postTemplate = null;
+                if (type == ReadableType.Map) {
+                    postTemplate = MapUtil.toJSONObject(options.getMap("postTemplate"));
+                } else if (type == ReadableType.Array) {
+                    postTemplate = ArrayUtil.toJSONArray(options.getArray("postTemplate"));
+                }
+                config.setTemplate(LocationTemplateFactory.fromJSON(postTemplate));
+            }
+        }
+
         return config;
     }
 
-    public static ReadableMap configToMap(Config config) {
+    public static ReadableMap toMap(Config config) {
         WritableMap out = Arguments.createMap();
         WritableMap httpHeaders = Arguments.createMap();
         out.putDouble("stationaryRadius", config.getStationaryRadius());
@@ -85,6 +113,19 @@ public class ConfigMapper {
         }
         out.putMap("httpHeaders", httpHeaders);
         out.putInt("maxLocations", config.getMaxLocations());
+
+        LocationTemplate tpl = config.getTemplate();
+        if (tpl instanceof HashMapLocationTemplate) {
+            Map map = ((HashMapLocationTemplate)tpl).toMap();
+            if (map != null) {
+                out.putMap("postTemplate", MapUtil.toWritableMap(map));
+            }
+        } else if (tpl instanceof ArrayListLocationTemplate) {
+            Object[] keys = ((ArrayListLocationTemplate)tpl).toArray();
+            if (keys != null) {
+                out.putArray("postTemplate", ArrayUtil.toWritableArray(keys));
+            }
+        }
 
         return out;
     }

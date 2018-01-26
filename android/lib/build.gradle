@@ -5,6 +5,7 @@ android {
     buildToolsVersion "23.0.3"
 
     defaultConfig {
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         minSdkVersion 16
         targetSdkVersion 23
         versionCode 8
@@ -13,6 +14,11 @@ android {
 }
 
 dependencies {
+    androidTestCompile 'com.android.support:support-annotations:23.1.1'
+    androidTestCompile 'com.android.support.test:runner:0.5'
+    androidTestCompile 'com.android.support.test:rules:0.5'
+    testCompile 'junit:junit:4.12'
+    testCompile "org.json:json:20140107"
     compile 'com.facebook.react:react-native:+'
     compile 'com.android.support:support-v4:+'
     compile 'com.google.android.gms:play-services-location:+'

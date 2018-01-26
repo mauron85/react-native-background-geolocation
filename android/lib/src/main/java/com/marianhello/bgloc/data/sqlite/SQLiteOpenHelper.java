@@ -14,7 +14,7 @@ import java.util.ArrayList;
 public class SQLiteOpenHelper extends android.database.sqlite.SQLiteOpenHelper {
     private static final String TAG = SQLiteOpenHelper.class.getName();
     public static final String SQLITE_DATABASE_NAME = "cordova_bg_geolocation.db";
-    public static final int DATABASE_VERSION = 12;
+    public static final int DATABASE_VERSION = 13;
 
     private static final String TEXT_TYPE = " TEXT";
     private static final String INTEGER_TYPE = " INTEGER";
@@ -67,7 +67,8 @@ public class SQLiteOpenHelper extends android.database.sqlite.SQLiteOpenHelper {
         ConfigurationEntry.COLUMN_NAME_SYNC_URL + TEXT_TYPE + COMMA_SEP +
         ConfigurationEntry.COLUMN_NAME_SYNC_THRESHOLD + INTEGER_TYPE + COMMA_SEP +
         ConfigurationEntry.COLUMN_NAME_HEADERS + TEXT_TYPE + COMMA_SEP +
-        ConfigurationEntry.COLUMN_NAME_MAX_LOCATIONS + INTEGER_TYPE +
+        ConfigurationEntry.COLUMN_NAME_MAX_LOCATIONS + INTEGER_TYPE + COMMA_SEP +
+        ConfigurationEntry.COLUMN_NAME_TEMPLATE + TEXT_TYPE +
         " )";
 
     private static final String SQL_DROP_CONFIG_TABLE =
@@ -157,6 +158,9 @@ public class SQLiteOpenHelper extends android.database.sqlite.SQLiteOpenHelper {
                         LocationEntry.COLUMN_NAME_HAS_ALTITUDE + "= 1," +
                         LocationEntry.COLUMN_NAME_HAS_RADIUS + "= 1"
                 );
+            case 12:
+                alterSql.add("ALTER TABLE " + ConfigurationEntry.TABLE_NAME +
+                        " ADD COLUMN " + ConfigurationEntry.COLUMN_NAME_TEMPLATE + TEXT_TYPE);
 
                 break;
             default:

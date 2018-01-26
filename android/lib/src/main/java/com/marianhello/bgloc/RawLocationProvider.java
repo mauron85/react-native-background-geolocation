@@ -6,10 +6,8 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.widget.Toast;
 
 import com.marianhello.logging.LoggerManager;
-import com.tenforwardconsulting.bgloc.DistanceFilterLocationProvider;
 
 /**
  * Created by finch on 7.11.2017.
@@ -18,10 +16,10 @@ import com.tenforwardconsulting.bgloc.DistanceFilterLocationProvider;
 public class RawLocationProvider extends AbstractLocationProvider implements LocationListener {
     private org.slf4j.Logger logger;
     private LocationManager locationManager;
-    private Boolean isStarted = false;
+    private boolean isStarted = false;
 
-    public RawLocationProvider(LocationService context) {
-        super(context);
+    public RawLocationProvider(LocationService locationService, Config config) {
+        super(locationService, config);
         PROVIDER_ID = Config.RAW_PROVIDER;
     }
 
@@ -32,17 +30,67 @@ public class RawLocationProvider extends AbstractLocationProvider implements Loc
         logger = LoggerManager.getLogger(RawLocationProvider.class);
         logger.debug("Creating RawLocationProvider");
 
-        locationManager = (LocationManager) locationService.getSystemService(Context.LOCATION_SERVICE);
+        locationManager = (LocationManager) mLocationService.getSystemService(Context.LOCATION_SERVICE);
+    }
+
+    @Override
+    public void onStart() {
+        if (isStarted) {
+            return;
+        }
+
+        Criteria criteria = new Criteria();
+        criteria.setAltitudeRequired(false);
+        criteria.setBearingRequired(false);
+        criteria.setSpeedRequired(true);
+        criteria.setCostAllowed(true);
+        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+        criteria.setHorizontalAccuracy(translateDesiredAccuracy(mConfig.getDesiredAccuracy()));
+        criteria.setPowerRequirement(Criteria.POWER_HIGH);
+
+        try {
+            locationManager.requestLocationUpdates(locationManager.getBestProvider(criteria, true), mConfig.getInterval(), mConfig.getDistanceFilter(), this);
+            isStarted = true;
+        } catch (SecurityException e) {
+            logger.error("Security exception: {}", e.getMessage());
+            this.handleSecurityException(e);
+        }
+    }
+
+    @Override
+    public void onStop() {
+        if (!isStarted) {
+            return;
+        }
+        try {
+            locationManager.removeUpdates(this);
+        } catch (SecurityException e) {
+            logger.error("Security exception: {}", e.getMessage());
+            this.handleSecurityException(e);
+        } finally {
+            isStarted = false;
+        }
+    }
+
+    @Override
+    public void onConfigure(Config config) {
+        mConfig = config;
+        if (isStarted) {
+            onStop();
+            onStart();
+        }
+    }
+
+    @Override
+    public boolean isStarted() {
+        return isStarted;
     }
 
     @Override
     public void onLocationChanged(Location location) {
         logger.debug("Location change: {}", location.toString());
 
-        if (config.isDebugging()) {
-            Toast.makeText(locationService, "acy:" + location.getAccuracy() + ",v:" + location.getSpeed(), Toast.LENGTH_LONG).show();
-            startTone(Tone.BEEP);
-        }
+        showDebugToast("acy:" + location.getAccuracy() + ",v:" + location.getSpeed());
         handleLocation(location);
     }
 
@@ -59,43 +107,6 @@ public class RawLocationProvider extends AbstractLocationProvider implements Loc
     @Override
     public void onProviderDisabled(String provider) {
         logger.debug("Provider {} was disabled", provider);
-    }
-
-    @Override
-    public void startRecording() {
-        if (isStarted) {
-            return;
-        }
-
-        Criteria criteria = new Criteria();
-        criteria.setAltitudeRequired(false);
-        criteria.setBearingRequired(false);
-        criteria.setSpeedRequired(true);
-        criteria.setCostAllowed(true);
-        criteria.setAccuracy(Criteria.ACCURACY_FINE);
-        criteria.setHorizontalAccuracy(translateDesiredAccuracy(config.getDesiredAccuracy()));
-        criteria.setPowerRequirement(Criteria.POWER_HIGH);
-
-        try {
-            locationManager.requestLocationUpdates(locationManager.getBestProvider(criteria, true), config.getInterval(), config.getDistanceFilter(), this);
-            isStarted = true;
-        } catch (SecurityException e) {
-            logger.error("Security exception: {}", e.getMessage());
-            this.handleSecurityException(e);
-        }
-    }
-
-    @Override
-    public void stopRecording() {
-        if (!isStarted) {
-            return;
-        }
-        try {
-            locationManager.removeUpdates(this);
-        } catch (SecurityException e) {
-            logger.error("Security exception: {}", e.getMessage());
-            this.handleSecurityException(e);
-        }
     }
 
     /**
@@ -122,8 +133,8 @@ public class RawLocationProvider extends AbstractLocationProvider implements Loc
 
     @Override
     public void onDestroy() {
-        logger.debug("Destroying DistanceFilterLocationProvider");
-        this.stopRecording();
+        logger.debug("Destroying RawLocationProvider");
+        this.onStop();
         super.onDestroy();
     }
 }
