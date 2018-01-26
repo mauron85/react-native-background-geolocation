@@ -17,14 +17,17 @@
 #else
 #import <React/RCTEventDispatcher.h>
 #endif
+#import "Config.h"
+#import "BackgroundGeolocationFacade.h"
 #import "BackgroundTaskManager.h"
 
 #define isNull(value) value == nil || [value isKindOfClass:[NSNull class]]
 
-@implementation RCTBackgroundGeolocation
+@implementation RCTBackgroundGeolocation {
+    BackgroundGeolocationFacade* facade;
+}
 
 @synthesize bridge = _bridge;
-@synthesize facade;
 
 RCT_EXPORT_MODULE();
 
@@ -141,7 +144,13 @@ RCT_EXPORT_METHOD(deleteLocation:(int)locationId success:(RCTResponseSenderBlock
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #deleteLocation");
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [facade deleteLocation:[NSNumber numberWithInt:locationId]];
+        NSError *error = nil;
+        BOOL result = [facade deleteLocation:[NSNumber numberWithInt:locationId] error:&error];
+        if (result) {
+            success(@[[NSNull null]]);
+        } else {
+            failure(@[@"Failed to delete location"]);
+        }
     });
 }
 
@@ -149,7 +158,14 @@ RCT_EXPORT_METHOD(deleteAllLocations:(RCTResponseSenderBlock)success failure:(RC
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #deleteAllLocations");
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        [facade deleteAllLocations];
+        NSError *error = nil;
+        BOOL result = [facade deleteAllLocations:&error];
+        if (result) {
+            success(@[[NSNull null]]);
+        } else {
+            failure(@[@"Failed to delete locations"]);
+        }
+
     });
 }
 
@@ -231,7 +247,7 @@ RCT_EXPORT_METHOD(endTask:(NSNumber* _Nonnull)taskKey)
     return [basePath stringByAppendingPathComponent:@"SQLiteLogger"];
 }
 
-- (void) onAuthorizationChanged:(NSInteger)authStatus
+- (void) onAuthorizationChanged:(BGAuthorizationStatus)authStatus
 {
     RCTLogInfo(@"RCTBackgroundGeolocation onAuthorizationChanged");
     [self sendEvent:@"authorization" resultAsNumber:[NSNumber numberWithInteger:authStatus]];
@@ -240,13 +256,13 @@ RCT_EXPORT_METHOD(endTask:(NSNumber* _Nonnull)taskKey)
 - (void) onLocationChanged:(Location*)location
 {
     RCTLogInfo(@"RCTBackgroundGeolocation onLocationChanged");
-    [self sendEvent:@"location" resultAsDictionary:[location toDictionary]];
+    [self sendEvent:@"location" resultAsDictionary:[location toDictionaryWithId]];
 }
 
 - (void) onStationaryChanged:(Location*)location
 {
     RCTLogInfo(@"RCTBackgroundGeolocation onStationaryChanged");
-    [self sendEvent:@"stationary" resultAsDictionary:[location toDictionary]];
+    [self sendEvent:@"stationary" resultAsDictionary:[location toDictionaryWithId]];
 }
 
 - (void) onError:(NSError*)error
@@ -265,6 +281,12 @@ RCT_EXPORT_METHOD(endTask:(NSNumber* _Nonnull)taskKey)
 {
     RCTLogInfo(@"RCTBackgroundGeoLocation location updates resumed");
     [self sendEvent:@"start"];
+}
+
+- (void) onActivityChanged:(Activity *)activity
+{
+    RCTLogInfo(@"RCTBackgroundGeoLocation activity changed");
+    [self sendEvent:@"activity" resultAsDictionary:[activity toDictionary]];
 }
 
 -(void) onAppResume:(NSNotification *)notification
