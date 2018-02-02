@@ -545,11 +545,6 @@ Note: Keep in mind that all locations (even single one) will be sent as array of
 [Background-geolocation-server](https://github.com/mauron85/background-geolocation-server) is a backend server written in nodejs.
 There are instructions how to run it and simulate locations on Android, iOS Simulator and Genymotion.
 
-### Example of backend server
-
-[Background-geolocation-server](https://github.com/mauron85/background-geolocation-server) is a backend server written in nodejs.
-There are instructions how to run it and simulate locations on Android, iOS Simulator and Genymotion.
-
 ## Debugging
 
 See [DEBUGGING.md](/DEBUGGING.md)
