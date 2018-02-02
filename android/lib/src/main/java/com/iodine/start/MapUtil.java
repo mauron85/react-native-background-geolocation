@@ -132,8 +132,6 @@ public class MapUtil {
             } else if (value.getClass() != null && value.getClass().isArray()) {
                 writableMap.putArray((String) pair.getKey(), ArrayUtil.toWritableArray((Object[]) value));
             }
-
-            iterator.remove();
         }
 
         return writableMap;
