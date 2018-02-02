@@ -72,16 +72,6 @@ public class BackgroundGeolocationFacade {
         logger = LoggerManager.getLogger(BackgroundGeolocationFacade.class);
         LoggerManager.enableDBLogging();
 
-        if (LocationService.isRunning()) {
-            if (!mIsBound) {
-                safeBindService();
-            }
-            if (!locationModeChangeReceiverRegistered) {
-                registerLocationModeChangeReceiver();
-            }
-        }
-
-
         // TODO: investigate if we can enable background sync conditionally
 //        final ResourceResolver res = ResourceResolver.newInstance(getApplication());
 //        final String authority = res.getStringResource(Config.CONTENT_AUTHORITY_RESOURCE);
@@ -258,6 +248,15 @@ public class BackgroundGeolocationFacade {
     }
 
     public void switchMode(int mode) {
+        if (LocationService.isRunning()) {
+            if (!mIsBound) {
+                safeBindService();
+            }
+            if (!locationModeChangeReceiverRegistered) {
+                registerLocationModeChangeReceiver();
+            }
+        }
+
         Message msg = Message.obtain(null, LocationService.MSG_SWITCH_MODE);
         msg.replyTo = mMessenger;
         msg.arg1 = mode;
