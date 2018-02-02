@@ -1,5 +1,20 @@
 ## Changelog
 
+### [0.5.0] - unreleased
+
+This release brings abstractions, allowing code reuse
+between ReactNative Cordova plugin variants.
+As result enabling faster pace of development and
+bug fixing on shared codebase.
+
+### Added
+- post/sync attributes customization via `postTemplate` config prop
+- iOS ACTIVITY_PROVIDER (experimental)
+- enable partial plugin reconfiguration
+- on "activity" changed event
+- Android Use gradle to choose authority (PR #136) by @jsdario
+- iOS configuration persistence
+
 ### [0.4.1] - 2017-12-19
 #### Changed
 - react native peer dependency >0.49.0

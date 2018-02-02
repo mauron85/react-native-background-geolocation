@@ -14,7 +14,7 @@ Plugin can be used for geolocation when app is running in foreground or backgrou
 
 You can choose from following location providers:
 * **DISTANCE_FILTER_PROVIDER**
-* **ACTIVITY_PROVIDER** (Android only)
+* **ACTIVITY_PROVIDER**
 * **RAW_PROVIDER**
 
 See [Which provider should I use?](/PROVIDERS.md) for more information about providers.
@@ -93,6 +93,12 @@ class BgTracking extends Component {
       url: 'http://192.168.81.15:3000/location',
       httpHeaders: {
         'X-FOO': 'bar'
+      },
+      // customize post properties
+      postTemplate: {
+        lat: '@latitude',
+        lon: '@longitude',
+        foo: 'bar' // you can also add your own properties
       }
     });
 
@@ -271,58 +277,50 @@ For iOS 11:
 
 Configure options:
 
-| Parameter                 | Type              | Platform     | Description                                                                                                                                                                                                                                                                                                                                        |
-|---------------------------|-------------------|--------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `locationProvider`        | `Number`          | all          | Set location provider **@see** [PROVIDERS](/PROVIDERS.md)                                                                                                                                                                                                                                                                                          |
-| `desiredAccuracy`         | `Number`          | all          | Desired accuracy in meters. Possible values [0, 10, 100, 1000]. The lower the number, the more power devoted to GeoLocation resulting in higher accuracy readings. 1000 results in lowest power drain and least accurate readings. @see Apple docs                                                                                                 |
-| `stationaryRadius`        | `Number`          | all          | Stationary radius in meters. When stopped, the minimum distance the device must move beyond the stationary location for aggressive background-tracking to engage.                                                                                                                                                                                  |
-| `debug`                   | `Boolean`         | all          | When enabled, the plugin will emit sounds for life-cycle events of background-geolocation! See debugging sounds table.                                                                                                                                                                                                                             |
-| `distanceFilter`          | `Number`          | all          | The minimum distance (measured in meters) a device must move horizontally before an update event is generated. **@see** [Apple docs](https://developer.apple.com/library/ios/documentation/CoreLocation/Reference/CLLocationManager_Class/CLLocationManager/CLLocationManager.html#//apple_ref/occ/instp/CLLocationManager/distanceFilter).        |
-| `stopOnTerminate`         | `Boolean`         | all          | Enable this in order to force a stop() when the application terminated (e.g. on iOS, double-tap home button, swipe away the app). (default true)                                                                                                                                                                                                   |
-| `startOnBoot`             | `Boolean`         | Android      | Start background service on device boot. (default false)                                                                                                                                                                                                                                                                                           |
-| `startForeground`         | `Boolean`         | Android      | If false location service will not be started in foreground and no notification will be shown. (default true)                                                                                                                                                                                                                                      |
-| `interval`                | `Number`          | Android      | The minimum time interval between location updates in milliseconds. **@see** [Android docs](http://developer.android.com/reference/android/location/LocationManager.html#requestLocationUpdates(long,%20float,%20android.location.Criteria,%20android.app.PendingIntent) for more information.                                                     |
-| `notificationTitle`       | `String` optional | Android      | Custom notification title in the drawer.                                                                                                                                                                                                                                                                                                           |
-| `notificationText`        | `String` optional | Android      | Custom notification text in the drawer.                                                                                                                                                                                                                                                                                                            |
-| `notificationIconColor`   | `String` optional | Android      | The accent color to use for notification. Eg. **#4CAF50**.                                                                                                                                                                                                                                                                                         |
-| `notificationIconLarge`   | `String` optional | Android      | The filename of a custom notification icon. See android quirks.                                                                                                                                                                                                                                                                                    |
-| `notificationIconSmall`   | `String` optional | Android      | The filename of a custom notification icon. See android quirks.                                                                                                                                                                                                                                                                                    |
-| `activityType`            | `String`          | iOS          | [AutomotiveNavigation, OtherNavigation, Fitness, Other] Presumably, this affects iOS GPS algorithm. **@see** [Apple docs](https://developer.apple.com/library/ios/documentation/CoreLocation/Reference/CLLocationManager_Class/CLLocationManager/CLLocationManager.html#//apple_ref/occ/instp/CLLocationManager/activityType) for more information |
-| `pauseLocationUpdates`    | `Boolean`         | iOS          | Pauses location updates when app is paused (default: false). **@see* [Apple docs](https://developer.apple.com/documentation/corelocation/cllocationmanager/1620553-pauseslocationupdatesautomatical?language=objc)
-| `saveBatteryOnBackground` | `Boolean`         | iOS          | Switch to less accurate significant changes and region monitory when in background (default: true)                                                                                                                                                                                                                                                 |
-| `url`                     | `String`          | all          | Server url where to send HTTP POST with recorded locations **@see** [HTTP locations posting](#http-locations-posting)                                                                                                                                                                                                                              |
-| `syncUrl`                 | `String`          | all          | Server url where to send fail to post locations **@see** [HTTP locations posting](#http-locations-posting)                                                                                                                                                                                                                                         |
-| `syncThreshold`           | `Number`          | all          | Specifies how many previously failed locations will be sent to server at once (default: 100)                                                                                                                                                                                                                                                       |
-| `httpHeaders`             | `Object`          | all          | Optional HTTP headers sent along in HTTP request                                                                                                                                                                                                                                                                                                   |
-| `maxLocations`            | `Number`          | all          | Limit maximum number of locations stored into db (default: 10000)                                                                                                                                                                                                                                                                                  |
+| Parameter                 | Type              | Platform     | Description                                                                                                                                                                                                                                                                                                                                        | Provider*   | Default                    | 
+|---------------------------|-------------------|--------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------|----------------------------|
+| `locationProvider`        | `Number`          | all          | Set location provider **@see** [PROVIDERS](/PROVIDERS.md)                                                                                                                                                                                                                                                                                          | N/A         | DISTANCE\_FILTER\_PROVIDER | 
+| `desiredAccuracy`         | `Number`          | all          | Desired accuracy in meters. Possible values [HIGH_ACCURACY, MEDIUM_ACCURACY, LOW_ACCURACY, PASSIVE_ACCURACY]. Accuracy has direct effect on power drain. Lower accuracy = lower power drain.                                                                                                                                                       | all         | MEDIUM\_ACCURACY           | 
+| `stationaryRadius`        | `Number`          | all          | Stationary radius in meters. When stopped, the minimum distance the device must move beyond the stationary location for aggressive background-tracking to engage.                                                                                                                                                                                  | DIS         | 50                         | 
+| `debug`                   | `Boolean`         | all          | When enabled, the plugin will emit sounds for life-cycle events of background-geolocation! See debugging sounds table.                                                                                                                                                                                                                             | all         | false                      | 
+| `distanceFilter`          | `Number`          | all          | The minimum distance (measured in meters) a device must move horizontally before an update event is generated. **@see** [Apple docs](https://developer.apple.com/library/ios/documentation/CoreLocation/Reference/CLLocationManager_Class/CLLocationManager/CLLocationManager.html#//apple_ref/occ/instp/CLLocationManager/distanceFilter).        | DIS,RAW     | 500                        | 
+| `stopOnTerminate`         | `Boolean`         | all          | Enable this in order to force a stop() when the application terminated (e.g. on iOS, double-tap home button, swipe away the app).                                                                                                                                                                                                                  | all         | true                       | 
+| `startOnBoot`             | `Boolean`         | Android      | Start background service on device boot.                                                                                                                                                                                                                                                                                                           | all         | false                      | 
+| `startForeground`         | `Boolean`         | Android      | If false location service will not be started in foreground and no notification will be shown.                                                                                                                                                                                                                                                     | all         | true                       | 
+| `interval`                | `Number`          | Android      | The minimum time interval between location updates in milliseconds. **@see** [Android docs](http://developer.android.com/reference/android/location/LocationManager.html#requestLocationUpdates(long,%20float,%20android.location.Criteria,%20android.app.PendingIntent)) for more information.                                                    | all         | 60000                      | 
+| `fastestInterval`         | `Number`          | Android      | Fastest rate in milliseconds at which your app can handle location updates. **@see** [Android  docs](https://developers.google.com/android/reference/com/google/android/gms/location/LocationRequest.html#getFastestInterval()).                                                                                                                   | ACT         | 120000                     | 
+| `activitiesInterval`      | `Number`          | Android      | Rate in milliseconds at which activity recognition occurs. Larger values will result in fewer activity detections while improving battery life.                                                                                                                                                                                                    | ACT         | 10000                      | 
+| `stopOnStillActivity`     | `Boolean`         | Android      | @deprecated stop location updates, when the STILL activity is detected                                                                                                                                                                                                                                                                             | ACT         | true                       | 
+| `notificationTitle`       | `String` optional | Android      | Custom notification title in the drawer.                                                                                                                                                                                                                                                                                                           | all         | "Background tracking"      | 
+| `notificationText`        | `String` optional | Android      | Custom notification text in the drawer.                                                                                                                                                                                                                                                                                                            | all         | "ENABLED"                  | 
+| `notificationIconColor`   | `String` optional | Android      | The accent color to use for notification. Eg. **#4CAF50**.                                                                                                                                                                                                                                                                                         | all         |                            | 
+| `notificationIconLarge`   | `String` optional | Android      | The filename of a custom notification icon. **@see** Android quirks.                                                                                                                                                                                                                                                                               | all         |                            | 
+| `notificationIconSmall`   | `String` optional | Android      | The filename of a custom notification icon. **@see** Android quirks.                                                                                                                                                                                                                                                                               | all         |                            | 
+| `activityType`            | `String`          | iOS          | [AutomotiveNavigation, OtherNavigation, Fitness, Other] Presumably, this affects iOS GPS algorithm. **@see** [Apple docs](https://developer.apple.com/library/ios/documentation/CoreLocation/Reference/CLLocationManager_Class/CLLocationManager/CLLocationManager.html#//apple_ref/occ/instp/CLLocationManager/activityType) for more information | all         | "OtherNavigation"          | 
+| `pauseLocationUpdates`    | `Boolean`         | iOS          | Pauses location updates when app is paused. **@see* [Apple docs](https://developer.apple.com/documentation/corelocation/cllocationmanager/1620553-pauseslocationupdatesautomatical?language=objc)                                                                                                                                                  | all         | false                      | 
+| `saveBatteryOnBackground` | `Boolean`         | iOS          | Switch to less accurate significant changes and region monitory when in background                                                                                                                                                                                                                                                                 | all         | true                       | 
+| `url`                     | `String`          | all          | Server url where to send HTTP POST with recorded locations **@see** [HTTP locations posting](#http-locations-posting)                                                                                                                                                                                                                              | all         |                            | 
+| `syncUrl`                 | `String`          | all          | Server url where to send fail to post locations **@see** [HTTP locations posting](#http-locations-posting)                                                                                                                                                                                                                                         | all         |                            | 
+| `syncThreshold`           | `Number`          | all          | Specifies how many previously failed locations will be sent to server at once                                                                                                                                                                                                                                                                      | all         | 100                        | 
+| `httpHeaders`             | `Object`          | all          | Optional HTTP headers sent along in HTTP request                                                                                                                                                                                                                                                                                                   | all         |                            | 
+| `maxLocations`            | `Number`          | all          | Limit maximum number of locations stored into db                                                                                                                                                                                                                                                                                                   | all         | 10000                      | 
+| `postTemplate`            | `Object\|Array`   | all          | Customization post template **@see** [Custom post template](#custom-post-template)                                                                                                                                                                                                                                                                 | all         |                            | 
 
-Following options are specific to provider as defined by locationProvider option
-#### ACTIVITY_PROVIDER provider options
+\*
+DIS = DISTANCE\_FILTER\_PROVIDER
+ACT = ACTIVITY\_PROVIDER
+RAW = RAW\_PROVIDER
 
-| Parameter             | Type      | Platform | Description                                                                                                                                                                                                                      |
-|-----------------------|-----------|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `interval`            | `Number`  | Android  | Rate in milliseconds at which your app prefers to receive location updates. **@see** [android docs](https://developers.google.com/android/reference/com/google/android/gms/location/LocationRequest.html#getInterval())          |
-| `fastestInterval`     | `Number`  | Android  | Fastest rate in milliseconds at which your app can handle location updates. **@see** [android  docs](https://developers.google.com/android/reference/com/google/android/gms/location/LocationRequest.html#getFastestInterval()). |
-| `activitiesInterval`  | `Number`  | Android  | Rate in milliseconds at which activity recognition occurs. Larger values will result in fewer activity detections while improving battery life.                                                                                  |
-| `stopOnStillActivity` | `Boolean` | Android  | stop() is forced, when the STILL activity is detected (default is true)                                                                                                                                                          |
 
-Location callback will be called with one argument - location object, which tries to mimic w3c [Coordinates interface](http://dev.w3.org/geo/api/spec-source.html#coordinates_interface).
+Partial reconfiguration is possible be providing only some configuration options:
 
-| Callback parameter | Type      | Description                                                            |
-|--------------------|-----------|------------------------------------------------------------------------|
-| `id`               | `Number`  | ID of location as stored in DB (or null)                               |
-| `provider`         | `String`  | gps, network, passive or fused                                         |
-| `locationProvider` | `Number`  | Location provider                                                      |
-| `debug`            | `Boolean` | true if location recorded as part of debug                             |
-| `time`             | `Number`  | UTC time of this fix, in milliseconds since January 1, 1970.           |
-| `latitude`         | `Number`  | latitude, in degrees.                                                  |
-| `longitude`        | `Number`  | longitude, in degrees.                                                 |
-| `accuracy`         | `Number`  | estimated accuracy of this location, in meters.                        |
-| `speed`            | `Number`  | speed if it is available, in meters/second over ground.                |
-| `altitude`         | `Number`  | altitude if available, in meters above the WGS 84 reference ellipsoid. |
-| `bearing`          | `Number`  | bearing, in degrees.                                                   |
+```
+BackgroundGeolocation.configure({
+  debug: true
+});
+```
 
-Note: Android currently returns `time` as type of String (instead of Number) [@see issue #9685](https://github.com/facebook/react-native/issues/9685)
+In this case new configuration options will be merged with stored configuration options and changes will be applied immediately.
 
 ### start()
 Platform: iOS, Android
@@ -444,6 +442,41 @@ Unregister all event listeners for given event
 
 ## Events
 
+| Name                | Callback param         | Platform     | Provider*   | Description                            |
+|---------------------|------------------------|--------------|-------------|----------------------------------------|
+| `location`          | `Location`             | all          | all         | on location update                     |
+| `stationary`        | `Location`             | all          | DIS,ACT     | on device entered stationary mode      |
+| `activity`          | `Activity`             | Android      | ACT         | on activity detection                  |
+| `error`             | `{ code, message }`    | all          | all         | on plugin error                        |
+| `authorization`     | `status`               | all          | all         | on user toggle location service        |
+| `start`             |                        | all          | all         | geolocation has been started           |
+| `stop`              |                        | all          | all         | geolocation has been stopped           |
+| `foreground`        |                        | Android      | all         | app entered foreground state (visible) |
+| `background`        |                        | Android      | all         | app entered background state           |
+
+### Location event
+| Location parameter | Type      | Description                                                            |
+|--------------------|-----------|------------------------------------------------------------------------|
+| `id`               | `Number`  | ID of location as stored in DB (or null)                               |
+| `provider`         | `String`  | gps, network, passive or fused                                         |
+| `locationProvider` | `Number`  | location provider                                                      |
+| `time`             | `Number`  | UTC time of this fix, in milliseconds since January 1, 1970.           |
+| `latitude`         | `Number`  | Latitude, in degrees.                                                  |
+| `longitude`        | `Number`  | Longitude, in degrees.                                                 |
+| `accuracy`         | `Number`  | Estimated accuracy of this location, in meters.                        |
+| `speed`            | `Number`  | Speed if it is available, in meters/second over ground.                |
+| `altitude`         | `Number`  | Altitude if available, in meters above the WGS 84 reference ellipsoid. |
+| `bearing`          | `Number`  | Bearing, in degrees.                                                   |
+
+### Activity event
+| Activity parameter | Type      | Description                                                            |
+|--------------------|-----------|------------------------------------------------------------------------|
+| `confidence`       | `Number`  | Percentage indicating the likelihood user is performing this activity. |
+| `type`             | `String`  | "IN_VEHICLE", "ON_BICYCLE", "ON_FOOT", "RUNNING", "STILL",             |
+|                    |           | "TILTING", "UNKNOWN", "WALKING"                                        |
+Note: Android currently returns `time` as type of String (instead of Number) [@see issue #9685](https://github.com/facebook/react-native/issues/9685)
+
+
 Event listeners can registered with:
 
 ```
@@ -459,18 +492,6 @@ eventSubscription.remove();
 Note: Components should unregister all event listeners in `componentWillUnmount` method,
 individually, or with `removeAllListeners`
 
-| Name                | Callback param      | Platform | Description                                                                     |
-|---------------------|---------------------|----------|----------------------------------------|
-| `location`          | `Location`          | all      | on location update                     |
-| `stationary`        | `Location`          | all      | on device entered stationary mode      |
-| `error`             | `{ code, message }` | all      | on plugin error                        |
-| `authorization`     | `status`            | all      | on user toggle location service        |
-| `start`             |                     | all      | geolocation has been started           |
-| `stop`              |                     | all      | geolocation has been stopped           |
-| `foreground`        |                     | android  | app entered foreground state (visible) |
-| `background`        |                     | android  | app entered background state           |
-
-
 ## HTTP locations posting
 
 All locations updates are recorded in local db at all times. When App is in foreground or background in addition to storing location in local db,
@@ -485,6 +506,44 @@ Batch sync takes place only when number of failed to post locations reaches `opt
 Locations are send only in single batch, when number of locations reaches `option.syncTreshold`. (No individual location will be send)
 
 Request body of posted locations is always array, even when only one location is sent.
+
+Warning: `option.maxLocations` has to be larger than `option.syncThreshold`. It's recommended to be 2x larger. In other case location syncing might not work properly.
+
+## Custom post template
+
+With `option.postTemplate` is possible to specify which location properties should be posted to `option.url` or `option.syncUrl`. This can be usefull to reduce
+number of bytes sent over "wire"
+
+All wanted location properties has to be prefixed with `@`. For all available properties check [Location event](#location-event).
+
+Two forms are supported:
+
+**jsonObject**
+
+```
+BackgroundGeolocation.configure({
+  postTemplate: {
+    lat: '@latitude',
+    lon: '@longitude',
+    foo: 'bar' // you can also add your own properties
+  }
+});
+```
+
+**jsonArray**
+```
+BackgroundGeolocation.configure({
+  postTemplate: ['@latitude', '@longitude', 'foo', 'bar']
+});
+```
+
+Note: only string keys and values are supported.
+Note: Keep in mind that all locations (even single one) will be sent as array of object(s), when postTemplate is `jsonObject` and array of array(s) for `jsonArray`!
+
+### Example of backend server
+
+[Background-geolocation-server](https://github.com/mauron85/background-geolocation-server) is a backend server written in nodejs.
+There are instructions how to run it and simulate locations on Android, iOS Simulator and Genymotion.
 
 ### Example of backend server
 
