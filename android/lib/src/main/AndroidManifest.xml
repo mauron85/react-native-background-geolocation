@@ -23,7 +23,7 @@
         </service>
         <provider
             android:name="com.marianhello.bgloc.sync.DummyContentProvider"
-            android:authorities="@string/content_authority"
+            android:authorities="${applicationId}.provider"
             android:exported="false"
             android:syncable="true"/>
         <service android:enabled="true" android:exported="false" android:name="com.marianhello.bgloc.LocationService" />
