@@ -311,7 +311,11 @@ FMDBLogger *sqliteLogger;
 
 - (void) showLocationSettings
 {
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"prefs:root=LOCATION_SERVICES"]];
+    if (@available(iOS 10, *)) {
+        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"App-Prefs:root=Privacy&path=LOCATION"]];
+    } else {
+        [[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"prefs:root=LOCATION_SERVICES"]];
+    }
 }
 
 - (Location*) getStationaryLocation
