@@ -10,7 +10,7 @@ import java.util.Iterator;
  * Created by finch on 15.12.2017.
  */
 
-public class ArrayListLocationTemplate implements LocationTemplate {
+public class ArrayListLocationTemplate extends AbstractLocationTemplate implements LocationTemplate {
     private ArrayList list;
     private static final long serialVersionUID = 1234L;
 
