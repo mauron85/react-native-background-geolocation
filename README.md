@@ -511,8 +511,8 @@ Warning: `option.maxLocations` has to be larger than `option.syncThreshold`. It'
 
 ## Custom post template
 
-With `option.postTemplate` is possible to specify which location properties should be posted to `option.url` or `option.syncUrl`. This can be usefull to reduce
-number of bytes sent over "wire"
+With `option.postTemplate` is possible to specify which location properties should be posted to `option.url` or `option.syncUrl`. This can be useful to reduce
+number of bytes sent over the "wire".
 
 All wanted location properties has to be prefixed with `@`. For all available properties check [Location event](#location-event).
 
