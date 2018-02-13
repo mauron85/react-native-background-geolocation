@@ -15,6 +15,11 @@ bug fixing on shared codebase.
 - Android Use gradle to choose authority (PR #136) by @jsdario
 - iOS configuration persistence
 
+### Fixed
+
+Since alpha.4:
+- iOS open location settings on iOS 10 and later (PR #158) by @asafron
+
 ### [0.4.1] - 2017-12-19
 #### Changed
 - react native peer dependency >0.49.0
