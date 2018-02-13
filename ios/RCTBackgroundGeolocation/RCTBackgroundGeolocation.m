@@ -121,7 +121,7 @@ RCT_EXPORT_METHOD(getLocations:(RCTResponseSenderBlock)success failure:(RCTRespo
         NSArray *locations = [facade getLocations];
         NSMutableArray* dictionaryLocations = [[NSMutableArray alloc] initWithCapacity:[locations count]];
         for (Location* location in locations) {
-            [dictionaryLocations addObject:[location toDictionary]];
+            [dictionaryLocations addObject:[location toDictionaryWithId]];
         }
         success(@[dictionaryLocations]);
     });
@@ -134,7 +134,7 @@ RCT_EXPORT_METHOD(getValidLocations:(RCTResponseSenderBlock)success failure:(RCT
         NSArray *locations = [facade getValidLocations];
         NSMutableArray* dictionaryLocations = [[NSMutableArray alloc] initWithCapacity:[locations count]];
         for (Location* location in locations) {
-            [dictionaryLocations addObject:[location toDictionary]];
+            [dictionaryLocations addObject:[location toDictionaryWithId]];
         }
         success(@[dictionaryLocations]);
     });
