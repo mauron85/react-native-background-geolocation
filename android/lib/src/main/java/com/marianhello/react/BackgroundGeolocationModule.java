@@ -375,12 +375,12 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
 
     @Override
     public void onLocationChanged(BackgroundLocation location) {
-        sendEvent(LOCATION_EVENT, LocationMapper.toWriteableMap(location));
+        sendEvent(LOCATION_EVENT, LocationMapper.toWriteableMapWithId(location));
     }
 
     @Override
     public void onStationaryChanged(BackgroundLocation location) {
-        sendEvent(STATIONARY_EVENT, LocationMapper.toWriteableMap(location));
+        sendEvent(STATIONARY_EVENT, LocationMapper.toWriteableMapWithId(location));
     }
 
     @Override
