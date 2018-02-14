@@ -26,14 +26,6 @@ public class SQLiteLocationDAO implements LocationDAO {
     this.db = db;
   }
 
-  public long getLastInsertRowId(SQLiteDatabase db) {
-    Cursor cur = db.rawQuery("SELECT last_insert_rowid()", null);
-    cur.moveToFirst();
-    long id = cur.getLong(0);
-    cur.close();
-    return id;
-  }
-
   /**
    * Get all locations that match whereClause
    *
@@ -166,6 +158,30 @@ public class SQLiteLocationDAO implements LocationDAO {
       shouldVacuum = true;
     }
 
+    // get oldest location id to be overwritten
+    Cursor cursor = null;
+    Long locationId;
+    try {
+      cursor = db.query(
+              LocationEntry.TABLE_NAME,
+              new String[] { LocationEntry._ID },
+              TextUtils.join("", new String[]{
+                      LocationEntry.COLUMN_NAME_TIME,
+                      "= (SELECT min(",
+                      LocationEntry.COLUMN_NAME_TIME,
+                      ") FROM ",
+                      LocationEntry.TABLE_NAME,
+                      ")"
+              }),
+              null, null, null, null);
+      cursor.moveToFirst();
+      locationId = cursor.getLong(0);
+    } finally {
+      if (cursor != null) {
+        cursor.close();
+      }
+    }
+
     sql = new StringBuilder("UPDATE ")
             .append(LocationEntry.TABLE_NAME).append(" SET ")
             .append(LocationEntry.COLUMN_NAME_PROVIDER).append("= ?,")
@@ -185,9 +201,8 @@ public class SQLiteLocationDAO implements LocationDAO {
             .append(LocationEntry.COLUMN_NAME_LOCATION_PROVIDER).append("= ?,")
             .append(LocationEntry.COLUMN_NAME_BATCH_START_MILLIS).append("= ?,")
             .append(LocationEntry.COLUMN_NAME_VALID).append("= ?")
-            .append(" WHERE ").append(LocationEntry.COLUMN_NAME_TIME)
-            .append("= (SELECT min(").append(LocationEntry.COLUMN_NAME_TIME).append(") FROM ")
-            .append(LocationEntry.TABLE_NAME).append(")")
+            .append(" WHERE ").append(LocationEntry._ID)
+            .append("= ?")
             .toString();
     db.execSQL(sql, new Object[] {
             location.getProvider(),
@@ -206,16 +221,16 @@ public class SQLiteLocationDAO implements LocationDAO {
             location.hasRadius() ? 1 : 0,
             location.getLocationProvider(),
             location.getBatchStartMillis(),
-            location.isValid() ? 1 : 0
+            location.isValid() ? 1 : 0,
+            locationId
     });
 
-    rowId = getLastInsertRowId(db);
     db.setTransactionSuccessful();
     db.endTransaction();
 
     if (shouldVacuum) { db.execSQL("VACUUM"); }
 
-    return rowId;
+    return locationId;
   }
 
   /**
