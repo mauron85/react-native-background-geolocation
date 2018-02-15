@@ -164,7 +164,7 @@ public class SQLiteLocationDAO implements LocationDAO {
     try {
       cursor = db.query(
               LocationEntry.TABLE_NAME,
-              new String[] { LocationEntry._ID },
+              new String[] { "min(" + LocationEntry._ID + ")" },
               TextUtils.join("", new String[]{
                       LocationEntry.COLUMN_NAME_TIME,
                       "= (SELECT min(",
