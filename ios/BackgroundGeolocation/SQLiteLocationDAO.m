@@ -60,7 +60,7 @@
         FMResultSet *rs = [database executeQuery:sql];
         while([rs next]) {
             Location *location = [[Location alloc] init];
-            location.locationId = [NSNumber numberWithDouble:[rs doubleForColumnIndex:0]];
+            location.locationId = [NSNumber numberWithLongLong:[rs longLongIntForColumnIndex:0]];
             NSTimeInterval timestamp = [rs doubleForColumnIndex:1];
             location.time = [NSDate dateWithTimeIntervalSince1970:timestamp];
             location.accuracy = [NSNumber numberWithDouble:[rs doubleForColumnIndex:2]];
@@ -108,7 +108,7 @@
         FMResultSet *rs = [database executeQuery:sql];
         while([rs next]) {
             Location *location = [[Location alloc] init];
-            location.locationId = [NSNumber numberWithDouble:[rs doubleForColumnIndex:0]];
+            location.locationId = [NSNumber numberWithLongLong:[rs longLongIntForColumnIndex:0]];
             NSTimeInterval timestamp = [rs doubleForColumnIndex:1];
             location.time = [NSDate dateWithTimeIntervalSince1970:timestamp];
             location.accuracy = [NSNumber numberWithDouble:[rs doubleForColumnIndex:2]];
@@ -155,7 +155,7 @@
         FMResultSet *rs = [database executeQuery:sql];
         while([rs next]) {
             Location *location = [[Location alloc] init];
-            location.locationId = [NSNumber numberWithDouble:[rs doubleForColumnIndex:0]];
+            location.locationId = [NSNumber numberWithLongLong:[rs longLongIntForColumnIndex:0]];
             NSTimeInterval timestamp = [rs doubleForColumnIndex:1];
             location.time = [NSDate dateWithTimeIntervalSince1970:timestamp];
             location.accuracy = [NSNumber numberWithDouble:[rs doubleForColumnIndex:2]];
