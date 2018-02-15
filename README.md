@@ -257,15 +257,16 @@ You will need to ensure that you have installed the following items through the 
 2. add `./node_modules/react-native-mauron85-background-geolocation/ios/RCTBackgroundGeolocation.xcodeproj`
 3. In the XCode project navigator, select your project, select the `Build Phases` tab and in the `Link Binary With Libraries` section add **libRCTBackgroundGeolocation.a**
 4. add `UIBackgroundModes` **location** to `Info.plist`
+5. add `NSMotionUsageDescription` **App requires motion tracking** to `Info.plist` (required by ACTIVITY_PROVIDER)
 
 For iOS before version 11:
 
-5. add `NSLocationAlwaysUsageDescription` **App requires background tracking** to `Info.plist`
+6. add `NSLocationAlwaysUsageDescription` **App requires background tracking** to `Info.plist`
 
 For iOS 11:
 
-5. add `NSLocationWhenInUseUsageDescription` **App requires background tracking** to `Info.plist`
-6. add `NSLocationAlwaysAndWhenInUseUsageDescription` **App requires background tracking** to `Info.plist`
+6. add `NSLocationWhenInUseUsageDescription` **App requires background tracking** to `Info.plist`
+7. add `NSLocationAlwaysAndWhenInUseUsageDescription` **App requires background tracking** to `Info.plist`
 
 ## API
 
@@ -370,8 +371,6 @@ Platform: iOS, Android
 Method will return all stored locations.
 This method is useful for initial rendering of user location on a map just after application launch.
 
-NOTE: Returned locations does not contain location.id.
-
 | Success callback parameter | Type    | Description                    |
 |----------------------------|---------|--------------------------------|
 | `locations`                | `Array` | collection of stored locations |
@@ -388,7 +387,6 @@ BackgroundGeolocation.getLocations(
 Platform: iOS, Android
 
 Method will return locations, which has not been yet posted to server.
-NOTE: Locations does contain location.id.
 
 | Success callback parameter | Type    | Description                    |
 |----------------------------|---------|--------------------------------|
@@ -474,6 +472,9 @@ Unregister all event listeners for given event
 | `confidence`       | `Number`  | Percentage indicating the likelihood user is performing this activity. |
 | `type`             | `String`  | "IN_VEHICLE", "ON_BICYCLE", "ON_FOOT", "RUNNING", "STILL",             |
 |                    |           | "TILTING", "UNKNOWN", "WALKING"                                        |
+
+Note: Do not use location `id` as unique key in your database as ids will be reused when `option.maxLocations` is reached.
+
 Note: Android currently returns `time` as type of String (instead of Number) [@see issue #9685](https://github.com/facebook/react-native/issues/9685)
 
 
