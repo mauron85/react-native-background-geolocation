@@ -279,6 +279,15 @@
             }
         }
 
+        // get oldest location id to be overwritten
+        sql = @"SELECT MIN(" @LC_COLUMN_NAME_ID ") FROM " @LC_TABLE_NAME @" WHERE " @LC_COLUMN_NAME_RECORDED_AT
+        @" = (SELECT min(" @LC_COLUMN_NAME_RECORDED_AT @") FROM " @LC_TABLE_NAME @" )";
+        rs = [database executeQuery:sql];
+        if ([rs next]) {
+            locationId = [NSNumber numberWithLongLong:[rs longLongIntForColumnIndex:0]];
+        }
+        [rs close];
+
         sql = @"UPDATE " @LC_TABLE_NAME @" SET "
         @LC_COLUMN_NAME_TIME @EQ_BIND
         @COMMA_SEP @LC_COLUMN_NAME_ACCURACY @EQ_BIND
@@ -291,8 +300,7 @@
         @COMMA_SEP @LC_COLUMN_NAME_LOCATION_PROVIDER @EQ_BIND
         @COMMA_SEP @LC_COLUMN_NAME_VALID @EQ_BIND
         @COMMA_SEP @LC_COLUMN_NAME_RECORDED_AT @EQ_BIND
-        @" WHERE " @LC_COLUMN_NAME_RECORDED_AT @" = (SELECT min(" @LC_COLUMN_NAME_RECORDED_AT @") FROM " @LC_TABLE_NAME @")"
-        @" ORDER BY " @LC_COLUMN_NAME_VALID @" LIMIT 1";
+        @" WHERE " @LC_COLUMN_NAME_ID @EQ_BIND;
 
         BOOL success = [database executeUpdate:sql,
             [NSNumber numberWithDouble:[location.time timeIntervalSince1970]],
@@ -305,13 +313,13 @@
             location.provider ?: [NSNull null],
             location.locationProvider ?: [NSNull null],
             location.isValid == YES ? @(1) : @(0),
-            recordedAt
+            recordedAt,
+            locationId
         ];
 
-        if (success) {
-            locationId = [NSNumber numberWithLongLong:[database lastInsertRowId]];
-        } else {
+        if (!success) {
             NSLog(@"Inserting location %@ failed code: %d: message: %@", location.time, [database lastErrorCode], [database lastErrorMessage]);
+            locationId = [NSNumber numberWithInt:-1];
         }
 
     }];
