@@ -28,7 +28,7 @@
     activityType = @"OtherNavigation";
     activitiesInterval = [NSNumber numberWithInt:10000];
     _stopOnTerminate = [NSNumber numberWithBool:YES];
-    _saveBatteryOnBackground = [NSNumber numberWithBool:YES];
+    _saveBatteryOnBackground = [NSNumber numberWithBool:NO];
     maxLocations = [NSNumber numberWithInt:10000];
     syncThreshold = [NSNumber numberWithInt:100];
     _pauseLocationUpdates = [NSNumber numberWithBool:NO];
