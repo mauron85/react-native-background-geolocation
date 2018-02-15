@@ -15,6 +15,11 @@ bug fixing on shared codebase.
 - Android Use gradle to choose authority (PR #136) by @jsdario
 - iOS configuration persistence
 
+### Changed
+
+Since alpha.6
+- iOS saveBatteryOnBackground defaults to false
+
 ### Fixed
 
 Since alpha.4:
