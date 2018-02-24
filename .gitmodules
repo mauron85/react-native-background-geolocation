@@ -1,0 +1,3 @@
+[submodule "common"]
+	path = ios/common
+	url = https://github.com/mauron85/background-geolocation-ios.git

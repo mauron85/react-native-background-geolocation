@@ -7,30 +7,30 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		4161C06D201B8FB8007761EF /* libBackgroundGeolocation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4161C067201B8D7F007761EF /* libBackgroundGeolocation.a */; };
+		4164B01620419D4000D7AC50 /* libBackgroundGeolocation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4164B00B20419C5800D7AC50 /* libBackgroundGeolocation.a */; };
 		418F754A1D02DC3D0045FEA0 /* RCTBackgroundGeolocation.h in Copy Files */ = {isa = PBXBuildFile; fileRef = 418F75491D02DC3D0045FEA0 /* RCTBackgroundGeolocation.h */; };
 		418F754C1D02DC3D0045FEA0 /* RCTBackgroundGeolocation.m in Sources */ = {isa = PBXBuildFile; fileRef = 418F754B1D02DC3D0045FEA0 /* RCTBackgroundGeolocation.m */; };
 		41E82EA11D5E4F9E00F65575 /* CoreLocation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 41E82EA01D5E4F9E00F65575 /* CoreLocation.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		4161C066201B8D7F007761EF /* PBXContainerItemProxy */ = {
+		4164B00A20419C5800D7AC50 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 4161C061201B8D7F007761EF /* BackgroundGeolocation.xcodeproj */;
+			containerPortal = 4164B00520419C5800D7AC50 /* BackgroundGeolocation.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 418F75461D02DC3D0045FEA0;
 			remoteInfo = BackgroundGeolocation;
 		};
-		4161C068201B8D7F007761EF /* PBXContainerItemProxy */ = {
+		4164B00C20419C5800D7AC50 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 4161C061201B8D7F007761EF /* BackgroundGeolocation.xcodeproj */;
+			containerPortal = 4164B00520419C5800D7AC50 /* BackgroundGeolocation.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 414898261FB593B900323454;
 			remoteInfo = BackgroundGeolocationTests;
 		};
-		4161C06A201B8F6D007761EF /* PBXContainerItemProxy */ = {
+		4164B00E20419C6100D7AC50 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 4161C061201B8D7F007761EF /* BackgroundGeolocation.xcodeproj */;
+			containerPortal = 4164B00520419C5800D7AC50 /* BackgroundGeolocation.xcodeproj */;
 			proxyType = 1;
 			remoteGlobalIDString = 418F75451D02DC3D0045FEA0;
 			remoteInfo = BackgroundGeolocation;
@@ -52,7 +52,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		4161C061201B8D7F007761EF /* BackgroundGeolocation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = BackgroundGeolocation.xcodeproj; sourceTree = "<group>"; };
+		4164B00520419C5800D7AC50 /* BackgroundGeolocation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = BackgroundGeolocation.xcodeproj; path = common/BackgroundGeolocation.xcodeproj; sourceTree = "<group>"; };
 		418F75461D02DC3D0045FEA0 /* libRCTBackgroundGeolocation.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRCTBackgroundGeolocation.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		418F75491D02DC3D0045FEA0 /* RCTBackgroundGeolocation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTBackgroundGeolocation.h; sourceTree = "<group>"; };
 		418F754B1D02DC3D0045FEA0 /* RCTBackgroundGeolocation.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = RCTBackgroundGeolocation.m; sourceTree = "<group>"; };
@@ -64,7 +64,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4161C06D201B8FB8007761EF /* libBackgroundGeolocation.a in Frameworks */,
+				4164B01620419D4000D7AC50 /* libBackgroundGeolocation.a in Frameworks */,
 				41E82EA11D5E4F9E00F65575 /* CoreLocation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -72,15 +72,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		4161C062201B8D7F007761EF /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				4161C067201B8D7F007761EF /* libBackgroundGeolocation.a */,
-				4161C069201B8D7F007761EF /* BackgroundGeolocationTests.xctest */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		4161C06C201B8FB8007761EF /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -88,10 +79,19 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		4164B00620419C5800D7AC50 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				4164B00B20419C5800D7AC50 /* libBackgroundGeolocation.a */,
+				4164B00D20419C5800D7AC50 /* BackgroundGeolocationTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
 		418F753D1D02DC3D0045FEA0 = {
 			isa = PBXGroup;
 			children = (
-				4161C061201B8D7F007761EF /* BackgroundGeolocation.xcodeproj */,
+				4164B00520419C5800D7AC50 /* BackgroundGeolocation.xcodeproj */,
 				41E82EA01D5E4F9E00F65575 /* CoreLocation.framework */,
 				418F75481D02DC3D0045FEA0 /* RCTBackgroundGeolocation */,
 				418F75471D02DC3D0045FEA0 /* Products */,
@@ -130,7 +130,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				4161C06B201B8F6D007761EF /* PBXTargetDependency */,
+				4164B00F20419C6100D7AC50 /* PBXTargetDependency */,
 			);
 			name = RCTBackgroundGeolocation;
 			productName = RCTBackgroundGeolocation;
@@ -163,8 +163,8 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 4161C062201B8D7F007761EF /* Products */;
-					ProjectRef = 4161C061201B8D7F007761EF /* BackgroundGeolocation.xcodeproj */;
+					ProductGroup = 4164B00620419C5800D7AC50 /* Products */;
+					ProjectRef = 4164B00520419C5800D7AC50 /* BackgroundGeolocation.xcodeproj */;
 				},
 			);
 			projectRoot = "";
@@ -175,18 +175,18 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		4161C067201B8D7F007761EF /* libBackgroundGeolocation.a */ = {
+		4164B00B20419C5800D7AC50 /* libBackgroundGeolocation.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
 			path = libBackgroundGeolocation.a;
-			remoteRef = 4161C066201B8D7F007761EF /* PBXContainerItemProxy */;
+			remoteRef = 4164B00A20419C5800D7AC50 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		4161C069201B8D7F007761EF /* BackgroundGeolocationTests.xctest */ = {
+		4164B00D20419C5800D7AC50 /* BackgroundGeolocationTests.xctest */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.cfbundle;
 			path = BackgroundGeolocationTests.xctest;
-			remoteRef = 4161C068201B8D7F007761EF /* PBXContainerItemProxy */;
+			remoteRef = 4164B00C20419C5800D7AC50 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -203,10 +203,10 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		4161C06B201B8F6D007761EF /* PBXTargetDependency */ = {
+		4164B00F20419C6100D7AC50 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			name = BackgroundGeolocation;
-			targetProxy = 4161C06A201B8F6D007761EF /* PBXContainerItemProxy */;
+			targetProxy = 4164B00E20419C6100D7AC50 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -248,6 +248,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "${PROJECT_DIR}/**";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -286,6 +287,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = "${PROJECT_DIR}/**";
 				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
@@ -301,7 +303,6 @@
 					"$(SRCROOT)/../../../React/**",
 					"$(SRCROOT)/../../react-native/React/**",
 					"$(SRCROOT)/react-native/React/**",
-					"${PROJECT_DIR}/BackgroundGeolocation",
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -317,7 +318,6 @@
 					"$(SRCROOT)/../../../React/**",
 					"$(SRCROOT)/../../react-native/React/**",
 					"$(SRCROOT)/react-native/React/**",
-					"${PROJECT_DIR}/BackgroundGeolocation",
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
