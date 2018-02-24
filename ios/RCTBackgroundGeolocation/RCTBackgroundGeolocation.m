@@ -323,7 +323,11 @@ RCT_EXPORT_METHOD(endTask:(NSNumber* _Nonnull)taskKey)
     
     if ([dict objectForKey:UIApplicationLaunchOptionsLocationKey]) {
         RCTLogInfo(@"RCTBackgroundGeolocation started by system on location event.");
-        //        [manager switchOperationMode:BACKGROUND];
+        Config *config = [facade getConfig];
+        if (![config stopOnTerminate]) {
+            [facade start:nil];
+            [facade switchMode:BACKGROUND];
+        }
     }
 }
 
