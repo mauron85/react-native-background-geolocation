@@ -397,15 +397,15 @@ Platform: iOS, Android
 
 Delete location with locationId.
 
-Note: Locations are not actually deleted from database to avoid gaps in locationId numbering.
-Instead locations are marked as deleted. Locations marked as deleted will not appear in output of `BackgroundGeolocation.getLocations`.
-
 ### deleteAllLocations(success, fail)
 Note: You don't need to delete all locations. Plugin manages number of locations automatically and location count never exceeds number as defined by `option.maxLocations`.
 
 Platform: iOS, Android
 
 Delete all stored locations.
+
+Note: Locations are not actually deleted from database to avoid gaps in locationId numbering.
+Instead locations are marked as deleted. Locations marked as deleted will not appear in output of `BackgroundGeolocation.getValidLocations`.
 
 ### switchMode(modeId, success, fail)
 Platform: iOS
