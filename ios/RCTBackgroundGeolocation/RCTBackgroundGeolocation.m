@@ -73,7 +73,7 @@ RCT_EXPORT_METHOD(start)
     if (error == nil) {
         [self sendEvent:@"start"];
     } else {
-        [self sendEvent:@"error" resultAsDictionary:[error userInfo]];
+        [self sendError:error];
     }
 }
 
@@ -86,7 +86,7 @@ RCT_EXPORT_METHOD(stop)
     if (error == nil) {
         [self sendEvent:@"stop"];
     } else {
-        [self sendEvent:@"error" resultAsDictionary:[error userInfo]];
+        [self sendError:error];
     }
 }
 
@@ -239,6 +239,17 @@ RCT_EXPORT_METHOD(endTask:(NSNumber* _Nonnull)taskKey)
     [_bridge.eventDispatcher sendDeviceEventWithName:event body:resultAsNumber];
 }
 
+-(void) sendError:(NSError*)error
+{
+    NSDictionary *userInfo = [error userInfo];
+    NSString *errorMessage = [error localizedDescription];
+    if (errorMessage == nil) {
+        errorMessage = [[userInfo objectForKey:NSUnderlyingErrorKey] localizedDescription];
+    }
+    NSDictionary *errorDict = @{ @"code": [NSNumber numberWithLong:error.code], @"message": errorMessage};
+    [self sendEvent:@"error" resultAsDictionary:errorDict];
+}
+
 - (NSString *)loggerDirectory
 {
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
@@ -268,7 +279,7 @@ RCT_EXPORT_METHOD(endTask:(NSNumber* _Nonnull)taskKey)
 - (void) onError:(NSError*)error
 {
     RCTLogInfo(@"RCTBackgroundGeolocation onError");
-    [self sendEvent:@"error" resultAsDictionary:[error userInfo]];
+    [self sendError:error];
 }
 
 - (void) onLocationPause
