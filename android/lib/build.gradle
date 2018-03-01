@@ -1,5 +1,16 @@
 apply plugin: 'com.android.library'
 
+repositories {
+    jcenter()
+    flatDir {
+        dirs '../libs'
+    }
+    // Google dependencies are now hosted at Maven
+    maven {
+        url 'https://maven.google.com'
+    }
+}
+
 android {
     compileSdkVersion 23
     buildToolsVersion "23.0.3"
@@ -14,15 +25,12 @@ android {
 }
 
 dependencies {
-    androidTestCompile 'com.android.support:support-annotations:23.1.1'
-    androidTestCompile 'com.android.support.test:runner:0.5'
-    androidTestCompile 'com.android.support.test:rules:0.5'
-    testCompile 'junit:junit:4.12'
-    testCompile "org.json:json:20140107"
-    compile 'com.facebook.react:react-native:+'
-    compile 'com.android.support:support-v4:+'
-    compile 'com.google.android.gms:play-services-location:+'
+    provided 'com.facebook.react:react-native:+'
+    compile 'com.google.android.gms:play-services-base:+'
     compile 'com.github.tony19:logback-android-core:1.1.1-6'
-    compile 'com.github.tony19:logback-android-classic:1.1.1-6'
+    compile('com.github.tony19:logback-android-classic:1.1.1-6') {
+        exclude group: 'com.google.android', module: 'android'
+    }
     compile 'org.slf4j:slf4j-api:1.7.21'
+    compile(name:'common', ext:'aar')
 }
