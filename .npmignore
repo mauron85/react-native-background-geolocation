@@ -14,3 +14,4 @@ local.properties
 *.iml
 build
 *.skip
+android/common
