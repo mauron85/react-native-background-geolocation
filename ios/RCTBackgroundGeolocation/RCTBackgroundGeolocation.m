@@ -99,7 +99,7 @@ RCT_EXPORT_METHOD(switchMode:(NSNumber*)mode success:(RCTResponseSenderBlock)suc
 RCT_EXPORT_METHOD(isLocationEnabled:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #isLocationEnabled");
-    success(@[@([facade isLocationEnabled])]);
+    success(@[@([facade locationServicesEnabled])]);
 }
 
 RCT_EXPORT_METHOD(showAppSettings)
@@ -193,13 +193,14 @@ RCT_EXPORT_METHOD(checkStatus:(RCTResponseSenderBlock)success failure:(RCTRespon
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #checkStatus");
     BOOL isRunning = [facade isStarted];
-    BOOL hasPermissions = [facade isLocationEnabled];
-    NSInteger authorization = 1; // TODO: check authorization
+    BOOL locationServicesEnabled = [facade locationServicesEnabled];
+    NSInteger authorizationStatus = [facade authorizationStatus];
 
     NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithCapacity:3];
     [dict setObject:[NSNumber numberWithBool:isRunning] forKey:@"isRunning"];
-    [dict setObject:[NSNumber numberWithBool:hasPermissions] forKey:@"hasPermissions"];
-    [dict setObject:[NSNumber numberWithInteger:authorization] forKey:@"authorization"];
+    [dict setObject:[NSNumber numberWithBool:locationServicesEnabled] forKey:@"hasPermissions"]; // @deprecated
+    [dict setObject:[NSNumber numberWithBool:locationServicesEnabled] forKey:@"locationServicesEnabled"];
+    [dict setObject:[NSNumber numberWithInteger:authorizationStatus] forKey:@"authorization"];
 
     success(@[dict]);
 }
