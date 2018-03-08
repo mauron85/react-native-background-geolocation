@@ -151,7 +151,7 @@ class BgTracking extends Component {
 
     BackgroundGeolocation.checkStatus(status => {
       console.log('[INFO] BackgroundGeolocation service is running', status.isRunning);
-      console.log('[INFO] BackgroundGeolocation service has permissions', status.hasPermissions);
+      console.log('[INFO] BackgroundGeolocation services enabled', status.locationServicesEnabled);
       console.log('[INFO] BackgroundGeolocation auth status: ' + status.authorization);
 
       // you don't need to check status before start (this is just the example)
@@ -175,13 +175,24 @@ export default BgTracking;
 
 ## Instalation
 
+### Installation
+
 Add package to your project
 
 ```
 npm install react-native-mauron85-background-geolocation --save
 ```
 
-### Android setup
+### Automatic installation
+
+Link your native dependencies
+```
+react-native link react-native-mauron85-background-geolocation
+```
+
+### Manual installation
+
+#### Android setup
 
 In `android/settings.gradle`
 
@@ -251,7 +262,7 @@ You will need to ensure that you have installed the following items through the 
 | Google Repository          | 24      |
 
 
-### iOS setup
+#### iOS setup
 
 1. In XCode, in the project navigator, right click `Libraries` ➜ `Add Files to [your project's name]`
 2. add `./node_modules/react-native-mauron85-background-geolocation/ios/RCTBackgroundGeolocation.xcodeproj`
@@ -352,8 +363,16 @@ Check status of the service
 | Success callback parameter | Type      | Description                                          |
 |----------------------------|-----------|------------------------------------------------------|
 | `isRunning`                | `Boolean` | true/false (true if service is running)              |
-| `hasPermissions`           | `Boolean` | true/false (true if service has permissions)         |
-| `authorization`            | `Number`  | BackgroundGeolocation.{NOT_AUTHORIZED | AUTHORIZED}  |
+| `locationServicesEnabled`  | `Boolean` | true/false (true if location services are enabled)   |
+| `authorization`            | `Number`  | authorization status                                 |
+
+Authorization statuses:
+
+* NOT_AUTHORIZED
+* AUTHORIZED - authorization to run in background and foreground
+* AUTHORIZED_FOREGROUND iOS only authorization to run in foreground only
+
+Note: In Android concept of authorization represent application permissions.
 
 ### showAppSettings()
 Platform: Android >= 6, iOS >= 8.0
