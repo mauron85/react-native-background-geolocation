@@ -190,6 +190,8 @@ Link your native dependencies
 react-native link react-native-mauron85-background-geolocation
 ```
 
+Note: For iOS you still need to manually add background mode and usage descriptions into your project (@see [iOS setup](#ios-setup))
+
 ### Manual installation
 
 #### Android setup
