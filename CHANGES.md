@@ -15,15 +15,28 @@ bug fixing on shared codebase.
 - Android Use gradle to choose authority (PR #136) by @jsdario
 - iOS configuration persistence
 
+
+Since alpha.8:
+- Android automatic linking with react-native link
+- checkStatus returns status of location services (locationServicesEnabled)
+- iOS RAW_LOCATION_PROVIDER continue to run on app terminate
+
 ### Changed
 
-Since alpha.6
+Since alpha.6:
 - iOS saveBatteryOnBackground defaults to false
+
+Since alpha.8:
+- shared code base with Cordova
 
 ### Fixed
 
 Since alpha.4:
 - iOS open location settings on iOS 10 and later (PR #158) by @asafron
+
+Since alpha.8:
+- checkStatus authorization
+- Android fix for Build Failed: cannot find symbol
 
 ### [0.4.1] - 2017-12-19
 #### Changed
