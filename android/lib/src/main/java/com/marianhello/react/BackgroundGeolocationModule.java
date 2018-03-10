@@ -282,7 +282,8 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
                 try {
                     WritableMap out = Arguments.createMap();
                     out.putBoolean("isRunning", LocationService.isRunning());
-                    out.putBoolean("hasPermissions", hasPermissions(PERMISSIONS));
+                    out.putBoolean("hasPermissions", hasPermissions(PERMISSIONS)); //@Deprecated
+                    out.putBoolean("locationServicesEnabled", facade.locationServicesEnabled());
                     out.putInt("authorization", getAuthorizationStatus());
                     success.invoke(out);
                 } catch (SettingNotFoundException e) {
