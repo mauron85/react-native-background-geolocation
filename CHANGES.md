@@ -15,11 +15,13 @@ bug fixing on shared codebase.
 - Android Use gradle to choose authority (PR #136) by @jsdario
 - iOS configuration persistence
 
-
 Since alpha.8:
 - Android automatic linking with react-native link
-- checkStatus returns status of location services (locationServicesEnabled)
+- iOS checkStatus returns status of location services (locationServicesEnabled)
 - iOS RAW_LOCATION_PROVIDER continue to run on app terminate
+
+Since alpha.10:
+- Android checkStatus returns status of location services (locationServicesEnabled)
 
 ### Changed
 
