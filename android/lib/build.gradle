@@ -16,8 +16,8 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         minSdkVersion 16
         targetSdkVersion 23
-        versionCode 8
-        versionName "0.5.0-alpha.8"
+        versionCode 9
+        versionName "0.5.0-alpha.9"
     }
 }
 

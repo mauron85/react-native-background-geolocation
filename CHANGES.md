@@ -38,6 +38,10 @@ Since alpha.8:
 - checkStatus authorization
 - Android fix for Build Failed: cannot find symbol
 
+Since alpha.9:
+- Android fix #118 - NullPointerException LocationService.onTaskRemoved
+- Android permission - check and request permissions in runtime
+
 ### [0.4.1] - 2017-12-19
 #### Changed
 - react native peer dependency >0.49.0
