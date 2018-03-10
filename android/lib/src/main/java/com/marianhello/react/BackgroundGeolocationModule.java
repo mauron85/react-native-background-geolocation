@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.provider.Settings.SettingNotFoundException;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 
 import com.facebook.react.bridge.Arguments;
@@ -18,6 +17,7 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.intentfilter.androidpermissions.PermissionManager;
 import com.marianhello.bgloc.BackgroundGeolocationFacade;
 import com.marianhello.bgloc.Config;
 import com.marianhello.bgloc.LocationService;
@@ -31,11 +31,13 @@ import com.marianhello.react.data.LocationMapper;
 
 import org.json.JSONException;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 
 import static com.marianhello.bgloc.BackgroundGeolocationFacade.PERMISSIONS;
 
-public class BackgroundGeolocationModule extends ReactContextBaseJavaModule implements LifecycleEventListener, ActivityCompat.OnRequestPermissionsResultCallback, PluginDelegate {
+public class BackgroundGeolocationModule extends ReactContextBaseJavaModule implements LifecycleEventListener, PluginDelegate {
 
     public static final String LOCATION_EVENT = "location";
     public static final String STATIONARY_EVENT = "stationary";
@@ -96,40 +98,6 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     public void onHostDestroy() {
         logger.info("Destroying plugin");
         facade.onAppDestroy();
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        switch (requestCode) {
-            case PERMISSIONS_REQUEST_CODE: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length == 0) {
-                    // permission denied
-                    logger.info("User denied requested permissions");
-                    sendEvent(AUTHORIZATION_EVENT, BackgroundGeolocationFacade.AUTHORIZATION_DENIED);
-                    return;
-                }
-                for (int grant : grantResults) {
-                    if (grant != PackageManager.PERMISSION_GRANTED) {
-                        // permission denied
-                        logger.info("User denied requested permissions");
-                        sendEvent(AUTHORIZATION_EVENT, BackgroundGeolocationFacade.AUTHORIZATION_DENIED);
-                        return;
-                    }
-                }
-
-                // permission was granted
-                // start service
-                logger.info("User granted requested permissions");
-                try {
-                    facade.start();
-                } catch (JSONException e) {
-                    logger.error("Error while starting facade", e);
-                }
-
-                return;
-            }
-        }
     }
 
     private void runOnWebViewThread(Runnable runnable) {
@@ -340,9 +308,37 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
         sendEvent(ERROR_EVENT, out);
     }
 
+    private void sendError(int code, String message) {
+        WritableMap out = Arguments.createMap();
+        out.putInt("code", code);
+        out.putString("message", message);
+
+        sendEvent(ERROR_EVENT, out);
+    }
+
     private void requestPermissions(int requestCode, String[] permissions) {
-        // TODO: implement
-        // https://github.com/facebook/react-native/blob/ce967c6fbe9ff7337cc95bdd93a0c08a0688769a/ReactAndroid/src/main/java/com/facebook/react/modules/permissions/PermissionsModule.java
+        PermissionManager permissionManager = PermissionManager.getInstance(getContext());
+        permissionManager.checkPermissions(Arrays.asList(permissions), new PermissionManager.PermissionRequestListener() {
+            @Override
+            public void onPermissionGranted() {
+                // permission was granted
+                // start service
+                logger.info("User granted requested permissions");
+                try {
+                    facade.start();
+                } catch (JSONException e) {
+                    logger.error("Error while starting facade", e);
+                    sendError(PluginError.SERVICE_ERROR, e.getMessage());
+                }
+            }
+
+            @Override
+            public void onPermissionDenied() {
+                logger.info("User denied requested permissions");
+                sendEvent(AUTHORIZATION_EVENT, BackgroundGeolocationFacade.AUTHORIZATION_DENIED);
+            }
+        });
+
     }
 
     public boolean hasPermissions(String[] permissions) {

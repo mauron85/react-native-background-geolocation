@@ -22,13 +22,13 @@ android {
 }
 
 dependencies {
-    provided 'com.facebook.react:react-native:+'
+    compile 'com.facebook.react:react-native:+'
     compile 'com.google.android.gms:play-services-base:+'
     compile 'com.google.android.gms:play-services-location:+'
-    compile 'com.android.support:support-v4:23.+'
     compile 'com.github.tony19:logback-android-core:1.1.1-6'
     compile('com.github.tony19:logback-android-classic:1.1.1-6') {
         exclude group: 'com.google.android', module: 'android'
     }
     compile 'org.slf4j:slf4j-api:1.7.21'
+    compile 'com.intentfilter:android-permissions:0.1.5'
 }
