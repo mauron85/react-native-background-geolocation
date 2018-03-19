@@ -1,5 +1,10 @@
 apply plugin: 'com.android.library'
 
+def applicationId = ""
+if (findProject(':app') != null) {
+    applicationId = project(':app').android.defaultConfig.applicationId
+}
+
 repositories {
     jcenter()
     // Google dependencies are now hosted at Maven
@@ -13,6 +18,8 @@ android {
     buildToolsVersion "23.0.3"
 
     defaultConfig {
+        resValue "string", "content_authority", applicationId + '.provider'
+        resValue "string", "account_type", applicationId
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         minSdkVersion 16
         targetSdkVersion 23

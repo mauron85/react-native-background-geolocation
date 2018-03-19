@@ -215,19 +215,6 @@ dependencies {
 }
 ```
 
-In `android/src/main/res/values/strings.xml`
-
-Properties `@account_type` and `@content_authority` should be prefixed with your application package class.
-
-```xml
-<resources>
-<!-- Make sure you override following in your app res/values/strings.xml -->
-    <string name="app_name">APP_NAME</string>
-    <string name="account_type">com.yourcompany.account</string>
-    <string name="content_authority">com.yourcompany.authority</string>
-</resources>
-```
-
 Register module (in `MainApplication.java`)
 
 ```java
