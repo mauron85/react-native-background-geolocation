@@ -3,4 +3,4 @@
 git submodule init
 git submodule update
 
-cp -r android/common/src/main/java/* android/lib/src/main/java/
+cp -r android/common/src/main/* android/lib/src/main/
