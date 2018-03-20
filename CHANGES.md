@@ -31,6 +31,10 @@ Since alpha.6:
 Since alpha.8:
 - shared code base with Cordova
 
+Since alpha.11:
+- Android derive sync authority and provider from applicationId
+- Android remove android.permission.GET_ACCOUNTS
+
 ### Fixed
 
 Since alpha.4:
