@@ -183,7 +183,7 @@ Add package to your project
 npm install react-native-mauron85-background-geolocation --save
 ```
 
-### Automatic installation
+### Automatic setup
 
 Link your native dependencies
 ```
@@ -192,7 +192,7 @@ react-native link react-native-mauron85-background-geolocation
 
 Note: For iOS you still need to manually add background mode and usage descriptions into your project (@see [iOS setup](#ios-setup))
 
-### Manual installation
+### Manual setup
 
 #### Android setup
 
@@ -218,7 +218,7 @@ dependencies {
 Register module (in `MainApplication.java`)
 
 ```java
-import com.marianhello.react.BackgroundGeolocationPackage;  // <--- Import Package
+import com.marianhello.bgloc.react.BackgroundGeolocationPackage;  // <--- Import Package
 
 public class MainApplication extends Application implements ReactApplication {
   ...
