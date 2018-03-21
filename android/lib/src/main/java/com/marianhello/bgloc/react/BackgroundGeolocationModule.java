@@ -1,10 +1,9 @@
-package com.marianhello.react;
+package com.marianhello.bgloc.react;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.provider.Settings.SettingNotFoundException;
-import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
 
 import com.facebook.react.bridge.Arguments;
@@ -27,11 +26,10 @@ import com.marianhello.bgloc.data.BackgroundActivity;
 import com.marianhello.bgloc.data.BackgroundLocation;
 import com.marianhello.logging.LogEntry;
 import com.marianhello.logging.LoggerManager;
-import com.marianhello.react.data.LocationMapper;
+import com.marianhello.bgloc.react.data.LocationMapper;
 
 import org.json.JSONException;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 

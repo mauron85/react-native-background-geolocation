@@ -1,4 +1,4 @@
-package com.marianhello.react;
+package com.marianhello.bgloc.react;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReadableMap;
@@ -10,15 +10,11 @@ import com.iodine.start.MapUtil;
 import com.marianhello.bgloc.Config;
 import com.marianhello.bgloc.data.ArrayListLocationTemplate;
 import com.marianhello.bgloc.data.HashMapLocationTemplate;
-import com.marianhello.bgloc.data.LinkedHashSetLocationTemplate;
 import com.marianhello.bgloc.data.LocationTemplate;
 import com.marianhello.bgloc.data.LocationTemplateFactory;
 
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
