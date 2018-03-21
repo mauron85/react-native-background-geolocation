@@ -51,6 +51,10 @@ Since alpha.9:
 Sice alpha.13:
 - Android fix allowBackup attribute conflict
 
+Sice alpha.14:
+- Android fix #166 - Error: more than one library with package name
+'com.google.android.gms.license'
+
 ### [0.4.1] - 2017-12-19
 #### Changed
 - react native peer dependency >0.49.0
