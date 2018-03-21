@@ -48,6 +48,9 @@ Since alpha.9:
 - Android fix #118 - NullPointerException LocationService.onTaskRemoved
 - Android permission - check and request permissions in runtime
 
+Sice alpha.13:
+- Android fix allowBackup attribute conflict
+
 ### [0.4.1] - 2017-12-19
 #### Changed
 - react native peer dependency >0.49.0
