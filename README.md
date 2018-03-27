@@ -134,10 +134,12 @@ class BgTracking extends Component {
     BackgroundGeolocation.on('authorization', (status) => {
       console.log('[INFO] BackgroundGeolocation authorization status: ' + status);
       if (status !== BackgroundGeolocation.AUTHORIZED) {
-        Alert.alert('Location services are disabled', 'Would you like to open location settings?', [
-          { text: 'Yes', onPress: () => BackgroundGeolocation.showLocationSettings() },
-          { text: 'No', onPress: () => console.log('No Pressed'), style: 'cancel' }
-        ]);
+        // we need to set delay or otherwise alert may not be shown
+        setTimeout(() =>
+          Alert.alert('App requires location tracking permission', 'Would you like to open app settings?', [
+            { text: 'Yes', onPress: () => BackgroundGeolocation.showAppSettings() },
+            { text: 'No', onPress: () => console.log('No Pressed'), style: 'cancel' }
+          ]), 1000);
       }
     });
 
