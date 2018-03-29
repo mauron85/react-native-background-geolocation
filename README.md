@@ -77,7 +77,7 @@ import BackgroundGeolocation from 'react-native-mauron85-background-geolocation'
 class BgTracking extends Component {
   componentDidMount() {
     BackgroundGeolocation.configure({
-      desiredAccuracy: 10,
+      desiredAccuracy: BackgroundGeolocation.HIGH_ACCURACY,
       stationaryRadius: 50,
       distanceFilter: 50,
       notificationTitle: 'Background tracking',
