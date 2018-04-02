@@ -4,7 +4,8 @@
   "description": "optimized background location tracking",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepublish": "node ./scripts/prepublish"
   },
   "repository": {
     "type": "git",
