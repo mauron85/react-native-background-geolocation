@@ -27,6 +27,10 @@ Since alpha.15:
 - Android location parameters isFromMockProvider, mockLocationsEnabled, radius, provider
 - Android Headless Task
 
+Since alpha.16:
+- iOS add background modes and permissions on postlink
+- add crossplatform prepublish script execution (PR #165) by @dobrynia
+
 ### Changed
 
 Since alpha.6:
