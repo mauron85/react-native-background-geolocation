@@ -5,3 +5,4 @@ Many thanks to all contributors
 * [erikkemperman](https://github.com/erikkemperman)
 * [codebling](https://github.com/codebling)
 * [pmwisdom](https://github.com/pmwisdom)
+* [dobrynia](https://github.com/dobrynia)
