@@ -463,18 +463,23 @@ Unregister all event listeners for given event
 | `background`        |                        | Android      | all         | app entered background state           |
 
 ### Location event
-| Location parameter | Type      | Description                                                            |
-|--------------------|-----------|------------------------------------------------------------------------|
-| `id`               | `Number`  | ID of location as stored in DB (or null)                               |
-| `provider`         | `String`  | gps, network, passive or fused                                         |
-| `locationProvider` | `Number`  | location provider                                                      |
-| `time`             | `Number`  | UTC time of this fix, in milliseconds since January 1, 1970.           |
-| `latitude`         | `Number`  | Latitude, in degrees.                                                  |
-| `longitude`        | `Number`  | Longitude, in degrees.                                                 |
-| `accuracy`         | `Number`  | Estimated accuracy of this location, in meters.                        |
-| `speed`            | `Number`  | Speed if it is available, in meters/second over ground.                |
-| `altitude`         | `Number`  | Altitude if available, in meters above the WGS 84 reference ellipsoid. |
-| `bearing`          | `Number`  | Bearing, in degrees.                                                   |
+| Location parameter     | Type      | Description                                                            |
+|------------------------|-----------|------------------------------------------------------------------------|
+| `id`                   | `Number`  | ID of location as stored in DB (or null)                               |
+| `provider`             | `String`  | gps, network, passive or fused                                         |
+| `locationProvider`     | `Number`  | location provider                                                      |
+| `time`                 | `Number`  | UTC time of this fix, in milliseconds since January 1, 1970.           |
+| `latitude`             | `Number`  | Latitude, in degrees.                                                  |
+| `longitude`            | `Number`  | Longitude, in degrees.                                                 |
+| `accuracy`             | `Number`  | Estimated accuracy of this location, in meters.                        |
+| `speed`                | `Number`  | Speed if it is available, in meters/second over ground.                |
+| `altitude`             | `Number`  | Altitude if available, in meters above the WGS 84 reference ellipsoid. |
+| `bearing`              | `Number`  | Bearing, in degrees.                                                   |
+| `isFromMockProvider`   | `Boolean` | (android only) True if location was recorded by mock provider          |
+| `mockLocationsEnabled` | `Boolean` | (android only) True if device has mock locations enabled               |
+
+Locations parameters `isFromMockProvider` and `mockLocationsEnabled` are not posted to `url` or `syncUrl` by default.
+Both can be requested via option `postTemplate`.
 
 Note: Do not use location `id` as unique key in your database as ids will be reused when `option.maxLocations` is reached.
 
@@ -550,9 +555,40 @@ BackgroundGeolocation.configure({
 Note: only string keys and values are supported.
 Note: Keep in mind that all locations (even single one) will be sent as array of object(s), when postTemplate is `jsonObject` and array of array(s) for `jsonArray`!
 
+### Android Headless Task (Experimental)
+
+Special task that gets executed when app is terminated, but plugin was configured to continue running in the background (option `stopOnTerminate: false`). In this scenario [Activity](https://developer.android.com/reference/android/app/Activity.html)
+was killed by the system and all registered event listeners will not be triggered until app is relaunched.
+
+**Note:** Prefer configuration options `url` and `syncUrl` over headless task. Use it sparingly!
+
+#### Task event
+| Parameter          | Type      | Description                                                            |
+|--------------------|-----------|------------------------------------------------------------------------|
+| `event.name`       | `String`  | Name of the event [ "location", "stationary", "activity" ]             |
+| `event.params`     | `Object`  | Event parameters. @see [Events](#events)                               |
+
+Keep in mind that callback function lives in isolated scope. Variables from upper scope cannot be referenced!
+
+Following example requires [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) enabled backend server.
+
+```
+BackgroundGeolocation.headlessTask(function(event) {
+    if (event.name === 'location' ||
+      event.name === 'stationary') {
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'http://192.168.81.14:3000/headless');
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.send(JSON.stringify(event.params));
+    }
+
+    return 'Processing event: ' + event.name; // will be logged
+});
+```
+
 ### Example of backend server
 
-[Background-geolocation-server](https://github.com/mauron85/background-geolocation-server) is a backend server written in nodejs.
+[Background-geolocation-server](https://github.com/mauron85/background-geolocation-server) is a backend server written in nodejs with CORS - Cross-Origin Resource Sharing support.
 There are instructions how to run it and simulate locations on Android, iOS Simulator and Genymotion.
 
 ## Debugging
