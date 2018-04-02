@@ -23,6 +23,9 @@ Since alpha.8:
 Since alpha.10:
 - Android checkStatus returns status of location services (locationServicesEnabled)
 
+Since alpha.15:
+- Android location parameters isFromMockProvider, mockLocationsEnabled, radius, provider
+
 ### Changed
 
 Since alpha.6:
@@ -54,6 +57,11 @@ Sice alpha.13:
 Sice alpha.14:
 - Android fix #166 - Error: more than one library with package name
 'com.google.android.gms.license'
+
+Since alpha.15:
+- Android only pass valid location parameters
+- iOS reset connectivity status on stop
+- iOS fix App Store Rejection - Prefs Non-Public URL Scheme
 
 ### [0.4.1] - 2017-12-19
 #### Changed
