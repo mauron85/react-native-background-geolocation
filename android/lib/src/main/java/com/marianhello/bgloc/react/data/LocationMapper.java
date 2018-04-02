@@ -12,15 +12,19 @@ import com.marianhello.utils.Convert;
 public class LocationMapper {
     public static WritableMap toWriteableMap(BackgroundLocation location) {
         WritableMap out = Arguments.createMap();
+        out.putString("provider", location.getProvider());
         Integer locationProvider = location.getLocationProvider();
         if (locationProvider != null) out.putInt("locationProvider", locationProvider);
         out.putDouble("time", new Long(location.getTime()).doubleValue());
         out.putDouble("latitude", location.getLatitude());
         out.putDouble("longitude", location.getLongitude());
-        out.putDouble("accuracy", location.getAccuracy());
-        out.putDouble("speed", location.getSpeed());
-        out.putDouble("altitude", location.getAltitude());
-        out.putDouble("bearing", location.getBearing());
+        if (location.hasAccuracy()) out.putDouble("accuracy", location.getAccuracy());
+        if (location.hasSpeed()) out.putDouble("speed", location.getSpeed());
+        if (location.hasAltitude()) out.putDouble("altitude", location.getAltitude());
+        if (location.hasBearing()) out.putDouble("bearing", location.getBearing());
+        if (location.hasRadius()) out.putDouble("radius", location.getRadius());
+        if (location.hasIsFromMockProvider()) out.putBoolean("isFromMockProvider", location.isFromMockProvider());
+        if (location.hasMockLocationsEnabled()) out.putBoolean("mockLocationsEnabled", location.areMockLocationsEnabled());
 
         return out;
     }
