@@ -182,7 +182,7 @@ export default BgTracking;
 Add package to your project
 
 ```
-npm install react-native-mauron85-background-geolocation --save
+yarn add react-native-mauron85-background-geolocation
 ```
 
 ### Automatic setup
@@ -191,8 +191,6 @@ Link your native dependencies
 ```
 react-native link react-native-mauron85-background-geolocation
 ```
-
-Note: For iOS you still need to manually add background mode and usage descriptions into your project (@see [iOS setup](#ios-setup))
 
 ### Manual setup
 

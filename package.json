@@ -33,7 +33,14 @@
   "peerDependencies": {
     "react-native": ">0.49.0"
   },
+  "devDependencies": {
+    "fs-extra": "^5.0.0",
+    "plist": "^3.0.1"
+  },
   "rnpm": {
+    "commands": {
+      "postlink": "node node_modules/react-native-mauron85-background-geolocation/scripts/postlink.js"
+    },
     "android": {
       "sourceDir": "./android/lib"
     }
