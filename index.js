@@ -158,6 +158,12 @@ var BackgroundGeolocation = {
     }
   },
 
+  headlessTask: function(func, successFn, errorFn) {
+    successFn = successFn || emptyFn;
+    errorFn = errorFn || emptyFn;
+    RNBackgroundGeolocation.headlessTask(func.toString(), successFn, errorFn);
+  },
+
   on: function(event, callbackFn) {
     if (typeof callbackFn !== 'function') {
       throw 'RNBackgroundGeolocation: callback function must be provided';

@@ -293,6 +293,13 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
 
     }
 
+    @ReactMethod
+    public void headlessTask(String jsFunction, Callback success, Callback error) {
+        logger.debug("Registering headless task");
+        facade.registerHeadlessTask(jsFunction);
+        success.invoke();
+        }
+
     private void sendEvent(String eventName, Object params) {
         getReactApplicationContext()
                 .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
