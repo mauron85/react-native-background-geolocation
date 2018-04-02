@@ -25,6 +25,7 @@ Since alpha.10:
 
 Since alpha.15:
 - Android location parameters isFromMockProvider, mockLocationsEnabled, radius, provider
+- Android Headless Task
 
 ### Changed
 
