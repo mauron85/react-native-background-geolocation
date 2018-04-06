@@ -1,8 +1,21 @@
 apply plugin: 'com.android.library'
 
+def DEFAULT_COMPILE_SDK_VERSION = 23
+def DEFAULT_BUILD_TOOLS_VERSION = "23.0.3"
+def DEFAULT_TARGET_SDK_VERSION = 23
+def DEFAULT_PLAY_SERVICES_VERSION = "11+"
+
 def applicationId = ""
 if (findProject(':app') != null) {
     applicationId = project(':app').android.defaultConfig.applicationId
+}
+
+// Check for application-defined play-services version
+def playServicesVersion = DEFAULT_PLAY_SERVICES_VERSION
+if (rootProject.hasProperty('playServicesVersion')) {
+    playServicesVersion = rootProject.playServicesVersion
+} else if (rootProject.hasProperty('googlePlayServicesVersion')) {
+    playServicesVersion = rootProject.googlePlayServicesVersion
 }
 
 repositories {
@@ -14,17 +27,17 @@ repositories {
 }
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "23.0.3"
+    compileSdkVersion rootProject.hasProperty('compileSdkVersion') ? rootProject.compileSdkVersion : DEFAULT_COMPILE_SDK_VERSION
+    buildToolsVersion rootProject.hasProperty('buildToolsVersion') ? rootProject.buildToolsVersion : DEFAULT_BUILD_TOOLS_VERSION
 
     defaultConfig {
         resValue "string", "content_authority", applicationId + '.provider'
         resValue "string", "account_type", applicationId
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         minSdkVersion 16
-        targetSdkVersion 23
-        versionCode 13
-        versionName "0.5.0-alpha.13"
+        targetSdkVersion rootProject.hasProperty('targetSdkVersion') ? rootProject.targetSdkVersion : DEFAULT_TARGET_SDK_VERSION
+        versionCode 1 // intentionally not updating version as we're not uploading to any java repository
+        versionName "1.0"
     }
 
     lintOptions {
@@ -34,8 +47,7 @@ android {
 
 dependencies {
     compile 'com.facebook.react:react-native:+'
-    compile 'com.google.android.gms:play-services-base:11+'
-    compile 'com.google.android.gms:play-services-location:11+'
+    compile "com.google.android.gms:play-services-location:$playServicesVersion"
     compile 'com.github.tony19:logback-android:1.1.1-9'
     compile 'org.slf4j:slf4j-api:1.7.21'
     compile 'com.intentfilter:android-permissions:0.1.6'
