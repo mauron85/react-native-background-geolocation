@@ -1,9 +1,10 @@
 apply plugin: 'com.android.library'
 
-def DEFAULT_COMPILE_SDK_VERSION = 23
-def DEFAULT_BUILD_TOOLS_VERSION = "23.0.3"
-def DEFAULT_TARGET_SDK_VERSION = 23
+def DEFAULT_COMPILE_SDK_VERSION = 26
+def DEFAULT_BUILD_TOOLS_VERSION = "26.0.2"
+def DEFAULT_TARGET_SDK_VERSION = 26
 def DEFAULT_PLAY_SERVICES_VERSION = "11+"
+def DEFAULT_SUPPORT_LIB_VERSION = "26.1.0"
 
 def applicationId = ""
 if (findProject(':app') != null) {
@@ -18,9 +19,15 @@ if (rootProject.hasProperty('playServicesVersion')) {
     playServicesVersion = rootProject.googlePlayServicesVersion
 }
 
+def supportLibVersion = DEFAULT_SUPPORT_LIB_VERSION
+if (rootProject.hasProperty('supportLibVersion')) {
+    supportLibVersion = rootProject.supportLibVersion
+}
+
 repositories {
     jcenter()
     // Google dependencies are now hosted at Maven
+    // unfortunately this is ignored when installing as react-native plugin
     maven {
         url 'https://maven.google.com'
     }
@@ -47,7 +54,24 @@ android {
 
 dependencies {
     compile 'com.facebook.react:react-native:+'
+    // For Oreo compatibility we are forced to use supportLibVersion >= 26.1.0
+    // Unfortunately Android will soon stop supporting downloading libraries through the SDK Manager.
+    // That would require user to manually add:
+    //
+    // repositories {
+    //   maven { url 'https://maven.google.com' }
+    // }
+    //
+    // into his root build.gradle.
+    // @see https://developer.android.com/topic/libraries/support-library/setup.html
+    //
+    // If you don't like this please ask react guys nicely to add google maven repo into
+    // their templates.
     compile "com.google.android.gms:play-services-location:$playServicesVersion"
+    compile "com.android.support:support-compat:$supportLibVersion"
+    // Because of play services version 11, we need to override it's support-v4 library!
+    // You can check dependency graph: ./gradlew app:dependencies --configuration compile
+    compile "com.android.support:support-v4:$supportLibVersion"
     compile 'com.github.tony19:logback-android:1.1.1-9'
     compile 'org.slf4j:slf4j-api:1.7.21'
     compile 'com.intentfilter:android-permissions:0.1.6'

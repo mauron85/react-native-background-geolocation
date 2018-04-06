@@ -188,9 +188,15 @@ yarn add react-native-mauron85-background-geolocation
 ### Automatic setup
 
 Link your native dependencies
+
 ```
 react-native link react-native-mauron85-background-geolocation
 ```
+
+Unfortunately there is one additional step - adding Google Maven repository into your project.
+Check [dependencies section](/#dependencies) for more details.
+
+Warning: Failing to add Google Maven repository will crash your application!
 
 ### Manual setup
 
@@ -242,13 +248,35 @@ You will need to ensure that you have installed the following items through the 
 
 | Name                       | Version |
 |----------------------------|---------|
-| Android SDK Tools          | 24.4.1  |
-| Android SDK Platform-tools | 23.1    |
-| Android SDK Build-tools    | 23.0.1  |
-| Android Support Repository | 25      |
-| Android Support Library    | 23.1.1  |
-| Google Play Services       | 29      |
-| Google Repository          | 24      |
+| Android SDK Tools          | 26.0.2  |
+| Android SDK Platform-tools | 26.0.2  |
+| Android SDK Build-tools    | 26.0.2  |
+| Android Support Repository | 47      |
+| Android Support Library    | 26.1.0  |
+| Google Play Services       | 11.8.0  |
+| Google Repository          | 58      |
+
+Android is no longer supporting downloading support libraries through the SDK Manager.
+The support libraries are now available through Google's Maven repository.
+
+You need to add google maven repository into your root `build.gradle`:
+
+```
+allprojects {
+    repositories {
+        mavenLocal()
+        jcenter()
+        maven {
+            // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
+            url "$rootDir/../node_modules/react-native/android"
+        }
+        <!-- add this -->
+        maven {
+            url "https://maven.google.com"
+        }
+    }
+}
+```
 
 
 #### iOS setup
