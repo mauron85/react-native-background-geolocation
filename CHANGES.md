@@ -56,10 +56,10 @@ Since alpha.9:
 - Android fix #118 - NullPointerException LocationService.onTaskRemoved
 - Android permission - check and request permissions in runtime
 
-Sice alpha.13:
+Since alpha.13:
 - Android fix allowBackup attribute conflict
 
-Sice alpha.14:
+Since alpha.14:
 - Android fix #166 - Error: more than one library with package name
 'com.google.android.gms.license'
 
@@ -67,6 +67,9 @@ Since alpha.15:
 - Android only pass valid location parameters
 - iOS reset connectivity status on stop
 - iOS fix App Store Rejection - Prefs Non-Public URL Scheme
+
+Since alpha.17:
+- Android fix service accidently started with default or stored config
 
 ### [0.4.1] - 2017-12-19
 #### Changed
