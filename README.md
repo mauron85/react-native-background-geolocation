@@ -193,11 +193,6 @@ Link your native dependencies
 react-native link react-native-mauron85-background-geolocation
 ```
 
-Unfortunately there is one additional step - adding Google Maven repository into your project.
-Check [dependencies section](/#dependencies) for more details.
-
-Warning: Failing to add Google Maven repository will crash your application!
-
 ### Manual setup
 
 #### Android setup
@@ -206,6 +201,8 @@ In `android/settings.gradle`
 
 ```gradle
 ...
+include ':react-native-mauron85-background-geolocation-common'
+project(':react-native-mauron85-background-geolocation-common').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-mauron85-background-geolocation/android/common')
 include ':react-native-mauron85-background-geolocation', ':app'
 project(':react-native-mauron85-background-geolocation').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-mauron85-background-geolocation/android/lib')
 ...
@@ -256,28 +253,27 @@ You will need to ensure that you have installed the following items through the 
 | Google Play Services       | 11.8.0  |
 | Google Repository          | 58      |
 
-Android is no longer supporting downloading support libraries through the SDK Manager.
-The support libraries are now available through Google's Maven repository.
 
-You need to add google maven repository into your root `build.gradle`:
+#### Android Oreo
+
+You can enable experimental Oreo support by adding following into root build.gradle:
 
 ```
 allprojects {
-    repositories {
-        mavenLocal()
-        jcenter()
-        maven {
-            // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm
-            url "$rootDir/../node_modules/react-native/android"
-        }
-        <!-- add this -->
-        maven {
-            url "https://maven.google.com"
-        }
-    }
+  repositories {
+    maven { url 'https://maven.google.com' }
+  }
+}
+
+ext {
+  compileSdkVersion = 26
+  targetSdkVersion = 26
+  buildToolsVersion = "26.0.2"
+  supportLibVersion = "26.1.0"
+  googlePlayServicesVersion = "11.8.0"
+  oreoEXPERIMENTAL = "yes"
 }
 ```
-
 
 #### iOS setup
 
