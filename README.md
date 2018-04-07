@@ -28,7 +28,7 @@ See [Which provider should I use?](/PROVIDERS.md) for more information about pro
 * for background syncing syncUrl option is required. In version 0.3.x if syncUrl was not set url was used.
 * plugin constants are in directly BackgroundGeolocation namespace. (check index.js)
 * location property locationId renamed to just id
-* iOS pauseLocationUpdates now default to false (becuase iOS docs now states that you need to restart manually if you set it to true)
+* iOS pauseLocationUpdates now default to false (because iOS docs now states that you need to restart manually if you set it to true)
 * iOS no more requires to call finish method. Instead you can optionally start long running task with startTask
 
 ## Compatibility
