@@ -31,6 +31,12 @@ Since alpha.16:
 - iOS add background modes and permissions on postlink
 - add crossplatform prepublish script execution (PR #165) by @dobrynia
 
+Since alpha.17:
+- Android allow to override version of libraries with ext declaration
+
+Since alpha.19:
+- Android Oreo experimental support
+
 ### Changed
 
 Since alpha.6:
@@ -42,6 +48,10 @@ Since alpha.8:
 Since alpha.11:
 - Android derive sync authority and provider from applicationId
 - Android remove android.permission.GET_ACCOUNTS
+
+Since alpha.19:
+- Android postlink register project in settings.gradle instead of file copying
+(BREAKING CHANGE - read android-setup section)
 
 ### Fixed
 
