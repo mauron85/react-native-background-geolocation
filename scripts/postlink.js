@@ -30,30 +30,36 @@ const plist = require('plist');
 const infoPlistPath = path.join(appDir, 'ios', manifest.name, 'Info.plist');
 const infoPlistFile = fs.readFileSync(infoPlistPath, 'utf8');
 const infoPlist = plist.parse(infoPlistFile);
+const pListChanges = {};
 
-console.log('Adding UIBackgroundModes into project...');
-const bgModes = infoPlist.UIBackgroundModes || [];
-REQUIRED_BACKGROUND_MODES.forEach(function(mode) {
-  if (bgModes.indexOf(mode) === -1) {
-    bgModes.push(mode);
-  }
+const existingBgModes = infoPlist.UIBackgroundModes || [];
+const missingBgModes = REQUIRED_BACKGROUND_MODES.filter(function(mode) {
+  return existingBgModes.indexOf(mode) === -1;
 });
-infoPlist.UIBackgroundModes = bgModes;
 
-console.log('Adding permissions to Info.plist...');
+if (missingBgModes.length > 0)  {
+  pListChanges.UIBackgroundModes = missingBgModes;
+}
+
 if (!infoPlist.NSLocationAlwaysUsageDescription) {
-  infoPlist.NSLocationAlwaysUsageDescription = 'App requires background tracking';
+  pListChanges.NSLocationAlwaysUsageDescription = 'App requires background tracking';
 }
 if (!infoPlist.NSLocationAlwaysAndWhenInUseUsageDescription) {
-  infoPlist.NSLocationAlwaysAndWhenInUseUsageDescription = 'App requires background tracking';
+  pListChanges.NSLocationAlwaysAndWhenInUseUsageDescription = 'App requires background tracking';
 }
 if (!infoPlist.NSMotionUsageDescription) {
-  infoPlist.NSMotionUsageDescription = 'App requires motion tracking';
+  pListChanges.NSMotionUsageDescription = 'App requires motion tracking';
 }
 if (!infoPlist.NSLocationWhenInUseUsageDescription) {
-  infoPlist.NSLocationWhenInUseUsageDescription = 'App requires background tracking';
+  pListChanges.NSLocationWhenInUseUsageDescription = 'App requires background tracking';
 }
-fs.writeFileSync(infoPlistPath, plist.build(infoPlist));
+
+if (Object.keys(pListChanges).length > 0) {
+  // only write to plist if there were changes
+  Object.assign(infoPlist, pListChanges);
+  fs.writeFileSync(infoPlistPath, plist.build(infoPlist));
+}
+
 
 const exec = require('child_process').execSync;
 
