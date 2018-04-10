@@ -203,7 +203,7 @@ In `android/settings.gradle`
 ...
 include ':react-native-mauron85-background-geolocation-common'
 project(':react-native-mauron85-background-geolocation-common').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-mauron85-background-geolocation/android/common')
-include ':react-native-mauron85-background-geolocation', ':app'
+include ':react-native-mauron85-background-geolocation'
 project(':react-native-mauron85-background-geolocation').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-mauron85-background-geolocation/android/lib')
 ...
 ```
