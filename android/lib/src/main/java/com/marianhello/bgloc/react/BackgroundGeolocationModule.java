@@ -252,23 +252,30 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     }
 
     @ReactMethod
-    public void getLogEntries(final int limit, final Callback success, Callback error) {
+    public void getLogEntries(final Integer limit, final Integer offset, final String minLevel, final Callback success, final Callback error) {
         runOnWebViewThread(new Runnable() {
             public void run() {
                 WritableArray logEntriesArray = Arguments.createArray();
-                Collection<LogEntry> logEntries = facade.getLogEntries(limit);
-                for (LogEntry logEntry : logEntries) {
-                    WritableMap out = Arguments.createMap();
-                    out.putInt("context", logEntry.getContext());
-                    out.putString("level", logEntry.getLevel());
-                    out.putString("message", logEntry.getMessage());
-                    out.putString("timestamp", new Long(logEntry.getTimestamp()).toString());
-                    out.putString("logger", logEntry.getLoggerName());
+                try {
+                    Collection<LogEntry> logEntries = facade.getLogEntries(limit, offset, minLevel);
+                    for (LogEntry logEntry : logEntries) {
+                        WritableMap out = Arguments.createMap();
+                        out.putInt("context", logEntry.getContext());
+                        out.putString("level", logEntry.getLevel());
+                        out.putString("message", logEntry.getMessage());
+                        out.putString("timestamp", new Long(logEntry.getTimestamp()).toString());
+                        out.putString("logger", logEntry.getLoggerName());
+                        if (logEntry.hasStackTrace()) {
+                            out.putString("stackTrace", logEntry.getStackTrace());
+                        }
 
-                    logEntriesArray.pushMap(out);
+                        logEntriesArray.pushMap(out);
+                    }
+                    success.invoke(logEntriesArray);
+                } catch (Exception e) {
+                    logger.error("Getting log entries failed: {}", e.getMessage());
+                    error.invoke("Getting log entries failed:" + e.getMessage());
                 }
-
-                success.invoke(logEntriesArray);
             }
         });
     }

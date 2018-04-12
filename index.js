@@ -33,6 +33,12 @@ var BackgroundGeolocation = {
   LOW_ACCURACY: 1000,
   PASSIVE_ACCURACY: 10000,
 
+  LOG_ERROR: 'ERROR',
+  LOG_WARN: 'WARN',
+  LOG_INFO: 'INFO',
+  LOG_DEBUG: 'DEBUG',
+  LOG_TRACE: 'TRACE',
+
   // @Deprecated
   provider: {
     ANDROID_DISTANCE_FILTER_PROVIDER: 0,
@@ -131,10 +137,25 @@ var BackgroundGeolocation = {
     RNBackgroundGeolocation.getConfig(successFn, errorFn);
   },
 
-  getLogEntries: function(limit, successFn, errorFn) {
-    successFn = successFn || emptyFn;
-    errorFn = errorFn || emptyFn;
-    RNBackgroundGeolocation.getLogEntries(limit, successFn, errorFn);
+  getLogEntries: function(limit, /* offset = 0, minLevel = "DEBUG", successFn = emptyFn, errorFn = emptyFn */) {
+    var acnt = arguments.length;
+    var offset, minLevel, successFn, errorFn;
+
+    if (acnt > 1 && typeof arguments[1] == 'function') {
+      // backward compatibility
+      console.log('[WARN]: Calling deprecated variant of getLogEntries method.');
+      offset = 0;
+      minLevel = BackgroundGeolocation.LOG_DEBUG;
+      successFn = arguments[1] || emptyFn;
+      errorFn = arguments[2] || emptyFn;
+    } else {
+      offset = acnt > 1 && arguments[1] !== undefined ? arguments[1] : 0;
+      minLevel = acnt > 2 && arguments[2] !== undefined ? arguments[2] : BackgroundGeolocation.LOG_DEBUG;
+      successFn = acnt > 3 && arguments[3] !== undefined ? arguments[3] : emptyFn;
+      errorFn = acnt > 4 && arguments[4] !== undefined ? arguments[4] : emptyFn;
+    }
+
+    RNBackgroundGeolocation.getLogEntries(limit, offset, minLevel, successFn, errorFn);
   },
 
   startTask: function(callbackFn) {

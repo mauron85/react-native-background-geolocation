@@ -169,12 +169,11 @@ RCT_EXPORT_METHOD(deleteAllLocations:(RCTResponseSenderBlock)success failure:(RC
     });
 }
 
-RCT_EXPORT_METHOD(getLogEntries:(int)limit success:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
+RCT_EXPORT_METHOD(getLogEntries:(int)limit offset:(int)offset minLogLevel:(NSString*)minLogLevel success:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #getLogEntries");
-//    limit = isNull(limit) ? [NSNumber numberWithInt:0] : limit;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-        NSArray *logs = [facade getLogEntries:limit];
+        NSArray *logs = [facade getLogEntries:limit startAtOffset:offset minLogLevelFromString:minLogLevel];
         success(@[logs]);
     });
 }
