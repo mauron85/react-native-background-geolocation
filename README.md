@@ -459,12 +459,29 @@ BackgroundGeolocation.switchMode(BackgroundGeolocation.FOREGROUND_MODE);
 BackgroundGeolocation.switchMode(BackgroundGeolocation.BACKGROUND_MODE);
 ```
 
-### getLogEntries(limit, success, fail)
+### getLogEntries(limit, offset, minLevel, success, fail)
 Platform: Android, iOS
 
 Return all logged events. Useful for plugin debugging.
-Parameter `limit` limits number of returned entries.
-**@see [Debugging](#debugging)** for more information.
+
+| Parameter  | Type          | Description                                                                                       |
+|------------|---------------|---------------------------------------------------------------------------------------------------|
+| `limit`    | `Number`      | limits number of returned entries                                                                 |
+| `offset`   | `Number`      | return entries from offset. Useful if you plan to implement infinite log scrolling*               |
+| `minLevel` | `String`      | return log entries above level. Available levels: ["TRACE", "DEBUG", "INFO", "WARN", "ERROR]      |
+| `success`  | `Function`    | callback function which will be called with log entries                                           |
+
+*[Example of infinite log scrolling](https://github.com/mauron85/react-native-background-geolocation-example/blob/master/src/scenes/Logs.js)
+
+Format of log entry:
+
+| Parameter   | Type          | Description                                                                                       |
+|-------------|---------------|---------------------------------------------------------------------------------------------------|
+| `rowid`     | `Number`      | id of log entry as stored in db                                                                   |
+| `timestamp` | `Number`      | timestamp in milliseconds since beginning of UNIX epoch                                           |
+| `level`     | `String`      | log level                                                                                         |
+| `message`   | `String`      | log message                                                                                       |
+| `stackTrace`| `String`      | recorded stacktrace (Android only, on iOS part of message)                                        |
 
 ### removeAllListeners(event)
 
@@ -615,7 +632,22 @@ There are instructions how to run it and simulate locations on Android, iOS Simu
 
 ## Debugging
 
-See [DEBUGGING.md](/DEBUGGING.md)
+## Submit crash log
+
+TODO
+
+## Debugging sounds
+| Event                               | *ios*                             | *android*               |
+|-------------------------------------|-----------------------------------|-------------------------|
+| Exit stationary region              | Calendar event notification sound | dialtone beep-beep-beep |
+| Geolocation recorded                | SMS sent sound                    | tt short beep           |
+| Aggressive geolocation engaged      | SIRI listening sound              |                         |
+| Passive geolocation engaged         | SIRI stop listening sound         |                         |
+| Acquiring stationary location sound | "tick,tick,tick" sound            |                         |
+| Stationary location acquired sound  | "bloom" sound                     | long tt beep            |
+
+**NOTE:** For iOS  in addition, you must manually enable the *Audio and Airplay* background mode in *Background Capabilities* to hear these debugging sounds.
+
 
 ## Geofencing
 Try using [react-native-geo-fencing](https://github.com/surialabs/react-native-geo-fencing). Let's keep this plugin lightweight as much as possible.

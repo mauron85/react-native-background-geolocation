@@ -37,6 +37,10 @@ Since alpha.17:
 Since alpha.19:
 - Android Oreo experimental support
 
+Since alpha.20:
+- option to get logs by offset and filter by log level
+- log uncaught exceptions
+
 ### Changed
 
 Since alpha.6:
@@ -52,6 +56,9 @@ Since alpha.11:
 Since alpha.19:
 - Android postlink register project in settings.gradle instead of file copying
 (BREAKING CHANGE - read android-setup section)
+
+Since alpha.20:
+- iOS use Android log format (BREAKING CHANGE)
 
 ### Fixed
 
