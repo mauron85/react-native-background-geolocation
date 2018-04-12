@@ -88,6 +88,9 @@ Since alpha.15:
 Since alpha.17:
 - Android fix service accidently started with default or stored config
 
+Since alpha.21:
+- Android fix some nullpointer exceptions 92649c70e0ce0072464f47f1d096bef40047b8a6
+
 ### [0.4.1] - 2017-12-19
 #### Changed
 - react native peer dependency >0.49.0
