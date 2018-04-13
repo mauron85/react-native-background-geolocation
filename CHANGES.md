@@ -89,7 +89,10 @@ Since alpha.17:
 - Android fix service accidently started with default or stored config
 
 Since alpha.21:
+- Android uninstall common module on postunlink
+- Android prevent multiple registration of common project
 - Android fix some nullpointer exceptions 92649c70e0ce0072464f47f1d096bef40047b8a6
+- iOS update plist on changes only
 
 ### [0.4.1] - 2017-12-19
 #### Changed
