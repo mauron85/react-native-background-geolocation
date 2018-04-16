@@ -260,6 +260,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
                     Collection<LogEntry> logEntries = facade.getLogEntries(limit, offset, minLevel);
                     for (LogEntry logEntry : logEntries) {
                         WritableMap out = Arguments.createMap();
+                        out.putInt("id", logEntry.getId());
                         out.putInt("context", logEntry.getContext());
                         out.putString("level", logEntry.getLevel());
                         out.putString("message", logEntry.getMessage());
