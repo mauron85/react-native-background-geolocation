@@ -477,7 +477,7 @@ Format of log entry:
 
 | Parameter   | Type          | Description                                                                                       |
 |-------------|---------------|---------------------------------------------------------------------------------------------------|
-| `rowid`     | `Number`      | id of log entry as stored in db                                                                   |
+| `id`        | `Number`      | id of log entry as stored in db                                                                   |
 | `timestamp` | `Number`      | timestamp in milliseconds since beginning of UNIX epoch                                           |
 | `level`     | `String`      | log level                                                                                         |
 | `message`   | `String`      | log message                                                                                       |
