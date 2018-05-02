@@ -1,5 +1,8 @@
 # react-native-mauron85-background-geolocation
 
+## Breaking changes
+This document is describing module as in version 0.5. Documentation for version 0.4 can be found [here](https://github.com/mauron85/react-native-background-geolocation/tree/0.4-stable).
+
 # Donation
 
 Please support my work and support continuous development by your donation.
@@ -18,18 +21,6 @@ You can choose from following location providers:
 * **RAW_PROVIDER**
 
 See [Which provider should I use?](/PROVIDERS.md) for more information about providers.
-
-## Breaking changes
-
-### 0.4.x:
-
-* start method doesn't accept callback (use .on("start") event)
-* stop method doesn't accept callback (use .on("stop") event)
-* for background syncing syncUrl option is required. In version 0.3.x if syncUrl was not set url was used.
-* plugin constants are in directly BackgroundGeolocation namespace. (check index.js)
-* location property locationId renamed to just id
-* iOS pauseLocationUpdates now default to false (because iOS docs now states that you need to restart manually if you set it to true)
-* iOS no more requires to call finish method. Instead you can optionally start long running task with startTask
 
 ## Compatibility
 
