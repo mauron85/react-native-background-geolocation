@@ -32,6 +32,12 @@ def DEFAULT_BUILD_TOOLS_VERSION = "23.0.1"
 def DEFAULT_TARGET_SDK_VERSION = 23
 def DEFAULT_PLAY_SERVICES_VERSION = "11+"
 def DEFAULT_SUPPORT_LIB_VERSION = "23.0.1"
+def MOCKITO_CORE_VERSION = "1.10.19"
+def POWERMOCK_VERSION = "1.6.2"
+def ROBOLECTRIC_VERSION = "3.0"
+def JUNIT_VERSION = "4.12"
+def FEST_ASSERT_CORE_VERSION = "2.0M10"
+def SUPPORT_TEST_VERSION = "0.5"
 
 def applicationId = "com.marianhello.bgloc.react"
 if (findProject(':app') != null) {
