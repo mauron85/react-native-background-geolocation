@@ -458,6 +458,11 @@ BackgroundGeolocation.switchMode(BackgroundGeolocation.FOREGROUND_MODE);
 // switch to BACKGROUND mode
 BackgroundGeolocation.switchMode(BackgroundGeolocation.BACKGROUND_MODE);
 ```
+### forceSync(success, fail)
+Platform: Android, iOS
+
+Force sync of pending locations. Option `syncThreshold` will be ignored and
+all pending locations will be immediately posted to `syncUrl` in single batch.
 
 ### getLogEntries(limit, offset, minLevel, success, fail)
 Platform: Android, iOS

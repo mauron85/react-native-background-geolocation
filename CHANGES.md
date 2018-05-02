@@ -41,6 +41,9 @@ Since alpha.20:
 - option to get logs by offset and filter by log level
 - log uncaught exceptions
 
+Since alpha.22:
+- method forceSync
+
 ### Changed
 
 Since alpha.6:
@@ -59,6 +62,11 @@ Since alpha.19:
 
 Since alpha.20:
 - iOS use Android log format (BREAKING CHANGE)
+
+Since alpha.22:
+- Android remove sync delay when conditions are met
+- Android consider HTTP 201 response code as succesful post
+- Android obey system sync setting
 
 ### Fixed
 
@@ -93,6 +101,10 @@ Since alpha.21:
 - Android prevent multiple registration of common project
 - Android fix some nullpointer exceptions 92649c70e0ce0072464f47f1d096bef40047b8a6
 - iOS update plist on changes only
+
+Since alpha.22:
+- Android add guards to prevent some race conditions
+- Android config null handling
 
 ### [0.4.1] - 2017-12-19
 #### Changed
