@@ -1,9 +1,7 @@
 package com.marianhello.bgloc.react;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.provider.Settings.SettingNotFoundException;
 import android.support.v4.content.ContextCompat;
 
 import com.facebook.react.bridge.Arguments;
@@ -21,12 +19,12 @@ import com.marianhello.bgloc.BackgroundGeolocationFacade;
 import com.marianhello.bgloc.Config;
 import com.marianhello.bgloc.LocationService;
 import com.marianhello.bgloc.PluginDelegate;
-import com.marianhello.bgloc.PluginError;
+import com.marianhello.bgloc.PluginException;
 import com.marianhello.bgloc.data.BackgroundActivity;
 import com.marianhello.bgloc.data.BackgroundLocation;
+import com.marianhello.bgloc.react.data.LocationMapper;
 import com.marianhello.logging.LogEntry;
 import com.marianhello.logging.LoggerManager;
-import com.marianhello.bgloc.react.data.LocationMapper;
 
 import org.json.JSONException;
 
@@ -54,11 +52,45 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     private BackgroundGeolocationFacade facade;
     private org.slf4j.Logger logger;
 
+    public static class ErrorMap {
+        public static ReadableMap from(String message, int code) {
+            WritableMap out = Arguments.createMap();
+            out.putInt("code", code);
+            out.putString("message", message);
+            return out;
+        }
+
+        public static ReadableMap from(String message, Throwable cause, int code) {
+            WritableMap out = Arguments.createMap();
+            out.putInt("code", code);
+            out.putString("message", message);
+            out.putMap("cause", from(cause));
+            return out;
+        }
+
+        public static ReadableMap from(PluginException e) {
+            WritableMap out = Arguments.createMap();
+            out.putInt("code", e.getCode());
+            out.putString("message", e.getMessage());
+            if (e.getCause() != null) {
+                out.putMap("cause", from(e.getCause()));
+            }
+
+            return out;
+        }
+
+        private static WritableMap from(Throwable e) {
+            WritableMap out = Arguments.createMap();
+            out.putString("message", e.getMessage());
+            return out;
+        }
+    }
+
     public BackgroundGeolocationModule(ReactApplicationContext reactContext) {
         super(reactContext);
         reactContext.addLifecycleEventListener(this);
 
-        facade = new BackgroundGeolocationFacade(this);
+        facade = new BackgroundGeolocationFacade(reactContext, this);
         logger = LoggerManager.getLogger(BackgroundGeolocationModule.class);
     }
 
@@ -99,8 +131,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     }
 
     private void runOnWebViewThread(Runnable runnable) {
-        // currently there is other thread we can run on
-//        getCurrentActivity().runOnUiThread(runnable);
+        // currently react-native has no other thread we can run on
         new Thread(runnable).start();
     }
 
@@ -110,12 +141,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
         runOnWebViewThread(new Runnable() {
             public void run() {
                 if (hasPermissions(PERMISSIONS)) {
-                    try {
-                        facade.start();
-                    } catch (JSONException e) {
-                        logger.error("Configuration error: {}", e.getMessage());
-                        sendError(new PluginError(PluginError.JSON_ERROR, e.getMessage()));
-                    }
+                    facade.start();
                 } else {
                     logger.debug("Permissions not granted");
                     requestPermissions(PERMISSIONS_REQUEST_CODE, BackgroundGeolocationFacade.PERMISSIONS);
@@ -146,9 +172,12 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
                     Config config = ConfigMapper.fromMap(options);
                     facade.configure(config);
                     success.invoke(true);
-                } catch (Exception e) {
+                } catch (JSONException e) {
                     logger.error("Configuration error: {}", e.getMessage());
-                    error.invoke("Configuration error: " + e.getMessage());
+                    error.invoke(ErrorMap.from("Configuration error", e, PluginException.CONFIGURE_ERROR));
+                } catch (PluginException e) {
+                    logger.error("Configuration error: {}", e.getMessage());
+                    error.invoke(ErrorMap.from(e));
                 }
             }
         });
@@ -159,10 +188,10 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     public void isLocationEnabled(Callback success, Callback error) {
         logger.debug("Location services enabled check");
         try {
-            success.invoke(getAuthorizationStatus());
-        } catch (SettingNotFoundException e) {
+            success.invoke(facade.locationServicesEnabled());
+        } catch (PluginException e) {
             logger.error("Location service checked failed: {}", e.getMessage());
-            error.invoke("Location setting error occured");
+            error.invoke(ErrorMap.from(e));
         }
     }
 
@@ -243,9 +272,9 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
                     Config config = facade.getConfig();
                     ReadableMap out = ConfigMapper.toMap(config);
                     success.invoke(out);
-                } catch (JSONException e) {
-                    logger.error("Error getting mConfig: {}", e.getMessage());
-                    error.invoke("Error getting config: " + e.getMessage());
+                } catch (PluginException e) {
+                    logger.error("Error getting config: {}", e.getMessage());
+                    error.invoke(ErrorMap.from(e));
                 }
             }
         });
@@ -256,27 +285,22 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
         runOnWebViewThread(new Runnable() {
             public void run() {
                 WritableArray logEntriesArray = Arguments.createArray();
-                try {
-                    Collection<LogEntry> logEntries = facade.getLogEntries(limit, offset, minLevel);
-                    for (LogEntry logEntry : logEntries) {
-                        WritableMap out = Arguments.createMap();
-                        out.putInt("id", logEntry.getId());
-                        out.putInt("context", logEntry.getContext());
-                        out.putString("level", logEntry.getLevel());
-                        out.putString("message", logEntry.getMessage());
-                        out.putString("timestamp", new Long(logEntry.getTimestamp()).toString());
-                        out.putString("logger", logEntry.getLoggerName());
-                        if (logEntry.hasStackTrace()) {
-                            out.putString("stackTrace", logEntry.getStackTrace());
-                        }
-
-                        logEntriesArray.pushMap(out);
+                Collection<LogEntry> logEntries = facade.getLogEntries(limit, offset, minLevel);
+                for (LogEntry logEntry : logEntries) {
+                    WritableMap out = Arguments.createMap();
+                    out.putInt("id", logEntry.getId());
+                    out.putInt("context", logEntry.getContext());
+                    out.putString("level", logEntry.getLevel());
+                    out.putString("message", logEntry.getMessage());
+                    out.putString("timestamp", new Long(logEntry.getTimestamp()).toString());
+                    out.putString("logger", logEntry.getLoggerName());
+                    if (logEntry.hasStackTrace()) {
+                        out.putString("stackTrace", logEntry.getStackTrace());
                     }
-                    success.invoke(logEntriesArray);
-                } catch (Exception e) {
-                    logger.error("Getting log entries failed: {}", e.getMessage());
-                    error.invoke("Getting log entries failed:" + e.getMessage());
+
+                    logEntriesArray.pushMap(out);
                 }
+                success.invoke(logEntriesArray);
             }
         });
     }
@@ -292,9 +316,9 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
                     out.putBoolean("locationServicesEnabled", facade.locationServicesEnabled());
                     out.putInt("authorization", getAuthorizationStatus());
                     success.invoke(out);
-                } catch (SettingNotFoundException e) {
+                } catch (PluginException e) {
                     logger.error("Location service checked failed: {}", e.getMessage());
-                    error.invoke("Location setting error occured");
+                    error.invoke(ErrorMap.from(e));
                 }
             }
         });
@@ -306,7 +330,13 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
         logger.debug("Registering headless task");
         facade.registerHeadlessTask(jsFunction);
         success.invoke();
-        }
+    }
+
+    @ReactMethod
+    public void forceSync(Callback success, Callback error) {
+        facade.forceSync();
+        success.invoke();
+    }
 
     private void sendEvent(String eventName, Object params) {
         getReactApplicationContext()
@@ -314,10 +344,10 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
                 .emit(eventName, params);
     }
 
-    private void sendError(PluginError error) {
+    private void sendError(PluginException error) {
         WritableMap out = Arguments.createMap();
-        out.putInt("code", error.getErrorCode());
-        out.putString("message", error.getErrorMessage());
+        out.putInt("code", error.getCode());
+        out.putString("message", error.getMessage());
 
         sendEvent(ERROR_EVENT, out);
     }
@@ -338,12 +368,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
                 // permission was granted
                 // start service
                 logger.info("User granted requested permissions");
-                try {
-                    facade.start();
-                } catch (JSONException e) {
-                    logger.error("Error while starting facade", e);
-                    sendError(PluginError.SERVICE_ERROR, e.getMessage());
-                }
+                facade.start();
             }
 
             @Override
@@ -364,16 +389,10 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
         return true;
     }
 
-    public int getAuthorizationStatus() throws SettingNotFoundException {
+    public int getAuthorizationStatus() {
         return facade.getAuthorizationStatus();
     }
 
-    @Override
-    public Activity getActivity() {
-        return getCurrentActivity();
-    }
-
-    @Override
     public Context getContext() {
         return getReactApplicationContext().getBaseContext();
     }
@@ -412,7 +431,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     }
 
     @Override
-    public void onError(PluginError error) {
+    public void onError(PluginException error) {
         sendError(error);
     }
 }

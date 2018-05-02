@@ -17,14 +17,14 @@
 #else
 #import <React/RCTEventDispatcher.h>
 #endif
-#import "Config.h"
-#import "BackgroundGeolocationFacade.h"
-#import "BackgroundTaskManager.h"
+#import "MAURConfig.h"
+#import "MAURBackgroundGeolocationFacade.h"
+#import "MAURBackgroundTaskManager.h"
 
 #define isNull(value) value == nil || [value isKindOfClass:[NSNull class]]
 
 @implementation RCTBackgroundGeolocation {
-    BackgroundGeolocationFacade* facade;
+    MAURBackgroundGeolocationFacade* facade;
 }
 
 @synthesize bridge = _bridge;
@@ -36,7 +36,7 @@ RCT_EXPORT_MODULE();
 {
     self = [super init];
     if (self) {
-        facade = [[BackgroundGeolocationFacade alloc] init];
+        facade = [[MAURBackgroundGeolocationFacade alloc] init];
         facade.delegate = self;
         
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onAppPause:) name:UIApplicationDidEnterBackgroundNotification object:nil];
@@ -54,7 +54,7 @@ RCT_EXPORT_MODULE();
 RCT_EXPORT_METHOD(configure:(NSDictionary*)configDictionary success:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #configure");
-    Config* config = [Config fromDictionary:configDictionary];
+    MAURConfig* config = [MAURConfig fromDictionary:configDictionary];
     NSError *error = nil;
     
     if ([facade configure:config error:&error]) {
@@ -120,7 +120,7 @@ RCT_EXPORT_METHOD(getLocations:(RCTResponseSenderBlock)success failure:(RCTRespo
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSArray *locations = [facade getLocations];
         NSMutableArray* dictionaryLocations = [[NSMutableArray alloc] initWithCapacity:[locations count]];
-        for (Location* location in locations) {
+        for (MAURLocation* location in locations) {
             [dictionaryLocations addObject:[location toDictionaryWithId]];
         }
         success(@[dictionaryLocations]);
@@ -133,7 +133,7 @@ RCT_EXPORT_METHOD(getValidLocations:(RCTResponseSenderBlock)success failure:(RCT
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         NSArray *locations = [facade getValidLocations];
         NSMutableArray* dictionaryLocations = [[NSMutableArray alloc] initWithCapacity:[locations count]];
-        for (Location* location in locations) {
+        for (MAURLocation* location in locations) {
             [dictionaryLocations addObject:[location toDictionaryWithId]];
         }
         success(@[dictionaryLocations]);
@@ -181,9 +181,9 @@ RCT_EXPORT_METHOD(getLogEntries:(int)limit fromLogEntryId:(int)logEntry minLogLe
 RCT_EXPORT_METHOD(getConfig:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #getConfig");
-    Config *config = [facade getConfig];
+    MAURConfig *config = [facade getConfig];
     if (config == nil) {
-        config = [[Config alloc] init]; // default config
+        config = [[MAURConfig alloc] init]; // default config
     }
     success(@[[config toDictionary]]);
 }
@@ -206,13 +206,18 @@ RCT_EXPORT_METHOD(checkStatus:(RCTResponseSenderBlock)success failure:(RCTRespon
 
 RCT_EXPORT_METHOD(startTask:(RCTResponseSenderBlock)callback)
 {
-    NSUInteger taskKey = [[BackgroundTaskManager sharedTasks] beginTask];
+    NSUInteger taskKey = [[MAURBackgroundTaskManager sharedTasks] beginTask];
     callback(@[[NSNumber numberWithInteger:taskKey]]);
 }
 
 RCT_EXPORT_METHOD(endTask:(NSNumber* _Nonnull)taskKey)
 {
-    [[BackgroundTaskManager sharedTasks] endTaskWithKey:[taskKey integerValue]];
+    [[MAURBackgroundTaskManager sharedTasks] endTaskWithKey:[taskKey integerValue]];
+}
+
+RCT_EXPORT_METHOD(forceSync)
+{
+    [facade forceSync];
 }
 
 -(void) sendEvent:(NSString*)name
@@ -258,19 +263,19 @@ RCT_EXPORT_METHOD(endTask:(NSNumber* _Nonnull)taskKey)
     return [basePath stringByAppendingPathComponent:@"SQLiteLogger"];
 }
 
-- (void) onAuthorizationChanged:(BGAuthorizationStatus)authStatus
+- (void) onAuthorizationChanged:(MAURLocationAuthorizationStatus)authStatus
 {
     RCTLogInfo(@"RCTBackgroundGeolocation onAuthorizationChanged");
     [self sendEvent:@"authorization" resultAsNumber:[NSNumber numberWithInteger:authStatus]];
 }
 
-- (void) onLocationChanged:(Location*)location
+- (void) onLocationChanged:(MAURLocation*)location
 {
     RCTLogInfo(@"RCTBackgroundGeolocation onLocationChanged");
     [self sendEvent:@"location" resultAsDictionary:[location toDictionaryWithId]];
 }
 
-- (void) onStationaryChanged:(Location*)location
+- (void) onStationaryChanged:(MAURLocation*)location
 {
     RCTLogInfo(@"RCTBackgroundGeolocation onStationaryChanged");
     [self sendEvent:@"stationary" resultAsDictionary:[location toDictionaryWithId]];
@@ -294,7 +299,7 @@ RCT_EXPORT_METHOD(endTask:(NSNumber* _Nonnull)taskKey)
     [self sendEvent:@"start"];
 }
 
-- (void) onActivityChanged:(Activity *)activity
+- (void) onActivityChanged:(MAURActivity *)activity
 {
     RCTLogInfo(@"RCTBackgroundGeoLocation activity changed");
     [self sendEvent:@"activity" resultAsDictionary:[activity toDictionary]];
@@ -303,14 +308,14 @@ RCT_EXPORT_METHOD(endTask:(NSNumber* _Nonnull)taskKey)
 -(void) onAppResume:(NSNotification *)notification
 {
     RCTLogInfo(@"RCTBackgroundGeoLocation resumed");
-    [facade switchMode:FOREGROUND];
+    [facade switchMode:MAURForegroundMode];
     [self sendEvent:@"foreground"];
 }
 
 -(void) onAppPause:(NSNotification *)notification
 {
     RCTLogInfo(@"RCTBackgroundGeoLocation paused");
-    [facade switchMode:BACKGROUND];
+    [facade switchMode:MAURBackgroundMode];
     [self sendEvent:@"background"];
 }
 
@@ -323,10 +328,10 @@ RCT_EXPORT_METHOD(endTask:(NSNumber* _Nonnull)taskKey)
     
     if ([dict objectForKey:UIApplicationLaunchOptionsLocationKey]) {
         RCTLogInfo(@"RCTBackgroundGeolocation started by system on location event.");
-        Config *config = [facade getConfig];
+        MAURConfig *config = [facade getConfig];
         if (![config stopOnTerminate]) {
             [facade start:nil];
-            [facade switchMode:BACKGROUND];
+            [facade switchMode:MAURBackgroundMode];
         }
     }
 }

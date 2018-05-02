@@ -11,8 +11,8 @@
 #else
 #import "RCTBridgeModule.h"
 #endif
-#import "ProviderDelegate.h"
+#import "MAURProviderDelegate.h"
 
-@interface RCTBackgroundGeolocation : NSObject <RCTBridgeModule, ProviderDelegate>
+@interface RCTBackgroundGeolocation : NSObject <RCTBridgeModule, MAURProviderDelegate>
 
 @end

@@ -33,7 +33,7 @@ def DEFAULT_TARGET_SDK_VERSION = 23
 def DEFAULT_PLAY_SERVICES_VERSION = "11+"
 def DEFAULT_SUPPORT_LIB_VERSION = "23.0.1"
 
-def applicationId = ""
+def applicationId = "com.marianhello.bgloc.react"
 if (findProject(':app') != null) {
     applicationId = project(':app').android.defaultConfig.applicationId
 }
@@ -98,4 +98,16 @@ dependencies {
     compile 'com.github.tony19:logback-android:1.1.1-9'
     compile 'org.slf4j:slf4j-api:1.7.21'
     compile 'com.intentfilter:android-permissions:0.1.6'
+
+    testCompile "junit:junit:${JUNIT_VERSION}"
+    testCompile "org.powermock:powermock-api-mockito:${POWERMOCK_VERSION}"
+    testCompile "org.powermock:powermock-module-junit4-rule:${POWERMOCK_VERSION}"
+    testCompile "org.powermock:powermock-classloading-xstream:${POWERMOCK_VERSION}"
+    testCompile "org.mockito:mockito-core:${MOCKITO_CORE_VERSION}"
+    testCompile "org.easytesting:fest-assert-core:${FEST_ASSERT_CORE_VERSION}"
+    testCompile "org.robolectric:robolectric:${ROBOLECTRIC_VERSION}"
+
+//    androidTestCompile "com.android.support:support-annotations:$supportLibVersion"
+    androidTestCompile "com.android.support.test:runner:${SUPPORT_TEST_VERSION}"
+    androidTestCompile "com.android.support.test:rules:${SUPPORT_TEST_VERSION}"
 }
