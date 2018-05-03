@@ -4,6 +4,11 @@ var { DeviceEventEmitter, NativeModules } = require('react-native');
 const RNBackgroundGeolocation = NativeModules.BackgroundGeolocation;
 
 function emptyFn() {}
+function defaultErrorHandler(error) {
+  var cause = error.cause || {};
+  var causeMessage = cause.message;
+  throw new Error(error.message + (causeMessage ? ': ' + cause.message : ''));
+}
 
 var BackgroundGeolocation = {
   events: [
@@ -67,7 +72,7 @@ var BackgroundGeolocation = {
 
   configure: function(config, successFn, errorFn) {
     successFn = successFn || emptyFn;
-    errorFn = errorFn || emptyFn;
+    errorFn = errorFn || defaultErrorHandler;
     RNBackgroundGeolocation.configure(config, successFn, errorFn);
   },
 

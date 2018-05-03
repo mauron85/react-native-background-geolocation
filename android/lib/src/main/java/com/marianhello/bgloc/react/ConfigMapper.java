@@ -67,6 +67,9 @@ public class ConfigMapper {
 
             while (it.hasNextKey()) {
                 String key = it.nextKey();
+                if (rm.getType(key) != ReadableType.String) {
+                    throw new JSONException("httpHeaders value for key " + key + " is not string");
+                }
                 httpHeaders.put(key, rm.getString(key));
             }
 
