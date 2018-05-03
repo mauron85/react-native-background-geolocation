@@ -1,13 +1,14 @@
 'use strict';
 
 var { DeviceEventEmitter, NativeModules } = require('react-native');
-const RNBackgroundGeolocation = NativeModules.BackgroundGeolocation;
+var RNBackgroundGeolocation = NativeModules.BackgroundGeolocation;
+var TAG = 'RNBackgroundGeolocation';
 
 function emptyFn() {}
 function defaultErrorHandler(error) {
   var cause = error.cause || {};
   var causeMessage = cause.message;
-  throw new Error(error.message + (causeMessage ? ': ' + cause.message : ''));
+  throw TAG + ': ' + error.message + (causeMessage ? ': ' + cause.message : '');
 }
 
 var BackgroundGeolocation = {
@@ -198,10 +199,10 @@ var BackgroundGeolocation = {
 
   on: function(event, callbackFn) {
     if (typeof callbackFn !== 'function') {
-      throw 'RNBackgroundGeolocation: callback function must be provided';
+      throw TAG + ': callback function must be provided';
     }
     if (this.events.indexOf(event) < 0) {
-      throw 'RNBackgroundGeolocation: Unknown event "' + event + '"';
+      throw TAG + ': Unknown event "' + event + '"';
     }
 
     return DeviceEventEmitter.addListener(event, callbackFn);
@@ -209,7 +210,7 @@ var BackgroundGeolocation = {
 
   removeAllListeners: function(event) {
     if (this.events.indexOf(event) < 0) {
-      console.log('[WARN] RNBackgroundGeolocation: removeAllListeners for unknown event "' + event + '"');
+      console.log('[WARN] ' + TAG + ': removeAllListeners for unknown event "' + event + '"');
       return false;
     }
 
