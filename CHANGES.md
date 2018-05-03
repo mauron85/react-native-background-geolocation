@@ -106,6 +106,9 @@ Since alpha.22:
 - Android add guards to prevent some race conditions
 - Android config null handling
 
+Sice alpha.25:
+- Android issue #185 - handle invalid configuration
+
 ### [0.4.1] - 2017-12-19
 #### Changed
 - react native peer dependency >0.49.0
