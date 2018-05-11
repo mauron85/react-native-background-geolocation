@@ -455,7 +455,7 @@ Platform: Android, iOS
 Force sync of pending locations. Option `syncThreshold` will be ignored and
 all pending locations will be immediately posted to `syncUrl` in single batch.
 
-### getLogEntries(limit, offset, minLevel, success, fail)
+### getLogEntries(limit, fromId, minLevel, success, fail)
 Platform: Android, iOS
 
 Return all logged events. Useful for plugin debugging.
@@ -463,7 +463,7 @@ Return all logged events. Useful for plugin debugging.
 | Parameter  | Type          | Description                                                                                       |
 |------------|---------------|---------------------------------------------------------------------------------------------------|
 | `limit`    | `Number`      | limits number of returned entries                                                                 |
-| `offset`   | `Number`      | return entries from offset. Useful if you plan to implement infinite log scrolling*               |
+| `fromId`   | `Number`      | return entries after fromId. Useful if you plan to implement infinite log scrolling*              |
 | `minLevel` | `String`      | return log entries above level. Available levels: ["TRACE", "DEBUG", "INFO", "WARN", "ERROR]      |
 | `success`  | `Function`    | callback function which will be called with log entries                                           |
 
