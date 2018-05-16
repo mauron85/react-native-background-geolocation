@@ -1,7 +1,9 @@
+<!-- PLEASE DON'T DELETE THIS TEMPLATE, OR YOUR ISSUE WILL BE CLOSED/IGNORED !!! -->
 <!--- Provide a general summary of the issue in the Title above -->
 
 ## Your Environment
 <!--- Include as many relevant details about the environment you experienced the bug in -->
+<!--- Please specify exact version numbers and don't use terms like "latest", as such reference to numeric version changes over the time -->
 * Plugin version:
 * Platform: iOS or Android
 * OS version:
