@@ -44,6 +44,9 @@ Since alpha.20:
 Since alpha.22:
 - method forceSync
 
+Since alpha.26:
+- Android add httpHeaders validation
+
 ### Changed
 
 Since alpha.6:
@@ -67,6 +70,12 @@ Since alpha.22:
 - Android remove sync delay when conditions are met
 - Android consider HTTP 201 response code as succesful post
 - Android obey system sync setting
+
+Since alpha.26:
+- Android show service notification only when in background
+- Android remove config option startForeground (related to above)
+- Android remove wake locks from both Android providers (by @grassick)
+- Android remove restriction on postTemplate string only values
 
 ### Fixed
 
