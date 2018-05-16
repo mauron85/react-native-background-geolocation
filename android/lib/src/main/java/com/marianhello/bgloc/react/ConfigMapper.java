@@ -14,6 +14,7 @@ import com.marianhello.bgloc.data.LocationTemplate;
 import com.marianhello.bgloc.data.LocationTemplateFactory;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -62,18 +63,12 @@ public class ConfigMapper {
         if (options.hasKey("syncThreshold")) config.setSyncThreshold(options.getInt("syncThreshold"));
         if (options.hasKey("httpHeaders")) {
             HashMap httpHeaders = new HashMap<String, String>();
-            ReadableMap rm = options.getMap("httpHeaders");
-            ReadableMapKeySetIterator it = rm.keySetIterator();
-
-            while (it.hasNextKey()) {
-                String key = it.nextKey();
-                if (rm.getType(key) != ReadableType.String) {
-                    throw new JSONException("httpHeaders value for key '" + key + "' is not a string");
-                }
-                httpHeaders.put(key, rm.getString(key));
+            ReadableType type = options.getType("httpHeaders");
+            if (type != ReadableType.Map) {
+                throw new JSONException("httpHeaders must be object");
             }
-
-            config.setHttpHeaders(httpHeaders);
+            JSONObject httpHeadersJson =  MapUtil.toJSONObject(options.getMap("httpHeaders"));
+            config.setHttpHeaders(httpHeadersJson);
         }
         if (options.hasKey("maxLocations")) config.setMaxLocations(options.getInt("maxLocations"));
 

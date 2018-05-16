@@ -30,6 +30,7 @@ import org.json.JSONException;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.concurrent.TimeoutException;
 
 import static com.marianhello.bgloc.BackgroundGeolocationFacade.PERMISSIONS;
 
@@ -90,7 +91,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
         super(reactContext);
         reactContext.addLifecycleEventListener(this);
 
-        facade = new BackgroundGeolocationFacade(reactContext, this);
+        facade = new BackgroundGeolocationFacade(getContext(), this);
         logger = LoggerManager.getLogger(BackgroundGeolocationModule.class);
     }
 
@@ -106,7 +107,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     @Override
     public void onHostResume() {
         logger.info("App will be resumed");
-        facade.switchMode(BackgroundGeolocationFacade.FOREGROUND_MODE);
+        facade.resume();
         sendEvent(FOREGROUND_EVENT, null);
     }
 
@@ -116,7 +117,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     @Override
     public void onHostPause() {
         logger.info("App will be paused");
-        facade.switchMode(BackgroundGeolocationFacade.BACKGROUND_MODE);
+        facade.pause();
         sendEvent(BACKGROUND_EVENT, null);
     }
 
@@ -127,10 +128,11 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     @Override
     public void onHostDestroy() {
         logger.info("Destroying plugin");
-        facade.onAppDestroy();
+        facade.destroy();
+//        facade = null;
     }
 
-    private void runOnWebViewThread(Runnable runnable) {
+    private void runOnBackgroundThread(Runnable runnable) {
         // currently react-native has no other thread we can run on
         new Thread(runnable).start();
     }
@@ -138,25 +140,17 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
 
     @ReactMethod
     public void start() {
-        runOnWebViewThread(new Runnable() {
-            public void run() {
-                if (hasPermissions(PERMISSIONS)) {
-                    facade.start();
-                } else {
-                    logger.debug("Permissions not granted");
-                    requestPermissions(PERMISSIONS_REQUEST_CODE, BackgroundGeolocationFacade.PERMISSIONS);
-                }
-            }
-        });
+        if (hasPermissions(PERMISSIONS)) {
+            facade.start();
+        } else {
+            logger.debug("Permissions not granted");
+            requestPermissions(PERMISSIONS_REQUEST_CODE, BackgroundGeolocationFacade.PERMISSIONS);
+        }
     }
 
     @ReactMethod
     public void stop() {
-        runOnWebViewThread(new Runnable() {
-            public void run() {
-                facade.stop();
-            }
-        });
+        facade.stop();
     }
 
     @ReactMethod
@@ -166,7 +160,8 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
 
     @ReactMethod
     public void configure(final ReadableMap options, final Callback success, final Callback error) {
-        runOnWebViewThread(new Runnable() {
+        runOnBackgroundThread(new Runnable() {
+            @Override
             public void run() {
                 try {
                     Config config = ConfigMapper.fromMap(options);
@@ -200,7 +195,6 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
         BackgroundGeolocationFacade.showLocationSettings(getContext());
     }
 
-
     @ReactMethod
     public void showAppSettings() {
         BackgroundGeolocationFacade.showAppSettings(getContext());
@@ -218,7 +212,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
 
     @ReactMethod
     public void getLocations(final Callback success, final Callback error) {
-        runOnWebViewThread(new Runnable() {
+        runOnBackgroundThread(new Runnable() {
             public void run() {
                 WritableArray locationsArray = Arguments.createArray();
                 Collection<BackgroundLocation> locations = facade.getLocations();
@@ -232,7 +226,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
 
     @ReactMethod
     public void getValidLocations(final Callback success, Callback error) {
-        runOnWebViewThread(new Runnable() {
+        runOnBackgroundThread(new Runnable() {
             public void run() {
                 WritableArray locationsArray = Arguments.createArray();
                 Collection<BackgroundLocation> locations = facade.getValidLocations();
@@ -246,7 +240,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
 
     @ReactMethod
     public void deleteLocation(final Integer locationId, final Callback success, Callback error) {
-        runOnWebViewThread(new Runnable() {
+        runOnBackgroundThread(new Runnable() {
             public void run() {
                 facade.deleteLocation(locationId.longValue());
                 success.invoke(true);
@@ -256,7 +250,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
 
     @ReactMethod
     public void deleteAllLocations(final Callback success, Callback error) {
-        runOnWebViewThread(new Runnable() {
+        runOnBackgroundThread(new Runnable() {
             public void run() {
                 facade.deleteAllLocations();
                 success.invoke(true);
@@ -266,7 +260,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
 
     @ReactMethod
     public void getConfig(final Callback success, final Callback error) {
-        runOnWebViewThread(new Runnable() {
+        runOnBackgroundThread(new Runnable() {
             public void run() {
                 try {
                     Config config = facade.getConfig();
@@ -282,7 +276,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
 
     @ReactMethod
     public void getLogEntries(final Integer limit, final Integer offset, final String minLevel, final Callback success, final Callback error) {
-        runOnWebViewThread(new Runnable() {
+        runOnBackgroundThread(new Runnable() {
             public void run() {
                 WritableArray logEntriesArray = Arguments.createArray();
                 Collection<LogEntry> logEntries = facade.getLogEntries(limit, offset, minLevel);
@@ -307,11 +301,11 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
 
     @ReactMethod
     public void checkStatus(final Callback success, final Callback error) {
-        runOnWebViewThread(new Runnable() {
+        runOnBackgroundThread(new Runnable() {
             public void run() {
                 try {
                     WritableMap out = Arguments.createMap();
-                    out.putBoolean("isRunning", LocationService.isRunning());
+                    out.putBoolean("isRunning", facade.isRunning());
                     out.putBoolean("hasPermissions", hasPermissions(PERMISSIONS)); //@Deprecated
                     out.putBoolean("locationServicesEnabled", facade.locationServicesEnabled());
                     out.putInt("authorization", getAuthorizationStatus());
@@ -322,7 +316,6 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
                 }
             }
         });
-
     }
 
     @ReactMethod
@@ -421,13 +414,15 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     }
 
     @Override
-    public void onLocationPause() {
-        sendEvent(STOP_EVENT, null);
-    }
-
-    @Override
-    public void onLocationResume() {
-        sendEvent(START_EVENT, null);
+    public void onServiceStatusChanged(int status) {
+        switch (status) {
+            case LocationService.SERVICE_STARTED:
+                sendEvent(START_EVENT, null);
+                return;
+            case LocationService.SERVICE_STOPPED:
+                sendEvent(STOP_EVENT, null);
+                return;
+        }
     }
 
     @Override
