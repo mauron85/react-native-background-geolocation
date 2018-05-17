@@ -215,7 +215,7 @@ RCT_EXPORT_METHOD(endTask:(NSNumber* _Nonnull)taskKey)
     [[MAURBackgroundTaskManager sharedTasks] endTaskWithKey:[taskKey integerValue]];
 }
 
-RCT_EXPORT_METHOD(forceSync)
+RCT_EXPORT_METHOD(forceSync:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
 {
     [facade forceSync];
 }
