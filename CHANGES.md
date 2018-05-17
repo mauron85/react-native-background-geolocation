@@ -118,6 +118,10 @@ Since alpha.22:
 Sice alpha.25:
 - Android issue #185 - handle invalid configuration
 
+Sice alpha.27:
+- iOS fix forceSync params
+- fix #183 - Error when adding 'activity' event listener
+
 ### [0.4.1] - 2017-12-19
 #### Changed
 - react native peer dependency >0.49.0
