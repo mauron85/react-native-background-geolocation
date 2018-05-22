@@ -47,6 +47,10 @@ Since alpha.22:
 Since alpha.26:
 - Android add httpHeaders validation
 
+Sice alpha.28:
+- implement getCurrentLocation
+- iOS implement getStationaryLocation
+
 ### Changed
 
 Since alpha.6:
@@ -76,6 +80,19 @@ Since alpha.26:
 - Android remove config option startForeground (related to above)
 - Android remove wake locks from both Android providers (by @grassick)
 - Android remove restriction on postTemplate string only values
+
+Since alpha.28:
+- Android bring back startOnForeground config option (BREAKING CHANGE!)
+
+startOnForeground has slightly different meaning.
+
+If false (default) then service will create notification and promotes
+itself to foreground service, when client unbinds from service.
+This typically happens when application is moving to background.
+If app is moving back to foreground (becoming visible to user)
+service destroys notification and also stop being foreground service.
+
+If true service will create notification and will stay in foreground at all times.
 
 ### Fixed
 
@@ -121,6 +138,11 @@ Sice alpha.25:
 Sice alpha.27:
 - iOS fix forceSync params
 - fix #183 - Error when adding 'activity' event listener
+
+Sice alpha.28:
+- iOS display debug notifications in foreground on iOS >= 10
+- iOS fix error message format
+- iOS activity provider stationary event
 
 ### [0.4.1] - 2017-12-19
 #### Changed
