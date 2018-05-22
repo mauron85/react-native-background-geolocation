@@ -306,6 +306,7 @@ Configure options:
 | `fastestInterval`         | `Number`          | Android      | Fastest rate in milliseconds at which your app can handle location updates. **@see** [Android  docs](https://developers.google.com/android/reference/com/google/android/gms/location/LocationRequest.html#getFastestInterval()).                                                                                                                   | ACT         | 120000                     | 
 | `activitiesInterval`      | `Number`          | Android      | Rate in milliseconds at which activity recognition occurs. Larger values will result in fewer activity detections while improving battery life.                                                                                                                                                                                                    | ACT         | 10000                      | 
 | `stopOnStillActivity`     | `Boolean`         | Android      | @deprecated stop location updates, when the STILL activity is detected                                                                                                                                                                                                                                                                             | ACT         | true                       | 
+| `startOnForeground`       | `Boolean`         | Android      | show service notification when in foreground                                                                                                                                                                                                                                                                                                       | all         | false                      |
 | `notificationTitle`       | `String` optional | Android      | Custom notification title in the drawer.                                                                                                                                                                                                                                                                                                           | all         | "Background tracking"      | 
 | `notificationText`        | `String` optional | Android      | Custom notification text in the drawer.                                                                                                                                                                                                                                                                                                            | all         | "ENABLED"                  | 
 | `notificationIconColor`   | `String` optional | Android      | The accent color to use for notification. Eg. **#4CAF50**.                                                                                                                                                                                                                                                                                         | all         |                            | 
@@ -346,6 +347,35 @@ Start background geolocation.
 Platform: iOS, Android
 
 Stop background geolocation.
+
+### getCurrentLocation(success, fail, options)
+Platform: iOS, Android
+
+One time location check to get current location of the device.
+
+| Option parameter           | Type      | Description                                                                            |
+|----------------------------|-----------|----------------------------------------------------------------------------------------|
+| `timeout`                  | `Number`  | Maximum time in milliseconds device will wait for location                             |
+| `maximumAge`               | `Number`  | Maximum age in milliseconds of a possible cached location that is acceptable to return |
+| `enableHighAccuracy`       | `Boolean` | if true and if the device is able to provide a more accurate position, it will do so   |
+
+| Success callback parameter | Type      | Description                                                    |
+|----------------------------|-----------|----------------------------------------------------------------|
+| `location`                 | `Object`  | location object (@see [Location event](#location-event))       |
+
+| Error callback parameter   | Type      | Description                                                    |
+|----------------------------|-----------|----------------------------------------------------------------|
+| `code`                     | `Number`  | Reason of an error occurring when using the geolocating device |
+| `message`                  | `String`  | Message describing the details of the error                    |
+
+Error codes:
+
+| Value | Associated constant  | Description                                                              |
+|-------|----------------------|--------------------------------------------------------------------------|
+| 1     | PERMISSION_DENIED    | Request failed due missing permissions                                   |
+| 2     | LOCATION_UNAVAILABLE | Internal source of location returned an internal error                   |
+| 3     | TIMEOUT              | Timeout defined by `option.timeout was exceeded                          |
+
 
 ### isLocationEnabled(success, fail)
 Deprecated: This method is deprecated and will be removed in next major version.
