@@ -46,6 +46,10 @@ var BackgroundGeolocation = {
   LOG_DEBUG: 'DEBUG',
   LOG_TRACE: 'TRACE',
 
+  PERMISSION_DENIED: 1,
+  LOCATION_UNAVAILABLE: 2,
+  TIMEOUT: 3,
+
   // @Deprecated
   provider: {
     ANDROID_DISTANCE_FILTER_PROVIDER: 0,
@@ -106,6 +110,22 @@ var BackgroundGeolocation = {
 
   showLocationSettings: function() {
     RNBackgroundGeolocation.showLocationSettings();
+  },
+
+  /**
+   * Returns current stationaryLocation if available.  null if not
+   */
+  getStationaryLocation: function (successFn, errorFn) {
+    successFn = successFn || emptyFn;
+    errorFn = errorFn || emptyFn;
+    RNBackgroundGeolocation.getStationaryLocation(successFn, errorFn);
+  },
+
+  getCurrentLocation: function(successFn, errorFn, options) {
+    options = options || {};
+    successFn = successFn || emptyFn;
+    errorFn = errorFn || emptyFn;
+    RNBackgroundGeolocation.getCurrentLocation(options, successFn, errorFn);
   },
 
   getLocations: function(successFn, errorFn) {

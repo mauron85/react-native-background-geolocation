@@ -43,6 +43,9 @@ RCT_EXPORT_MODULE();
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onAppResume:) name:UIApplicationWillEnterForegroundNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onFinishLaunching:) name:UIApplicationDidFinishLaunchingNotification object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onAppTerminate:) name:UIApplicationWillTerminateNotification object:nil];
+
+        // HACK: it seems to be too late to register on launch observer so trigger it manually
+        [self onFinishLaunching:nil];
     }
 
     return self;
@@ -60,7 +63,8 @@ RCT_EXPORT_METHOD(configure:(NSDictionary*)configDictionary success:(RCTResponse
     if ([facade configure:config error:&error]) {
         success(@[[NSNull null]]);
     } else {
-        failure(@[@"Configuration error"]);
+        NSDictionary *dict = [self errorToDictionary:MAURBGConfigureError message:@"Configuration error" cause:error];
+        failure(@[dict]);
     }
 }
 
@@ -149,7 +153,8 @@ RCT_EXPORT_METHOD(deleteLocation:(int)locationId success:(RCTResponseSenderBlock
         if (result) {
             success(@[[NSNull null]]);
         } else {
-            failure(@[@"Failed to delete location"]);
+            NSDictionary *dict = [self errorToDictionary:MAURBGServiceError message:@"Failed to delete location" cause:error];
+            failure(@[dict]);
         }
     });
 }
@@ -163,9 +168,41 @@ RCT_EXPORT_METHOD(deleteAllLocations:(RCTResponseSenderBlock)success failure:(RC
         if (result) {
             success(@[[NSNull null]]);
         } else {
-            failure(@[@"Failed to delete locations"]);
+            NSDictionary *dict = [self errorToDictionary:MAURBGServiceError message:@"Failed to delete locations" cause:error];
+            failure(@[dict]);
         }
+    });
+}
 
+RCT_EXPORT_METHOD(getCurrentLocation:(NSDictionary*)options success:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
+{
+    RCTLogInfo(@"RCTBackgroundGeolocation #getCurrentLocation");
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        NSError *error = nil;
+        NSNumber *timeout = [options objectForKey:@"timeout"] ?: [NSNumber numberWithInt:INT_MAX];
+        NSNumber *maximumAge = [options objectForKey:@"maximumAge"] ?: [NSNumber numberWithLong:LONG_MAX];
+        NSNumber *enableHighAccuracy = [options objectForKey:@"enableHighAccuracy"] ?: [NSNumber numberWithBool:NO];
+
+        MAURLocation *location = [facade getCurrentLocation:timeout.intValue maximumAge:maximumAge.longValue enableHighAccuracy:enableHighAccuracy.boolValue error:&error];
+        if (location != nil) {
+            success(@[[location toDictionary]]);
+        } else {
+            NSDictionary *dict = [self errorToDictionary:error];
+            failure(@[dict]);
+        }
+    });
+}
+                   
+RCT_EXPORT_METHOD(getStationaryLocation:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
+{
+    RCTLogInfo(@"RCTBackgroundGeolocation #getStationaryLocation");
+    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+        MAURLocation *stationaryLocation = [facade getStationaryLocation];
+        if (stationaryLocation) {
+            success(@[[stationaryLocation toDictionary]]);
+        } else {
+            success(@[@(NO)]);
+        }
     });
 }
 
@@ -244,15 +281,29 @@ RCT_EXPORT_METHOD(forceSync:(RCTResponseSenderBlock)success failure:(RCTResponse
     [_bridge.eventDispatcher sendDeviceEventWithName:event body:resultAsNumber];
 }
 
--(void) sendError:(NSError*)error
+- (NSDictionary*) errorToDictionary:(NSInteger)code message:(NSString*)message cause:(NSError*)error
 {
     NSDictionary *userInfo = [error userInfo];
     NSString *errorMessage = [error localizedDescription];
     if (errorMessage == nil) {
         errorMessage = [[userInfo objectForKey:NSUnderlyingErrorKey] localizedDescription];
     }
-    NSDictionary *errorDict = @{ @"code": [NSNumber numberWithLong:error.code], @"message": errorMessage};
-    [self sendEvent:@"error" resultAsDictionary:errorDict];
+    return @{ @"code": [NSNumber numberWithInteger:code], @"message":message, @"cause":errorMessage};
+}
+
+- (NSDictionary*) errorToDictionary:(NSError*)error
+{
+    NSDictionary *userInfo = [error userInfo];
+    NSString *errorMessage = [error localizedDescription];
+    if (errorMessage == nil) {
+        errorMessage = [[userInfo objectForKey:NSUnderlyingErrorKey] localizedDescription];
+    }
+    return @{ @"code": [NSNumber numberWithInteger:error.code], @"message":errorMessage};
+}
+
+-(void) sendError:(NSError*)error
+{
+    [self sendEvent:@"error" resultAsDictionary:[self errorToDictionary:error]];
 }
 
 - (NSString *)loggerDirectory
@@ -324,6 +375,11 @@ RCT_EXPORT_METHOD(forceSync:(RCTResponseSenderBlock)success failure:(RCTResponse
  */
 -(void) onFinishLaunching:(NSNotification *)notification
 {
+    if (@available(iOS 10, *)) {
+        UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+        center.delegate = self;
+    }
+
     NSDictionary *dict = [notification userInfo];
     
     if ([dict objectForKey:UIApplicationLaunchOptionsLocationKey]) {
@@ -336,10 +392,21 @@ RCT_EXPORT_METHOD(forceSync:(RCTResponseSenderBlock)success failure:(RCTResponse
     }
 }
 
+-(void) userNotificationCenter:(UNUserNotificationCenter *)center
+       willPresentNotification:(UNNotification *)notification
+         withCompletionHandler:(void (^)(UNNotificationPresentationOptions options))completionHandler
+{
+    completionHandler(UNNotificationPresentationOptionAlert);
+}
+
 -(void) onAppTerminate:(NSNotification *)notification
 {
     RCTLogInfo(@"RCTBackgroundGeoLocation appTerminate");
     [facade onAppTerminate];
+}
+
++(BOOL)requiresMainQueueSetup {
+    return NO;
 }
 
 @end

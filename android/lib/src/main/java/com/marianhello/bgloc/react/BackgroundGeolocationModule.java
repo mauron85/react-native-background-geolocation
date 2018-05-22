@@ -258,6 +258,46 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
         });
     }
 
+    private BackgroundLocation getCurrentLocation(int timeout, long maximumAge, boolean enableHighAccuracy) throws PluginException {
+        try {
+            return facade.getCurrentLocation(timeout, maximumAge, enableHighAccuracy);
+        } catch (PluginException e) {
+            if (e.getCode() == PluginException.PERMISSION_DENIED_ERROR) {
+                throw new PluginException("Permission denied", 1); // PERMISSION_DENIED
+            } else {
+                throw new PluginException(e.getMessage(), 2); // LOCATION_UNAVAILABLE
+            }
+        } catch (TimeoutException e) {
+            throw new PluginException("Location request timed out", 3); //TIMEOUT
+        }
+    }
+
+    @ReactMethod
+    public void getCurrentLocation(final ReadableMap options, final Callback success, final Callback error) {
+        PermissionManager permissionManager = PermissionManager.getInstance(getContext());
+        permissionManager.checkPermissions(Arrays.asList(PERMISSIONS), new PermissionManager.PermissionRequestListener() {
+            @Override
+            public void onPermissionGranted() {
+                try {
+                    int timeout = options.hasKey("timeout") ? options.getInt("timeout") : Integer.MAX_VALUE;
+                    long maximumAge = options.hasKey("maximumAge") ? options.getInt("maximumAge") : Long.MAX_VALUE;
+                    boolean enableHighAccuracy = options.hasKey("enableHighAccuracy") ? options.getBoolean("enableHighAccuracy") : false;
+
+                    BackgroundLocation location = getCurrentLocation(timeout, maximumAge, enableHighAccuracy);
+                    success.invoke(LocationMapper.toWriteableMap(location));
+                } catch (PluginException e) {
+                    error.invoke(ErrorMap.from(e));
+                }
+            }
+
+            @Override
+            public void onPermissionDenied() {
+                logger.info("User denied requested permissions");
+                error.invoke(ErrorMap.from("Permission denied", 1)); // PERMISSION_DENIED
+            }
+        });
+    }
+
     @ReactMethod
     public void getConfig(final Callback success, final Callback error) {
         runOnBackgroundThread(new Runnable() {
@@ -370,7 +410,6 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
                 sendEvent(AUTHORIZATION_EVENT, BackgroundGeolocationFacade.AUTHORIZATION_DENIED);
             }
         });
-
     }
 
     public boolean hasPermissions(String[] permissions) {
