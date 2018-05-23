@@ -616,7 +616,6 @@ BackgroundGeolocation.configure({
 });
 ```
 
-Note: only string keys and values are supported.
 Note: Keep in mind that all locations (even a single one) will be sent as an array of object(s), when postTemplate is `jsonObject` and array of array(s) for `jsonArray`!
 
 ### Android Headless Task (Experimental)
