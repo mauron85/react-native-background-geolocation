@@ -27,11 +27,6 @@
 
 apply plugin: 'com.android.library'
 
-def DEFAULT_COMPILE_SDK_VERSION = 23
-def DEFAULT_BUILD_TOOLS_VERSION = "23.0.1"
-def DEFAULT_TARGET_SDK_VERSION = 23
-def DEFAULT_PLAY_SERVICES_VERSION = "11+"
-def DEFAULT_SUPPORT_LIB_VERSION = "23.0.1"
 def MOCKITO_CORE_VERSION = "1.10.19"
 def POWERMOCK_VERSION = "1.6.2"
 def ROBOLECTRIC_VERSION = "3.0"
@@ -39,27 +34,14 @@ def JUNIT_VERSION = "4.12"
 def FEST_ASSERT_CORE_VERSION = "2.0M10"
 def SUPPORT_TEST_VERSION = "0.5"
 
-def applicationId = "com.marianhello.bgloc.react"
-if (findProject(':app') != null) {
-    applicationId = project(':app').android.defaultConfig.applicationId
-}
+apply from: '../common/VERSIONS.gradle'
+def applicationId = getApplicationId()
+def playServicesVersion = getPlayServicesVersion()
+def supportLibVersion = getSupportLibVersion()
 
 def projectFlavor = "preoreo"
 if (rootProject.hasProperty('oreoEXPERIMENTAL')) {
     projectFlavor = "oreo"
-}
-
-// Check for application-defined play-services version
-def playServicesVersion = DEFAULT_PLAY_SERVICES_VERSION
-if (rootProject.hasProperty('playServicesVersion')) {
-    playServicesVersion = rootProject.playServicesVersion
-} else if (rootProject.hasProperty('googlePlayServicesVersion')) {
-    playServicesVersion = rootProject.googlePlayServicesVersion
-}
-
-def supportLibVersion = DEFAULT_SUPPORT_LIB_VERSION
-if (rootProject.hasProperty('supportLibVersion')) {
-    supportLibVersion = rootProject.supportLibVersion
 }
 
 repositories {
@@ -72,15 +54,13 @@ repositories {
 }
 
 android {
-    compileSdkVersion rootProject.hasProperty('compileSdkVersion') ? rootProject.compileSdkVersion : DEFAULT_COMPILE_SDK_VERSION
-    buildToolsVersion rootProject.hasProperty('buildToolsVersion') ? rootProject.buildToolsVersion : DEFAULT_BUILD_TOOLS_VERSION
+    compileSdkVersion project.ext.getCompileSdkVersion()
+    buildToolsVersion project.ext.getBuildToolsVersion()
 
     defaultConfig {
-        resValue "string", "content_authority", applicationId + '.provider'
-        resValue "string", "account_type", applicationId
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         minSdkVersion 16
-        targetSdkVersion rootProject.hasProperty('targetSdkVersion') ? rootProject.targetSdkVersion : DEFAULT_TARGET_SDK_VERSION
+        targetSdkVersion project.ext.getTargetSdkVersion()
         versionCode 1 // intentionally not updating version as we're not uploading to any java repository
         versionName "1.0"
     }
@@ -96,15 +76,11 @@ dependencies {
     compile 'com.facebook.react:react-native:+'
     compile "com.google.android.gms:play-services-location:$playServicesVersion"
     if (projectFlavor == "oreo") {
-        compile "com.android.support:support-compat:$supportLibVersion"
+        compile "com.android.support:support-compat:26+"
         // Because of play services version 11, we need to override it's support-v4 library!
         // You can check dependency graph: ./gradlew app:dependencies --configuration compile
         compile "com.android.support:support-v4:$supportLibVersion"
     }
-    compile 'com.github.tony19:logback-android:1.1.1-9'
-    compile 'org.slf4j:slf4j-api:1.7.21'
-    compile 'com.intentfilter:android-permissions:0.1.6'
-
     testCompile "junit:junit:${JUNIT_VERSION}"
     testCompile "org.powermock:powermock-api-mockito:${POWERMOCK_VERSION}"
     testCompile "org.powermock:powermock-module-junit4-rule:${POWERMOCK_VERSION}"

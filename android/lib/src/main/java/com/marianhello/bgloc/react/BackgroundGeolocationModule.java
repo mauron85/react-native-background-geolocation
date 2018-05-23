@@ -1,8 +1,6 @@
 package com.marianhello.bgloc.react;
 
 import android.content.Context;
-import android.content.pm.PackageManager;
-import android.support.v4.content.ContextCompat;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
@@ -14,7 +12,6 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
-import com.intentfilter.androidpermissions.PermissionManager;
 import com.marianhello.bgloc.BackgroundGeolocationFacade;
 import com.marianhello.bgloc.Config;
 import com.marianhello.bgloc.LocationService;
@@ -28,11 +25,7 @@ import com.marianhello.logging.LoggerManager;
 
 import org.json.JSONException;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.concurrent.TimeoutException;
-
-import static com.marianhello.bgloc.BackgroundGeolocationFacade.PERMISSIONS;
 
 public class BackgroundGeolocationModule extends ReactContextBaseJavaModule implements LifecycleEventListener, PluginDelegate {
 
@@ -140,12 +133,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
 
     @ReactMethod
     public void start() {
-        if (hasPermissions(PERMISSIONS)) {
-            facade.start();
-        } else {
-            logger.debug("Permissions not granted");
-            requestPermissions(PERMISSIONS_REQUEST_CODE, BackgroundGeolocationFacade.PERMISSIONS);
-        }
+        facade.start();
     }
 
     @ReactMethod
@@ -258,44 +246,18 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
         });
     }
 
-    private BackgroundLocation getCurrentLocation(int timeout, long maximumAge, boolean enableHighAccuracy) throws PluginException {
-        try {
-            return facade.getCurrentLocation(timeout, maximumAge, enableHighAccuracy);
-        } catch (PluginException e) {
-            if (e.getCode() == PluginException.PERMISSION_DENIED_ERROR) {
-                throw new PluginException("Permission denied", 1); // PERMISSION_DENIED
-            } else {
-                throw new PluginException(e.getMessage(), 2); // LOCATION_UNAVAILABLE
-            }
-        } catch (TimeoutException e) {
-            throw new PluginException("Location request timed out", 3); //TIMEOUT
-        }
-    }
-
     @ReactMethod
     public void getCurrentLocation(final ReadableMap options, final Callback success, final Callback error) {
-        PermissionManager permissionManager = PermissionManager.getInstance(getContext());
-        permissionManager.checkPermissions(Arrays.asList(PERMISSIONS), new PermissionManager.PermissionRequestListener() {
-            @Override
-            public void onPermissionGranted() {
-                try {
-                    int timeout = options.hasKey("timeout") ? options.getInt("timeout") : Integer.MAX_VALUE;
-                    long maximumAge = options.hasKey("maximumAge") ? options.getInt("maximumAge") : Long.MAX_VALUE;
-                    boolean enableHighAccuracy = options.hasKey("enableHighAccuracy") ? options.getBoolean("enableHighAccuracy") : false;
+        try {
+            int timeout = options.hasKey("timeout") ? options.getInt("timeout") : Integer.MAX_VALUE;
+            long maximumAge = options.hasKey("maximumAge") ? options.getInt("maximumAge") : Long.MAX_VALUE;
+            boolean enableHighAccuracy = options.hasKey("enableHighAccuracy") ? options.getBoolean("enableHighAccuracy") : false;
 
-                    BackgroundLocation location = getCurrentLocation(timeout, maximumAge, enableHighAccuracy);
-                    success.invoke(LocationMapper.toWriteableMap(location));
-                } catch (PluginException e) {
-                    error.invoke(ErrorMap.from(e));
-                }
-            }
-
-            @Override
-            public void onPermissionDenied() {
-                logger.info("User denied requested permissions");
-                error.invoke(ErrorMap.from("Permission denied", 1)); // PERMISSION_DENIED
-            }
-        });
+            BackgroundLocation location = facade.getCurrentLocation(timeout, maximumAge, enableHighAccuracy);
+            success.invoke(LocationMapper.toWriteableMap(location));
+        } catch (PluginException e) {
+            error.invoke(ErrorMap.from(e));
+        }
     }
 
     @ReactMethod
@@ -346,7 +308,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
                 try {
                     WritableMap out = Arguments.createMap();
                     out.putBoolean("isRunning", facade.isRunning());
-                    out.putBoolean("hasPermissions", hasPermissions(PERMISSIONS)); //@Deprecated
+                    out.putBoolean("hasPermissions", facade.hasPermissions()); //@Deprecated
                     out.putBoolean("locationServicesEnabled", facade.locationServicesEnabled());
                     out.putInt("authorization", getAuthorizationStatus());
                     success.invoke(out);
@@ -391,34 +353,6 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
         out.putString("message", message);
 
         sendEvent(ERROR_EVENT, out);
-    }
-
-    private void requestPermissions(int requestCode, String[] permissions) {
-        PermissionManager permissionManager = PermissionManager.getInstance(getContext());
-        permissionManager.checkPermissions(Arrays.asList(permissions), new PermissionManager.PermissionRequestListener() {
-            @Override
-            public void onPermissionGranted() {
-                // permission was granted
-                // start service
-                logger.info("User granted requested permissions");
-                facade.start();
-            }
-
-            @Override
-            public void onPermissionDenied() {
-                logger.info("User denied requested permissions");
-                sendEvent(AUTHORIZATION_EVENT, BackgroundGeolocationFacade.AUTHORIZATION_DENIED);
-            }
-        });
-    }
-
-    public boolean hasPermissions(String[] permissions) {
-        for (String perm: permissions) {
-            if (ContextCompat.checkSelfPermission(getReactApplicationContext(), perm) != PackageManager.PERMISSION_GRANTED) {
-                return false;
-            }
-        }
-        return true;
     }
 
     public int getAuthorizationStatus() {
