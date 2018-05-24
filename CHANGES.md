@@ -82,9 +82,9 @@ Since alpha.26:
 - Android remove restriction on postTemplate string only values
 
 Since alpha.28:
-- Android bring back startOnForeground config option (BREAKING CHANGE!)
+- Android bring back startForeground config option (BREAKING CHANGE!)
 
-startOnForeground has slightly different meaning.
+startForeground has slightly different meaning.
 
 If false (default) then service will create notification and promotes
 itself to foreground service, when client unbinds from service.
