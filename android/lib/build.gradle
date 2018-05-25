@@ -38,6 +38,7 @@ apply from: '../common/VERSIONS.gradle'
 def applicationId = getApplicationId()
 def playServicesVersion = getPlayServicesVersion()
 def supportLibVersion = getSupportLibVersion()
+def hasGradle3Support = getGradle3Support();
 
 def projectFlavor = "preoreo"
 if (rootProject.hasProperty('oreoEXPERIMENTAL')) {
@@ -71,8 +72,12 @@ android {
 }
 
 dependencies {
-    releaseCompile project(path: ':react-native-mauron85-background-geolocation-common', configuration: "${projectFlavor}Release")
-    debugCompile project(path: ':react-native-mauron85-background-geolocation-common', configuration: "${projectFlavor}Debug")
+    if (hasGradle3Support) {
+        compile project(path: ':react-native-mauron85-background-geolocation-common')
+    } else {
+        releaseCompile project(path: ':react-native-mauron85-background-geolocation-common', configuration: "${projectFlavor}Release")
+        debugCompile project(path: ':react-native-mauron85-background-geolocation-common', configuration: "${projectFlavor}Debug")
+    }
     compile 'com.facebook.react:react-native:+'
     testCompile "junit:junit:${JUNIT_VERSION}"
     testCompile "org.powermock:powermock-api-mockito:${POWERMOCK_VERSION}"
