@@ -51,6 +51,9 @@ Sice alpha.28:
 - implement getCurrentLocation
 - iOS implement getStationaryLocation
 
+Sice alpha.31:
+- Android Gradle3 support (experimental)
+
 ### Changed
 
 Since alpha.6:
