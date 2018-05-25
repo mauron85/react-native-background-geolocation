@@ -74,13 +74,6 @@ dependencies {
     releaseCompile project(path: ':react-native-mauron85-background-geolocation-common', configuration: "${projectFlavor}Release")
     debugCompile project(path: ':react-native-mauron85-background-geolocation-common', configuration: "${projectFlavor}Debug")
     compile 'com.facebook.react:react-native:+'
-    compile "com.google.android.gms:play-services-location:$playServicesVersion"
-    if (projectFlavor == "oreo") {
-        compile "com.android.support:support-compat:26+"
-        // Because of play services version 11, we need to override it's support-v4 library!
-        // You can check dependency graph: ./gradlew app:dependencies --configuration compile
-        compile "com.android.support:support-v4:$supportLibVersion"
-    }
     testCompile "junit:junit:${JUNIT_VERSION}"
     testCompile "org.powermock:powermock-api-mockito:${POWERMOCK_VERSION}"
     testCompile "org.powermock:powermock-module-junit4-rule:${POWERMOCK_VERSION}"
