@@ -1,6 +1,7 @@
 package com.marianhello.bgloc.react;
 
 import android.content.Context;
+import android.os.Parcelable;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
@@ -8,10 +9,13 @@ import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
+import com.iodine.start.ArrayUtil;
+import com.iodine.start.MapUtil;
 import com.marianhello.bgloc.BackgroundGeolocationFacade;
 import com.marianhello.bgloc.Config;
 import com.marianhello.bgloc.LocationService;
@@ -22,8 +26,10 @@ import com.marianhello.bgloc.data.BackgroundLocation;
 import com.marianhello.bgloc.react.data.LocationMapper;
 import com.marianhello.logging.LogEntry;
 import com.marianhello.logging.LoggerManager;
+import com.marianhello.utils.Convert;
 
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.Collection;
 
@@ -32,6 +38,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     public static final String LOCATION_EVENT = "location";
     public static final String STATIONARY_EVENT = "stationary";
     public static final String ACTIVITY_EVENT = "activity";
+    public static final String LOCATION_POST_PREPARE_EVENT = "beforepost";
 
     public static final String FOREGROUND_EVENT = "foreground";
     public static final String BACKGROUND_EVENT = "background";
@@ -333,6 +340,11 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
         success.invoke();
     }
 
+    @ReactMethod
+    public void sendResponse(Integer msgId, ReadableArray params) {
+        facade.sendResponse(msgId, ArrayUtil.toArray(params));
+    }
+
     private void sendEvent(String eventName, Object params) {
         getReactApplicationContext()
                 .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
@@ -395,6 +407,21 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
             case LocationService.SERVICE_STOPPED:
                 sendEvent(STOP_EVENT, null);
                 return;
+        }
+    }
+
+    @Override
+    public void onMessage(String action, JSONObject payload, long messageId) {
+        WritableArray params = Arguments.createArray();
+        try {
+            params.pushString(action);
+            params.pushMap(MapUtil.toWritableMap(MapUtil.toMap(payload)));
+            params.pushInt(Convert.safeLongToInt(messageId));
+            getReactApplicationContext()
+                    .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                    .emit(action, params);
+        } catch (JSONException e) {
+            logger.error("Error sending message to client", e);
         }
     }
 

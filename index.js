@@ -21,7 +21,8 @@ var BackgroundGeolocation = {
     'error',
     'authorization',
     'foreground',
-    'background'
+    'background',
+    'beforepost'
   ],
 
   DISTANCE_FILTER_PROVIDER: 0,
@@ -225,6 +226,9 @@ var BackgroundGeolocation = {
     if (this.events.indexOf(event) < 0) {
       throw TAG + ': Unknown event "' + event + '"';
     }
+    if (event === 'beforepost') {
+      return BackgroundGeolocation._onAsync(event, callbackFn);
+    }
 
     return DeviceEventEmitter.addListener(event, callbackFn);
   },
@@ -236,6 +240,14 @@ var BackgroundGeolocation = {
     }
 
     return DeviceEventEmitter.removeAllListeners(event);
+  },
+
+  _onAsync: function(event, callbackFn) {
+    return DeviceEventEmitter.addListener(event, function(msg) {
+      var action = msg[0], payload = msg[1], msgId = msg[2];
+      console.log('Message received', msgId, action, payload);
+      RNBackgroundGeolocation.sendResponse(msgId, [callbackFn(payload)]);
+    });
   }
 };
 
