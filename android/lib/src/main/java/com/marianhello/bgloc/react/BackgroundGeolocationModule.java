@@ -248,16 +248,20 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
 
     @ReactMethod
     public void getCurrentLocation(final ReadableMap options, final Callback success, final Callback error) {
-        try {
-            int timeout = options.hasKey("timeout") ? options.getInt("timeout") : Integer.MAX_VALUE;
-            long maximumAge = options.hasKey("maximumAge") ? options.getInt("maximumAge") : Long.MAX_VALUE;
-            boolean enableHighAccuracy = options.hasKey("enableHighAccuracy") ? options.getBoolean("enableHighAccuracy") : false;
+      runOnBackgroundThread(new Runnable() {
+        public void run() {
+          try {
+              int timeout = options.hasKey("timeout") ? options.getInt("timeout") : Integer.MAX_VALUE;
+              long maximumAge = options.hasKey("maximumAge") ? options.getInt("maximumAge") : Long.MAX_VALUE;
+              boolean enableHighAccuracy = options.hasKey("enableHighAccuracy") && options.getBoolean("enableHighAccuracy");
 
-            BackgroundLocation location = facade.getCurrentLocation(timeout, maximumAge, enableHighAccuracy);
-            success.invoke(LocationMapper.toWriteableMap(location));
-        } catch (PluginException e) {
-            error.invoke(ErrorMap.from(e));
+              BackgroundLocation location = facade.getCurrentLocation(timeout, maximumAge, enableHighAccuracy);
+              success.invoke(LocationMapper.toWriteableMap(location));
+          } catch (PluginException e) {
+              error.invoke(ErrorMap.from(e));
+          }
         }
+      });
     }
 
     @ReactMethod
