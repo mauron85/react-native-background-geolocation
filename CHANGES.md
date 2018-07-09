@@ -151,6 +151,10 @@ Sice alpha.28:
 - iOS fix error message format
 - iOS activity provider stationary event
 
+Since alpha.35:
+- Android getCurrentLocation runs on background thread (PR #219 by [@djereg](https://github.com/djereg/))
+- iOS Fix crash on delete all location ([7392e39](https://github.com/mauron85/background-geolocation-ios/commit/7392e391c3de3ff0d6f5ef2ef19c34aba612bf9b) by [@acerbetti](https://github.com/acerbetti/))
+
 ### [0.4.1] - 2017-12-19
 #### Changed
 - react native peer dependency >0.49.0
