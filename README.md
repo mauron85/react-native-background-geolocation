@@ -62,7 +62,7 @@ ext {
 2. Add Google maven repository into allprojects -> repositories
 
 ```
-maven { url 'https://maven.google.com' }`
+maven { url 'https://maven.google.com' }
 ```
 
 3. Edit `android/app/build.gradle`
