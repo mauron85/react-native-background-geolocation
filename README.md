@@ -680,6 +680,53 @@ BackgroundGeolocation.headlessTask(function(event) {
 });
 ```
 
+### Transforming/filtering locations in native code
+
+In some cases you might want to modify a location before posting, reject a location, or any other logic around incoming locations - in native code. There's an option of doing so with a headless task, but you may want to preserve battery, or do more complex actions that are not available in React.
+
+In those cases you could register a location transform.
+
+Android example:
+
+When the `Application` is initialized (which also happens before services gets started in the background), write some code like this:
+
+```
+BackgroundGeolocationFacade.setLocationTransform(new ILocationTransform() {
+            @Nullable
+            @Override
+            public BackgroundLocation transformLocationBeforeCommit(@NonNull Context context, @NonNull BackgroundLocation location) {
+                // `context` is available too if there's a need to use a value from preferences etc.
+                
+                // Modify the location
+                location.setLatitude(location.getLatitude() + 0.018);
+                
+                // Return modified location
+                return location;
+  
+                // You could return null to reject the location,
+                // or if you did something else with the location and the library should not post or save it.
+            }
+        }
+```
+
+iOS example:
+
+
+In `didFinishLaunchingWithOptions` delegate method, write some code like this:
+
+```
+BackgroundGeolocationFacade.locationTransform = ^(MAURLocation * location) {
+  // Modify the location
+  location.latitude = @(location.latitude.doubleValue + 0.018);
+  
+  // Return modified location
+  return location;
+  
+  // You could return null to reject the location,
+  // or if you did something else with the location and the library should not post or save it.
+};
+```
+
 ### Example of backend server
 
 [Background-geolocation-server](https://github.com/mauron85/background-geolocation-server) is a backend server written in nodejs with CORS - Cross-Origin Resource Sharing support.
