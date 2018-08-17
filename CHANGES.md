@@ -54,6 +54,11 @@ Sice alpha.28:
 Sice alpha.31:
 - Android Gradle3 support (experimental)
 
+Sice alpha.37:
+- Transforming/filtering locations in native code (by [@danielgindi](https://github.com/danielgindi/))
+More info: https://github.com/mauron85/background-geolocation-android/pull/8
+
+
 ### Changed
 
 Since alpha.6:
