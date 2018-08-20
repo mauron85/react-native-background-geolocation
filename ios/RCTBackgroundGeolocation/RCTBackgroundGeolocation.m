@@ -25,6 +25,9 @@
 
 @implementation RCTBackgroundGeolocation {
     MAURBackgroundGeolocationFacade* facade;
+    
+    API_AVAILABLE(ios(10.0))
+    __weak id<UNUserNotificationCenterDelegate> prevNotificationDelegate;
 }
 
 @synthesize bridge = _bridge;
@@ -375,16 +378,21 @@ RCT_EXPORT_METHOD(forceSync:(RCTResponseSenderBlock)success failure:(RCTResponse
  */
 -(void) onFinishLaunching:(NSNotification *)notification
 {
-    if (@available(iOS 10, *)) {
-        UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
-        center.delegate = self;
-    }
-
     NSDictionary *dict = [notification userInfo];
+    
+    MAURConfig *config = [facade getConfig];
+    if (config.isDebugging)
+    {
+        if (@available(iOS 10, *))
+        {
+            UNUserNotificationCenter *center = [UNUserNotificationCenter currentNotificationCenter];
+            prevNotificationDelegate = center.delegate;
+            center.delegate = self;
+        }
+    }
     
     if ([dict objectForKey:UIApplicationLaunchOptionsLocationKey]) {
         RCTLogInfo(@"RCTBackgroundGeolocation started by system on location event.");
-        MAURConfig *config = [facade getConfig];
         if (![config stopOnTerminate]) {
             [facade start:nil];
             [facade switchMode:MAURBackgroundMode];
@@ -396,7 +404,18 @@ RCT_EXPORT_METHOD(forceSync:(RCTResponseSenderBlock)success failure:(RCTResponse
        willPresentNotification:(UNNotification *)notification
          withCompletionHandler:(void (^)(UNNotificationPresentationOptions options))completionHandler
 {
-    completionHandler(UNNotificationPresentationOptionAlert);
+    if (prevNotificationDelegate && [prevNotificationDelegate respondsToSelector:@selector(userNotificationCenter:willPresentNotification:withCompletionHandler:)])
+    {
+        // Give other delegates (like FCM) the chance to process this notification
+        
+        [prevNotificationDelegate userNotificationCenter:center willPresentNotification:notification withCompletionHandler:^(UNNotificationPresentationOptions options) {
+            completionHandler(UNNotificationPresentationOptionAlert);
+        }];
+    }
+    else
+    {
+        completionHandler(UNNotificationPresentationOptionAlert);
+    }
 }
 
 -(void) onAppTerminate:(NSNotification *)notification
