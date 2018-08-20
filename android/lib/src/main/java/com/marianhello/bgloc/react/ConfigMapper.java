@@ -49,6 +49,7 @@ public class ConfigMapper {
         if (options.hasKey("stopOnTerminate")) config.setStopOnTerminate(options.getBoolean("stopOnTerminate"));
         if (options.hasKey("startOnBoot")) config.setStartOnBoot(options.getBoolean("startOnBoot"));
         if (options.hasKey("startForeground")) config.setStartForeground(options.getBoolean("startForeground"));
+        if (options.hasKey("notificationsEnabled")) config.setNotificationsEnabled(options.getBoolean("notificationsEnabled"));
         if (options.hasKey("locationProvider")) config.setLocationProvider(options.getInt("locationProvider"));
         if (options.hasKey("interval")) config.setInterval(options.getInt("interval"));
         if (options.hasKey("fastestInterval")) config.setFastestInterval(options.getInt("fastestInterval"));
@@ -148,6 +149,9 @@ public class ConfigMapper {
         }
         if (config.getStartForeground() != null) {
             out.putBoolean("startForeground", config.getStartForeground());
+        }
+        if (config.getNotificationsEnabled() != null) {
+            out.putBoolean("notificationsEnabled", config.getNotificationsEnabled());
         }
         if (config.getLocationProvider() != null) {
             out.putInt("locationProvider", config.getLocationProvider());
