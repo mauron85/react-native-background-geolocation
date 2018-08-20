@@ -106,6 +106,12 @@ Since alpha.30:
 - Android internal changes (permission handling)
 - Android gradle build changes
 
+Since alpha.38:
+- Android disable notification sound and vibration on oreo
+(PR: [#9](https://github.com/mauron85/background-geolocation-android/pull/9)
+by [@danielgindi](https://github.com/danielgindi/),
+Closes #260)
+
 ### Fixed
 
 Since alpha.4:
@@ -165,6 +171,13 @@ Since alpha.36:
 (PR: [#7](https://github.com/mauron85/background-geolocation-android/pull/7)
 Commit: [00e1314](https://github.com/mauron85/background-geolocation-android/commit/00e131478ad4e37576eb85581bb663b65302a4e0) by [@danielgindi](https://github.com/danielgindi/),
 fixes #201, #181, #172)
+
+Since alpha.38:
+- iOS Avoid taking control of UNUserNotificationCenter
+(PR: [#268](https://github.com/mauron85/react-native-background-geolocation/pull/268)
+by [@danielgindi](https://github.com/danielgindi/),
+fixes #206, #256)
+
 
 ### [0.4.1] - 2017-12-19
 #### Changed
