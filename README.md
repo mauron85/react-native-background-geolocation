@@ -173,6 +173,15 @@ class BgTracking extends Component {
       console.log('[INFO] App is in foreground');
     });
 
+    BackgroundGeolocation.on('abort_requested', () => {
+      console.log('[INFO] Server responded with 285 Updates Not Required');
+
+      // Here we can decide whether we want stop the updates or not.
+      // If you've configured the server to return 285, then it means the server does not require further update.
+      // So the normal thing to do here would be to `BackgroundGeolocation.stop()`.
+      // But you might be counting on it to receive location updates in the UI, so you could just reconfigure and set `url` to null.
+    });
+
     BackgroundGeolocation.checkStatus(status => {
       console.log('[INFO] BackgroundGeolocation service is running', status.isRunning);
       console.log('[INFO] BackgroundGeolocation services enabled', status.locationServicesEnabled);
@@ -545,17 +554,18 @@ Unregister all event listeners for given event
 
 ## Events
 
-| Name                | Callback param         | Platform     | Provider*   | Description                            |
-|---------------------|------------------------|--------------|-------------|----------------------------------------|
-| `location`          | `Location`             | all          | all         | on location update                     |
-| `stationary`        | `Location`             | all          | DIS,ACT     | on device entered stationary mode      |
-| `activity`          | `Activity`             | Android      | ACT         | on activity detection                  |
-| `error`             | `{ code, message }`    | all          | all         | on plugin error                        |
-| `authorization`     | `status`               | all          | all         | on user toggle location service        |
-| `start`             |                        | all          | all         | geolocation has been started           |
-| `stop`              |                        | all          | all         | geolocation has been stopped           |
-| `foreground`        |                        | Android      | all         | app entered foreground state (visible) |
-| `background`        |                        | Android      | all         | app entered background state           |
+| Name                | Callback param         | Platform     | Provider*   | Description                                      |
+|---------------------|------------------------|--------------|-------------|--------------------------------------------------|
+| `location`          | `Location`             | all          | all         | on location update                               |
+| `stationary`        | `Location`             | all          | DIS,ACT     | on device entered stationary mode                |
+| `activity`          | `Activity`             | Android      | ACT         | on activity detection                            |
+| `error`             | `{ code, message }`    | all          | all         | on plugin error                                  |
+| `authorization`     | `status`               | all          | all         | on user toggle location service                  |
+| `start`             |                        | all          | all         | geolocation has been started                     |
+| `stop`              |                        | all          | all         | geolocation has been stopped                     |
+| `foreground`        |                        | Android      | all         | app entered foreground state (visible)           |
+| `background`        |                        | Android      | all         | app entered background state                     |
+| `abort_requested`   |                        | all          | all         | server responded with "285 Updates Not Required" |
 
 ### Location event
 | Location parameter     | Type      | Description                                                            |
