@@ -47,17 +47,22 @@ Since alpha.22:
 Since alpha.26:
 - Android add httpHeaders validation
 
-Sice alpha.28:
+Since alpha.28:
 - implement getCurrentLocation
 - iOS implement getStationaryLocation
 
-Sice alpha.31:
+Since alpha.31:
 - Android Gradle3 support (experimental)
 
-Sice alpha.37:
+Since alpha.37:
 - Transforming/filtering locations in native code (by [@danielgindi](https://github.com/danielgindi/))
 More info: https://github.com/mauron85/background-geolocation-android/pull/8
 
+Since alpha.40:
+- notificationsEnabled config option (by [@danielgindi](https://github.com/danielgindi/))
+More info: https://github.com/mauron85/react-native-background-geolocation/pull/269
+- Allow stopping location updates on status "285 Updates Not Required" (by [@danielgindi](https://github.com/danielgindi/))
+More info: https://github.com/mauron85/react-native-background-geolocation/pull/271
 
 ### Changed
 
@@ -150,14 +155,14 @@ Since alpha.22:
 - Android add guards to prevent some race conditions
 - Android config null handling
 
-Sice alpha.25:
+Since alpha.25:
 - Android issue #185 - handle invalid configuration
 
-Sice alpha.27:
+Since alpha.27:
 - iOS fix forceSync params
 - fix #183 - Error when adding 'activity' event listener
 
-Sice alpha.28:
+Since alpha.28:
 - iOS display debug notifications in foreground on iOS >= 10
 - iOS fix error message format
 - iOS activity provider stationary event
