@@ -359,18 +359,32 @@ RCT_EXPORT_METHOD(forceSync:(RCTResponseSenderBlock)success failure:(RCTResponse
     [self sendEvent:@"activity" resultAsDictionary:[activity toDictionary]];
 }
 
--(void) onAppResume:(NSNotification *)notification
+- (void) onAppResume:(NSNotification *)notification
 {
     RCTLogInfo(@"RCTBackgroundGeoLocation resumed");
     [facade switchMode:MAURForegroundMode];
     [self sendEvent:@"foreground"];
 }
 
--(void) onAppPause:(NSNotification *)notification
+- (void) onAppPause:(NSNotification *)notification
 {
     RCTLogInfo(@"RCTBackgroundGeoLocation paused");
     [facade switchMode:MAURBackgroundMode];
     [self sendEvent:@"background"];
+}
+
+- (void) onAbortRequested
+{
+    RCTLogInfo(@"RCTBackgroundGeoLocation abort requested by the server");
+    
+    if (_bridge)
+    {
+        [self sendEvent:@"abort_requested"];
+    }
+    else
+    {
+        [facade stop:nil];
+    }
 }
 
 /**@
