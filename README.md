@@ -768,4 +768,5 @@ Try using [react-native-geo-fencing](https://github.com/surialabs/react-native-g
 ## Changelog
 
 See [CHANGES.md](/CHANGES.md)
+
 See [变更（非官方中文版）](/CHANGES_zh-Hans.md)
