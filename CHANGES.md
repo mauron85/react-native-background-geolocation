@@ -183,6 +183,10 @@ Since alpha.38:
 by [@danielgindi](https://github.com/danielgindi/),
 fixes #206, #256)
 
+Since alpha.41:
+- Android fix locationService treating success as errors
+(PR: [#13](https://github.com/mauron85/background-geolocation-android/pull/13)
+by [@hoisel](https://github.com/hoisel/))
 
 ### [0.4.1] - 2017-12-19
 #### Changed
