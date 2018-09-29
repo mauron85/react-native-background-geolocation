@@ -188,6 +188,12 @@ Since alpha.41:
 (PR: [#13](https://github.com/mauron85/background-geolocation-android/pull/13)
 by [@hoisel](https://github.com/hoisel/))
 
+Since alpha.42:
+- Android make sure mService exists when we call start or stop
+(PR: [#17](https://github.com/mauron85/background-geolocation-android/pull/17)
+by [@ivosabev](https://github.com/ivosabev/),
+fixes #257, #280)
+
 ### [0.4.1] - 2017-12-19
 #### Changed
 - react native peer dependency >0.49.0
