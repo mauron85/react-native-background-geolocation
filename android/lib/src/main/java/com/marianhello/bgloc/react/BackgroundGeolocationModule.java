@@ -40,6 +40,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     public static final String START_EVENT = "start";
     public static final String STOP_EVENT = "stop";
     public static final String ABORT_REQUESTED_EVENT = "abort_requested";
+    public static final String HTTP_AUTHORIZATION_EVENT = "http_authorization";
     public static final String ERROR_EVENT = "error";
 
     private static final int PERMISSIONS_REQUEST_CODE = 1;
@@ -411,5 +412,10 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     @Override
     public void onAbortRequested() {
         sendEvent(ABORT_REQUESTED_EVENT, null);
+    }
+
+    @Override
+    public void onHttpAuthorization() {
+        sendEvent(HTTP_AUTHORIZATION_EVENT, null);
     }
 }
