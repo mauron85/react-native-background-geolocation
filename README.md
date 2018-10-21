@@ -182,6 +182,10 @@ class BgTracking extends Component {
       // But you might be counting on it to receive location updates in the UI, so you could just reconfigure and set `url` to null.
     });
 
+    BackgroundGeolocation.on('http_authorization', () => {
+      console.log('[INFO] App needs to authorize the http requests');
+    });
+
     BackgroundGeolocation.checkStatus(status => {
       console.log('[INFO] BackgroundGeolocation service is running', status.isRunning);
       console.log('[INFO] BackgroundGeolocation services enabled', status.locationServicesEnabled);
@@ -567,6 +571,7 @@ Unregister all event listeners for given event
 | `foreground`        |                        | Android      | all         | app entered foreground state (visible)           |
 | `background`        |                        | Android      | all         | app entered background state                     |
 | `abort_requested`   |                        | all          | all         | server responded with "285 Updates Not Required" |
+| `http_authorization`|                        | all          | all         | server responded with "401 Unauthorized"         |
 
 ### Location event
 | Location parameter     | Type      | Description                                                            |
