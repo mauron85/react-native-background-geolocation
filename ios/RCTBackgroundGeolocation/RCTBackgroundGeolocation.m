@@ -387,6 +387,16 @@ RCT_EXPORT_METHOD(forceSync:(RCTResponseSenderBlock)success failure:(RCTResponse
     }
 }
 
+- (void) onHttpAuthorization
+{
+    RCTLogInfo(@"RCTBackgroundGeoLocation http authorization");
+    
+    if (_bridge)
+    {
+        [self sendEvent:@"http_authorization"];
+    }
+}
+
 /**@
  * on UIApplicationDidFinishLaunchingNotification
  */
