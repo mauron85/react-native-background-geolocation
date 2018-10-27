@@ -27,13 +27,6 @@
 
 apply plugin: 'com.android.library'
 
-def MOCKITO_CORE_VERSION = "1.10.19"
-def POWERMOCK_VERSION = "1.6.2"
-def ROBOLECTRIC_VERSION = "3.0"
-def JUNIT_VERSION = "4.12"
-def FEST_ASSERT_CORE_VERSION = "2.0M10"
-def SUPPORT_TEST_VERSION = "0.5"
-
 apply from: '../common/VERSIONS.gradle'
 def applicationId = getApplicationId()
 def playServicesVersion = getPlayServicesVersion()
@@ -44,6 +37,35 @@ def projectFlavor = "preoreo"
 if (rootProject.hasProperty('oreoEXPERIMENTAL')) {
     projectFlavor = "oreo"
 }
+
+// https://hackernoon.com/android-how-to-add-gradle-dependencies-using-foreach-c4cbcc070458
+def oreoDependencies = [
+    [configuration: "implementation", dependency: libs.slf4j],
+    [configuration: "implementation", dependency: libs.reactNative],
+    [configuration: "testImplementation", dependency: testLibs.junit],
+    [configuration: "testImplementation", dependency: testLibs.powermockMockito],
+    [configuration: "testImplementation", dependency: testLibs.powermockjUnit],
+    [configuration: "testImplementation", dependency: testLibs.powermockClassloading],
+    [configuration: "testImplementation", dependency: testLibs.mockitoCore],
+    [configuration: "testImplementation", dependency: testLibs.festAssertCore],
+    [configuration: "testImplementation", dependency: testLibs.robolectric],
+    [configuration: "androidTestImplementation", dependency: testLibs.testRunner],
+    [configuration: "androidTestImplementation", dependency: testLibs.testRules],
+]
+
+def preoreoDependencies = [
+    [configuration: "compile", dependency: libs.slf4j],
+    [configuration: "compile", dependency: libs.reactNative],
+    [configuration: "testCompile", dependency: testLibs.junit],
+    [configuration: "testCompile", dependency: testLibs.powermockMockito],
+    [configuration: "testCompile", dependency: testLibs.powermockjUnit],
+    [configuration: "testCompile", dependency: testLibs.powermockClassloading],
+    [configuration: "testCompile", dependency: testLibs.mockitoCore],
+    [configuration: "testCompile", dependency: testLibs.festAssertCore],
+    [configuration: "testCompile", dependency: testLibs.robolectric],
+    [configuration: "androidTestCompile", dependency: testLibs.testRunner],
+    [configuration: "androidTestCompile", dependency: testLibs.testRules],
+]
 
 repositories {
     jcenter()
@@ -73,21 +95,17 @@ android {
 
 dependencies {
     if (hasGradle3Support) {
-        compile project(path: ':react-native-mauron85-background-geolocation-common')
+        implementation project(path: ':react-native-mauron85-background-geolocation-common')
+
+        oreoDependencies.each {
+            add(it.configuration, it.dependency)
+        }
     } else {
         releaseCompile project(path: ':react-native-mauron85-background-geolocation-common', configuration: "${projectFlavor}Release")
         debugCompile project(path: ':react-native-mauron85-background-geolocation-common', configuration: "${projectFlavor}Debug")
-    }
-    compile 'com.facebook.react:react-native:+'
-    testCompile "junit:junit:${JUNIT_VERSION}"
-    testCompile "org.powermock:powermock-api-mockito:${POWERMOCK_VERSION}"
-    testCompile "org.powermock:powermock-module-junit4-rule:${POWERMOCK_VERSION}"
-    testCompile "org.powermock:powermock-classloading-xstream:${POWERMOCK_VERSION}"
-    testCompile "org.mockito:mockito-core:${MOCKITO_CORE_VERSION}"
-    testCompile "org.easytesting:fest-assert-core:${FEST_ASSERT_CORE_VERSION}"
-    testCompile "org.robolectric:robolectric:${ROBOLECTRIC_VERSION}"
 
-//    androidTestCompile "com.android.support:support-annotations:$supportLibVersion"
-    androidTestCompile "com.android.support.test:runner:${SUPPORT_TEST_VERSION}"
-    androidTestCompile "com.android.support.test:rules:${SUPPORT_TEST_VERSION}"
+        preoreoDependencies.each {
+            add(it.configuration, it.dependency)
+        }
+    }
 }
