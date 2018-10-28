@@ -68,6 +68,10 @@ Since alpha.43:
 - Listen for 401 Unauthorized status codes received from http server (by [@FeNoMeNa](https://github.com/FeNoMeNa/))
 More info: https://github.com/mauron85/react-native-background-geolocation/pull/308/files
 
+Since alpha.44:
+- typescript definitions (index.d.ts)
+- Android allow override minSdkVersion
+
 ### Changed
 
 Since alpha.6:
@@ -197,6 +201,13 @@ Since alpha.42:
 (PR: [#17](https://github.com/mauron85/background-geolocation-android/pull/17)
 by [@ivosabev](https://github.com/ivosabev/),
 fixes #257, #280)
+
+Since alpha.44:
+- Android automatically use gradle4 template when gradle >= 4.4 is detected
+(no need for gradle3EXPERIMENTAL)
+- Android upgrade default libraries to version compatible with RN57
+- Android fix gradle4 compile, testCompile deprecated warnings
+- Android fix service crash on boot for Android 8 when startOnBoot option is used
 
 ### [0.4.1] - 2017-12-19
 #### Changed

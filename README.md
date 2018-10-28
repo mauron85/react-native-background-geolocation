@@ -22,6 +22,24 @@ You can choose from following location providers:
 
 See [Which provider should I use?](/PROVIDERS.md) for more information about providers.
 
+## Dependencies
+
+Versions of libraries and sdk versions used to compile this plugin can be overriden in
+`android/build.gradle` with ext declaration.
+
+When ext is not provided then following defaults will be used:
+
+```
+ext {
+  compileSdkVersion = 27
+  buildToolsVersion = "27.0.3"
+  targetSdkVersion = 26
+  minSdkVersion = 16
+  supportLibVersion = "27.1.1"
+  googlePlayServicesVersion = "11+"
+}
+```
+
 ## Compatibility
 
 Due to the rapid changes being made in the React Native ecosystem, this module will support
@@ -45,6 +63,10 @@ ext {
 ```
 
 ### Experimental Gradle 3 support
+
+Gradle 3 support is enabled by default starting React Native v57.
+
+Support for previous versions of React Native can be enabled with following steps:
 
 1. Add following into your root `build.gradle`:
 
@@ -73,6 +95,29 @@ android {
     compileSdkVersion 26
     buildToolsVersion "27.0.3"
 ...
+}
+```
+
+#### Android Oreo
+
+Android Oreo support is enabled by default starting React Native v57.
+
+You can enable experimental Oreo support for older version by adding following into root build.gradle:
+
+```
+allprojects {
+  repositories {
+    maven { url 'https://maven.google.com' }
+  }
+}
+
+ext {
+  compileSdkVersion = 26
+  targetSdkVersion = 26
+  buildToolsVersion = "26.0.2"
+  supportLibVersion = "26.1.0"
+  googlePlayServicesVersion = "11.8.0"
+  oreoEXPERIMENTAL = "yes"
 }
 ```
 
@@ -272,41 +317,6 @@ public class MainApplication extends Application implements ReactApplication {
       );
   }
   ...
-}
-```
-
-#### Dependencies
-Make sure you have installed the following items through the Android SDK Manager:
-
-| Name                       | Version |
-|----------------------------|---------|
-| Android SDK Tools          | 26.0.2  |
-| Android SDK Platform-tools | 26.0.2  |
-| Android SDK Build-tools    | 26.0.2  |
-| Android Support Repository | 47      |
-| Android Support Library    | 26.1.0  |
-| Google Play Services       | 11.8.0  |
-| Google Repository          | 58      |
-
-
-#### Android Oreo
-
-You can enable experimental Oreo support by adding following into root build.gradle:
-
-```
-allprojects {
-  repositories {
-    maven { url 'https://maven.google.com' }
-  }
-}
-
-ext {
-  compileSdkVersion = 26
-  targetSdkVersion = 26
-  buildToolsVersion = "26.0.2"
-  supportLibVersion = "26.1.0"
-  googlePlayServicesVersion = "11.8.0"
-  oreoEXPERIMENTAL = "yes"
 }
 ```
 
