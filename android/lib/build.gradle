@@ -68,12 +68,12 @@ def preoreoDependencies = [
 ]
 
 repositories {
-    jcenter()
     // Google dependencies are now hosted at Maven
     // unfortunately this is ignored when installing as react-native plugin
     maven {
         url 'https://maven.google.com'
     }
+    jcenter()
 }
 
 android {
@@ -82,7 +82,7 @@ android {
 
     defaultConfig {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        minSdkVersion 16
+        minSdkVersion project.ext.getMinSdkVersion()
         targetSdkVersion project.ext.getTargetSdkVersion()
         versionCode 1 // intentionally not updating version as we're not uploading to any java repository
         versionName "1.0"
