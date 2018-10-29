@@ -151,7 +151,7 @@ class BgTracking extends Component {
       notificationText: 'enabled',
       debug: true,
       startOnBoot: false,
-      stopOnTerminate: false,
+      stopOnTerminate: true,
       locationProvider: BackgroundGeolocation.ACTIVITY_PROVIDER,
       interval: 10000,
       fastestInterval: 5000,
