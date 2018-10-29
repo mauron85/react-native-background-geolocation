@@ -3,6 +3,281 @@
 // Definitions by: Mauron85 (@mauron85)
 // Definitions: https://github.com/mauron85/react-native-background-geolocation/blob/master/index.d.ts
 
+export type Event = 'location' | 'stationary' | 'activity' | 'start' | 'stop'
+    | 'error' | 'authorization' | 'foreground' | 'background'
+    | 'abort_requested' | 'http_authorization';
+export type Provider = 'gps' | 'network' | 'passive' | 'fused';
+export type LogLevel = "TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR";
+export type iOSActivityType = 'AutomotiveNavigation' | 'OtherNavigation' | 'Fitness' | 'Other';
+
+export interface EventSubscription {
+    remove(): void;
+}
+
+export interface HeadlessTaskEvent {
+    name: Event;
+    /**
+     * Event parameters.
+     */
+    params: any;
+}
+
+export interface BackgroundGeolocationOptions {
+    /**
+     * Set location provider
+     *
+     * Available providers:
+     * DISTANCE_FILTER_PROVIDER,
+     * ACTIVITY_PROVIDER
+     * RAW_PROVIDER
+     *
+     * @example
+     * { locationProvider: BackgroundGeolocation.RAW_PROVIDER }
+     */
+    locationProvider?: number,
+
+    /**
+     * Desired accuracy in meters.
+     *
+     * Possible values:
+     *  HIGH_ACCURACY
+     *  MEDIUM_ACCURACY
+     *  LOW_ACCURACY
+     *  PASSIVE_ACCURACY
+     *
+     * Note: Accuracy has direct effect on power drain. Lower accuracy = lower power drain.
+     *
+     * @example
+     * { desiredAccuracy: BackgroundGeolocation.LOW_ACCURACY }
+     */
+    desiredAccuracy?: number,
+
+    /**
+     * Stationary radius in meters. When stopped, the minimum distance the device
+     * must move beyond the stationary location for aggressive background-tracking to engage.
+     */
+    stationaryRadius?: number,
+
+    /**
+     * When enabled, the plugin will emit sounds for life-cycle events of background-geolocation.
+     */
+    debug?: boolean,
+
+    /**
+     * The minimum distance (measured in meters) a device must move horizontally
+     * before an update event is generated.
+     */
+    distanceFilter?: number,
+
+    /**
+     * Enable this in order to force a stop() when the application terminated
+     * (e.g. on iOS, double-tap home button, swipe away the app).
+     */
+    stopOnTerminate?: boolean,
+
+    /** Start background service on device boot. */
+    startOnBoot?: boolean,
+
+    /** The minimum time interval between location updates in milliseconds. */
+    interval?: number,
+
+    /** Fastest rate in milliseconds at which your app can handle location updates. */
+    fastestInterval?: number,
+
+    /**
+     * Rate in milliseconds at which activity recognition occurs.
+     * Larger values will result in fewer activity detections while improving battery life.
+     */
+    activitiesInterval?: number,
+
+    /**
+     * @deprecated Stop location updates, when the STILL activity is detected.
+     */
+    stopOnStillActivity?: boolean,
+
+    /**
+     * Enable/disable local notifications when tracking and syncing locations.
+     */
+    notificationsEnabled?: boolean,
+
+    /**
+     * Allow location sync service to run in foreground state.
+     * Foreground state also requires a notification to be presented to the user.
+     * (android only)
+     */
+    startForeground?: boolean,
+
+    /** Custom notification title in the drawer. (android only) */
+    notificationTitle?: string,
+
+    /** Custom notification text in the drawer. (android only) */
+    notificationText?: string,
+
+    /** The accent color (hex triplet) to use for notification. (android only) */
+    notificationIconColor?: string,
+
+    /** The filename of a custom notification icon. (android only) */
+    notificationIconLarge?: string,
+
+    /** The filename of a custom notification icon. (android only) */
+    notificationIconSmall?: string,
+
+    /**
+     * Activity type (iOS only)
+     *
+     * Posible values:
+     * "AutomotiveNavigation", "OtherNavigation", "Fitness", "Other"
+     */
+    activityType?: iOSActivityType,
+
+    /**
+     * Pauses location updates when app is paused. (iOS only)
+     */
+    pauseLocationUpdates?: boolean,
+
+    /**
+     * Switch to less accurate significant changes and region monitory when in background.
+     * (iOS only)
+     */
+    saveBatteryOnBackground?: boolean,
+
+    /** Server url where to send HTTP POST with recorded locations. */
+    url?: string,
+
+    /** Server url where to send fail to post locations. */
+    syncUrl?: string,
+
+    /** Specifies how many previously failed locations will be sent to server at once. */
+    syncThreshold?: string,
+
+    /** Optional HTTP headers sent along in HTTP request. */
+    httpHeaders?: object,
+
+    /** Limit maximum number of locations stored into db. */
+    maxLocations?: number,
+
+    /** Customization post template. */
+    postTemplate?: object
+}
+
+export interface BackgroundGeolocationError {
+    code: number,
+    message: string
+}
+
+export interface PositionOptions {
+    /** Maximum time in milliseconds device will wait for location. */
+    timeout?:  number,
+    /** Maximum age in milliseconds of a possible cached location that is acceptable to return. */
+    maximumAge?:  number,
+    /** if true and if the device is able to provide a more accurate position, it will do so. */
+    enableHighAccuracy?: boolean
+}
+
+export interface Location {
+    /** ID of location as stored in DB (or null). */
+    id: number,
+
+    /**
+     * Native provider reponsible for location.
+     *
+     * Possible values: "gps", "network", "passive" or "fused" */
+    provider: Provider,
+
+    /** Configured location provider. */
+    locationProvider: number,
+
+    /** UTC time of this fix, in milliseconds since January 1, 1970. */
+    time: number,
+
+    /** Latitude, in degrees. */
+    latitude: number,
+
+    /** Longitude, in degrees. */
+    longitude: number,
+
+    /** Estimated accuracy of this location, in meters. */
+    accuracy: number,
+
+    /**
+     * Speed if it is available, in meteBackgroundGeolocationrs/second over ground.
+     *
+     * Note: Not all providers are capable of providing speed.
+     * Typically network providers are not able to do so.
+     */
+    speed?: number,
+
+    /** Altitude if available, in meters above the WGS 84 reference ellipsoid. */
+    altitude: number,
+
+    /** Bearing, in degrees. */
+    bearing: number,
+
+    /**
+     * True if location was recorded by mock provider. (android only)
+     *
+     * Note: this property is not enabled by default!
+     * You can enable it "postTemplate" configure option
+     */
+    isFromMockProvider?: boolean,
+
+    /**
+     * True if device has mock locations enabled. (android only)
+     *
+     * Note: this property is not enabled by default!
+     * You can enable it "postTemplate" configure option
+     */
+    mockLocationsEnabled?: boolean
+}
+
+export interface StationaryLocation extends Location {
+    radius: number
+}
+
+export interface Activity {
+    /** Percentage indicating the likelihood user is performing this activity. */
+    confidence: number,
+    /** Type of the activity
+     *
+     * Possible values:
+     * "IN_VEHICLE", "ON_BICYCLE", "ON_FOOT", "RUNNING", "STILL",
+     * "TILTING", "UNKNOWN", "WALKING"
+     */
+    type: string
+}
+
+export interface ServiceStatus {
+    /** (true if service is running) */
+    isRunning: boolean,
+    /** (true if location services are enabled) */
+    locationServicesEnabled: boolean,
+    /**
+     * authorization status
+     *
+     * Posible values:
+     *  NOT_AUTHORIZED
+     *  AUTHORIZED
+     *  AUTHORIZED_FOREGROUND
+     *
+     * @example
+     * if (authorization == BackgroundGeolocation.NOT_AUTHORIZED) {...}
+     */
+    authorization: number
+}
+
+export interface LogEntry {
+    /** id of log entry as stored in db */
+    id: number,
+    /** timestamp in milliseconds since beginning of UNIX epoch */
+    timestamp: number,
+    /** log level */
+    level: LogLevel,
+    /** log message */
+    message: string,
+    /** recorded stacktrace (Android only, on iOS part of message) */
+    stackTrace: string
+}
+
 declare namespace BackgroundGeolocationPlugin {
     export const DISTANCE_FILTER_PROVIDER = 0;
     export const ACTIVITY_PROVIDER = 1;
@@ -30,263 +305,7 @@ declare namespace BackgroundGeolocationPlugin {
     export const LOCATION_UNAVAILABLE = 2;
     export const TIMEOUT = 3;
 
-    export interface BackgroundGeolocationOptions {
-        /**
-         * Set location provider
-         *
-         * Available providers:
-         * DISTANCE_FILTER_PROVIDER,
-         * ACTIVITY_PROVIDER
-         * RAW_PROVIDER
-         *
-         * @example
-         * { locationProvider: BackgroundGeolocation.RAW_PROVIDER }
-         */
-        locationProvider?: number,
-
-        /**
-         * Desired accuracy in meters.
-         *
-         * Possible values:
-         *  HIGH_ACCURACY
-         *  MEDIUM_ACCURACY
-         *  LOW_ACCURACY
-         *  PASSIVE_ACCURACY
-         *
-         * Note: Accuracy has direct effect on power drain. Lower accuracy = lower power drain.
-         *
-         * @example
-         * { desiredAccuracy: BackgroundGeolocation.LOW_ACCURACY }
-         */
-        desiredAccuracy?: number,
-
-        /**
-         * Stationary radius in meters. When stopped, the minimum distance the device
-         * must move beyond the stationary location for aggressive background-tracking to engage.
-         */
-        stationaryRadius?: number,
-
-        /**
-         * When enabled, the plugin will emit sounds for life-cycle events of background-geolocation.
-         */
-        debug?: boolean,
-
-        /**
-         * The minimum distance (measured in meters) a device must move horizontally
-         * before an update event is generated.
-         */
-        distanceFilter?: number,
-
-        /**
-         * Enable this in order to force a stop() when the application terminated
-         * (e.g. on iOS, double-tap home button, swipe away the app).
-         */
-        stopOnTerminate?: boolean,
-
-        /** Start background service on device boot. */
-        startOnBoot?: boolean,
-
-        /** The minimum time interval between location updates in milliseconds. */
-        interval?: number,
-
-        /** Fastest rate in milliseconds at which your app can handle location updates. */
-        fastestInterval?: number,
-
-        /**
-         * Rate in milliseconds at which activity recognition occurs.
-         * Larger values will result in fewer activity detections while improving battery life.
-         */
-        activitiesInterval?: number,
-
-        /**
-         * @deprecated Stop location updates, when the STILL activity is detected.
-         */
-        stopOnStillActivity?: boolean,
-
-        /**
-         * Enable/disable local notifications when tracking and syncing locations.
-         */
-        notificationsEnabled?: boolean,
-
-        /**
-         * Allow location sync service to run in foreground state.
-         * Foreground state also requires a notification to be presented to the user.
-         * (android only)
-         */
-        startForeground?: boolean,
-
-        /** Custom notification title in the drawer. (android only) */
-        notificationTitle?: string,
-
-        /** Custom notification text in the drawer. (android only) */
-        notificationText?: string,
-
-        /** The accent color (hex triplet) to use for notification. (android only) */
-        notificationIconColor?: string,
-
-        /** The filename of a custom notification icon. (android only) */
-        notificationIconLarge?: string,
-
-        /** The filename of a custom notification icon. (android only) */
-        notificationIconSmall?: string,
-
-        /**
-         * Activity type (ios only)
-         *
-         * Posible values:
-         * "AutomotiveNavigation", "OtherNavigation", "Fitness", "Other"
-         */
-        activityType?: string,
-
-        /**
-         * Pauses location updates when app is paused. (ios only)
-         */
-        pauseLocationUpdates?: boolean,
-
-        /**
-         * Switch to less accurate significant changes and region monitory when in background.
-         * (ios only)
-         */
-        saveBatteryOnBackground?: boolean,
-
-        /** Server url where to send HTTP POST with recorded locations. */
-        url?: string,
-
-        /** Server url where to send fail to post locations. */
-        syncUrl?: string,
-
-        /** Specifies how many previously failed locations will be sent to server at once. */
-        syncThreshold?: string,
-
-        /** Optional HTTP headers sent along in HTTP request. */
-        httpHeaders?: object,
-
-        /** Limit maximum number of locations stored into db. */
-        maxLocations?: number,
-
-        /** Customization post template. */
-        postTemplate?: object
-    }
-
-    export interface BackgroundGeolocationError {
-        code: number,
-        message: string
-    }
-
-    export interface PositionOptions {
-        /** Maximum time in milliseconds device will wait for location. */
-        timeout?:  number,
-        /** Maximum age in milliseconds of a possible cached location that is acceptable to return. */
-        maximumAge?:  number,
-        /** if true and if the device is able to provide a more accurate position, it will do so. */
-        enableHighAccuracy?: boolean
-    }
-
-    export interface Location {
-        /** ID of location as stored in DB (or null). */
-        id: number,
-
-        /**
-         * Native provider reponsible for location.
-         *
-         * Possible values: "gps", "network", "passive" or "fused" */
-        provider: string,
-
-        /** Configured location provider. */
-        locationProvider: number,
-
-        /** UTC time of this fix, in milliseconds since January 1, 1970. */
-        time: number,
-
-        /** Latitude, in degrees. */
-        latitude: number,
-
-        /** Longitude, in degrees. */
-        longitude: number,
-
-        /** Estimated accuracy of this location, in meters. */
-        accuracy: number,
-
-        /**
-         * Speed if it is available, in meteBackgroundGeolocationrs/second over ground.
-         *
-         * Note: Not all providers are capable of providing speed.
-         * Typically network providers are not able to do so.
-         */
-        speed?: number,
-
-        /** Altitude if available, in meters above the WGS 84 reference ellipsoid. */
-        altitude: number,
-
-        /** Bearing, in degrees. */
-        bearing: number,
-
-        /**
-         * True if location was recorded by mock provider. (android only)
-         *
-         * Note: this property is not enabled by default!
-         * You can enable it "postTemplate" configure option
-         */
-        isFromMockProvider?: boolean,
-
-        /**
-         * True if device has mock locations enabled. (android only)
-         *
-         * Note: this property is not enabled by default!
-         * You can enable it "postTemplate" configure option
-         */
-        mockLocationsEnabled?: boolean
-    }
-
-    export interface StationaryLocation extends Location {
-        radius: number
-    }
-
-    export interface Activity {
-        /** Percentage indicating the likelihood user is performing this activity. */
-        confidence: number,
-        /** Type of the activity
-         *
-         * Possible values:
-         * "IN_VEHICLE", "ON_BICYCLE", "ON_FOOT", "RUNNING", "STILL",
-         * "TILTING", "UNKNOWN", "WALKING"
-         */
-        type: string
-    }
-
-    export interface ServiceStatus {
-        /** (true if service is running) */
-        isRunning: boolean,
-        /** (true if location services are enabled) */
-        locationServicesEnabled: boolean,
-        /**
-         * authorization status
-         *
-         * Posible values:
-         *  NOT_AUTHORIZED
-         *  AUTHORIZED
-         *  AUTHORIZED_FOREGROUND
-         *
-         * @example
-         * if (authorization == BackgroundGeolocation.NOT_AUTHORIZED) {...}
-         */
-        authorization: number
-    }
-
-    export type LogLevel = "TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR";
-
-    export interface LogEntry {
-        /** id of log entry as stored in db */
-        id: number,
-        /** timestamp in milliseconds since beginning of UNIX epoch */
-        timestamp: number,
-        /** log level */
-        level: LogLevel,
-        /** log message */
-        message: string,
-        /** recorded stacktrace (Android only, on iOS part of message) */
-        stackTrace: string
-    }
+    export const events: Array<Event>;
 
     /**
      * Configure plugin.
@@ -465,18 +484,38 @@ declare namespace BackgroundGeolocationPlugin {
         /** Available levels: ["TRACE", "DEBUG", "INFO", "WARN", "ERROR] */
         minLevel: LogLevel,
         success: (options: Array<LogEntry>) => void,
+        fail?: (error: BackgroundGeolocationError) => void
     ): void;
 
-    /** Unregister all event listeners for given event */
-    export function removeAllListeners(
-        event: string
-    ): void;
+    /**
+     * Unregister all event listeners for given event
+     *
+     * @param event
+     */
+    export function removeAllListeners(event: Event): void;
 
+    /**
+     * Start background task (iOS only)
+     *
+     * to perform any long running operation on iOS
+     * you need to create background task
+     * IMPORTANT: task has to be ended by endTask
+     *
+     * @param success
+     * @param fail
+     */
     export function startTask(
         success: (taskKey: number) => void,
         fail?: (error: BackgroundGeolocationError) => void
     ): void;
 
+    /**
+     * End background task indentified by taskKey (iOS only)
+     *
+     * @param taskKey
+     * @param success
+     * @param fail
+     */
     export function endTask(
         taskKey: number,
         success?: () => void,
@@ -506,64 +545,149 @@ declare namespace BackgroundGeolocationPlugin {
      *  });
      * ```
     */
-   export function headlessTask(
-        task: (event: { name: string, params: object }) => void
+    export function headlessTask(
+        task: (event: HeadlessTaskEvent) => void
     ): void;
 
+    /**
+     * Register location event listener.
+     *
+     * @param eventName
+     * @param callback
+     */
     export function on(
         eventName: 'location',
         callback: (location: Location) => void
-    ): void;
+    ): EventSubscription;
 
+    /**
+     * Register stationary location event listener.
+     *
+     * @param eventName
+     * @param callback
+     */
     export function on(
         eventName: 'stationary',
         callback: (location: StationaryLocation) => void
-    ): void;
+    ): EventSubscription;
 
+    /**
+     * Register activity monitoring listener.
+     *
+     * @param eventName
+     * @param callback
+     */
     export function on(
         eventName: 'activity',
         callback: (activity: Activity) => void
-    ): void;
+    ): EventSubscription;
 
+    /**
+     * Register start event listener.
+     *
+     * Event is triggered when background service has been started
+     * succesfully.
+     *
+     * @param eventName
+     * @param callback
+     */
     export function on(
         eventName: 'start',
         callback: () => void
-    ): void;
+    ): EventSubscription;
 
+    /**
+     * Register stop event listener.
+     *
+     * Triggered when background service has been stopped
+     * succesfully.
+     *
+     * @param eventName
+     * @param callback
+     */
     export function on(
         eventName: 'stop',
         callback: () => void
-    ): void;
+    ): EventSubscription;
 
+    /**
+     * Register error listener.
+     *
+     * @param eventName
+     * @param callback
+     */
     export function on(
         eventName: 'error',
         callback: (error: BackgroundGeolocationError) => void
-    ): void;
+    ): EventSubscription;
 
+    /**
+     * Register authorization listener.
+     *
+     * Triggered when user changes authorization/permissions for
+     * the app or toggles location services.
+     *
+     * @param eventName
+     * @param callback
+     */
     export function on(
         eventName: 'authorization',
         callback: (status: number) => void
-    ): void;
+    ): EventSubscription;
 
+    /**
+     * Register foreground event listener.
+     *
+     * Triggered when app entered foreground state and (visible to the user)
+     *
+     * @param eventName
+     * @param callback
+     */
     export function on(
         eventName: 'foreground',
         callback: () => void
-    ): void;
+    ): EventSubscription;
 
+    /**
+     * Register background event listener.
+     *
+     * Triggered when app entered background state and (not visible to the user)
+     *
+     * @param eventName
+     * @param callback
+     */
     export function on(
         eventName: 'background',
         callback: () => void
-    ): void;
+    ): EventSubscription;
 
+    /**
+     * Register abort_requested event listener.
+     *
+     * Triggered when server responded with "285 Updates Not Required"
+     * to post/sync request.
+     *
+     * @param eventName
+     * @param callback
+     */
     export function on(
         eventName: 'abort_requested',
         callback: () => void
-    ): void;
+    ): EventSubscription;
 
+    /**
+     * Register http_authorization event listener.
+     *
+     * Triggered when server responded with "401 Unauthorized"
+     * to post/sync request.
+     *
+     * @param eventName
+     * @param callback
+     */
     export function on(
         eventName: 'http_authorization',
         callback: () => void
-    ): void;
+    ): EventSubscription;
 }
 
 export default BackgroundGeolocationPlugin;
