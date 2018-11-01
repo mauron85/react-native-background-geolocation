@@ -1,6 +1,6 @@
 // Type definitions for react-native-mauron85-background-geolocation
 // Project: https://github.com/mauron85/react-native-background-geolocation
-// Definitions by: Mauron85 (@mauron85)
+// Definitions by: Mauron85 (@mauron85), Norbert Györög (@djereg)
 // Definitions: https://github.com/mauron85/react-native-background-geolocation/blob/master/index.d.ts
 
 type Event = 'location' | 'stationary' | 'activity' | 'start' | 'stop' | 'error' | 'authorization' | 'foreground' | 'background' | 'abort_requested' | 'http_authorization';
