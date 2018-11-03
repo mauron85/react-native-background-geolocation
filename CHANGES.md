@@ -72,6 +72,9 @@ Since alpha.44:
 - typescript definitions (index.d.ts)
 - Android allow override minSdkVersion
 
+Since alpha.45:
+- allow nested location props in postTemplate
+
 ### Changed
 
 Since alpha.6:
