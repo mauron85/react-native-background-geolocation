@@ -2,7 +2,8 @@
   "name": "react-native-mauron85-background-geolocation",
   "version": "0.5.0-alpha.44",
   "description": "optimized background location tracking",
-  "main": "index.js",
+  "main": "./index.js",
+  "types": "./index.d.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
