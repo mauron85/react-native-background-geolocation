@@ -87,6 +87,7 @@ public class ConfigMapper {
                 config.setTemplate(LocationTemplateFactory.fromJSON(postTemplate));
             }
         }
+        if (options.hasKey("applyKalmanFilter")) config.setApplyKalmanFilter(options.getBoolean("applyKalmanFilter"));
 
         return config;
     }
@@ -211,6 +212,9 @@ public class ConfigMapper {
             } else {
                 out.putNull("postTemplate");
             }
+        }
+        if (config.getApplyKalmanFilter() != null) {
+            out.putBoolean("applyKalmanFilter", config.getApplyKalmanFilter());
         }
         return out;
     }
