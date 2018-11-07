@@ -47,7 +47,7 @@ export interface ConfigureOptions {
    * @example
    * { desiredAccuracy: BackgroundGeolocation.LOW_ACCURACY }
    */
-  desiredAccuracy?: AccuracyLevel;
+  desiredAccuracy?: AccuracyLevel | number;
 
   /**
    * Stationary radius in meters.
