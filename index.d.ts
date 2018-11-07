@@ -11,7 +11,7 @@ type ActivityType = 'IN_VEHICLE' | 'ON_BICYCLE' | 'ON_FOOT' | 'RUNNING' | 'STILL
 type LogLevel = 'TRACE' | 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
 type LocationProvider = 0 | 1 | 2;
 type AuthorizationStatus = 0 | 1 | 2;
-// type AccuracyLevel = 0 | 100 | 1000 | 1000;
+type AccuracyLevel = 0 | 100 | 1000 | 10000 | number;
 type LocationErrorCode = 1 | 2 | 3;
 type ServiceMode = 0 | 1;
 
@@ -47,7 +47,7 @@ export interface ConfigureOptions {
    * @example
    * { desiredAccuracy: BackgroundGeolocation.LOW_ACCURACY }
    */
-  desiredAccuracy?: number;
+  desiredAccuracy?: AccuracyLevel;
 
   /**
    * Stationary radius in meters.
