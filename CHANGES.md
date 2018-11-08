@@ -212,6 +212,10 @@ Since alpha.44:
 - Android fix gradle4 compile, testCompile deprecated warnings
 - Android fix service crash on boot for Android 8 when startOnBoot option is used
 
+Since alpha.46:
+- Android use global location content provider (in attempt to fix db locking issue)
+- fix type definition
+
 ### [0.4.1] - 2017-12-19
 #### Changed
 - react native peer dependency >0.49.0
