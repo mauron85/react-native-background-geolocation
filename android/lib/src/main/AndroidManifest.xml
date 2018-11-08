@@ -40,7 +40,7 @@
                 android:resource="@xml/authenticator" />
         </service>
         <provider
-            android:name="com.marianhello.bgloc.sync.DummyContentProvider"
+            android:name="com.marianhello.bgloc.data.provider.LocationContentProvider"
             android:authorities="@string/content_authority"
             android:exported="false"
             android:syncable="true"/>
