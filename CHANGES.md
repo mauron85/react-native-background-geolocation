@@ -75,6 +75,13 @@ Since alpha.44:
 Since alpha.45:
 - allow nested location props in postTemplate
 
+Since alpha.47:
+- Android make sync account name configurable
+in "android/app/src/main/res/values/strings.xml"
+```
+<string name="account_name">Sync Locations</string>
+```
+
 ### Changed
 
 Since alpha.6:

@@ -753,6 +753,17 @@ BackgroundGeolocationFacade.locationTransform = ^(MAURLocation * location) {
 };
 ```
 
+### Advanced plugin configuration
+
+#### Change Account Service Name (Android)
+
+Add string resource "account_name" into "android/app/src/main/res/values/strings.xml"
+
+```
+<string name="account_name">Sync Locations</string>
+
+```
+
 ### Example of backend server
 
 [Background-geolocation-server](https://github.com/mauron85/background-geolocation-server) is a backend server written in nodejs with CORS - Cross-Origin Resource Sharing support.
