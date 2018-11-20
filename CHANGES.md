@@ -135,6 +135,9 @@ Since alpha.38:
 by [@danielgindi](https://github.com/danielgindi/),
 Closes #260)
 
+Since alpha.48:
+- removeAllListeners - remove all event listeners when calling without parameter
+
 ### Fixed
 
 Since alpha.4:
@@ -222,6 +225,9 @@ Since alpha.44:
 Since alpha.46:
 - Android use global location content provider (in attempt to fix db locking issue)
 - fix type definition
+
+Since alpha.48:
+- Android prefix content_authority to prevent collision with other plugins (fixes #320)
 
 ### [0.4.1] - 2017-12-19
 #### Changed
