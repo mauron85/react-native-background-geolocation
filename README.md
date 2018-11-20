@@ -393,6 +393,19 @@ BackgroundGeolocation.configure({
 
 In this case new configuration options will be merged with stored configuration options and changes will be applied immediately.
 
+### getConfig(success, fail)
+Platform: iOS, Android
+
+Get current configuration. Method will return all configuration options and their values in success callback.
+Because `configure` method can be called with subset of the configuration options only,
+`getConfig` method can be used to check the actual applied configuration.
+
+```
+BackgroundGeolocation.getConfig(function(config) {
+  console.log(config);
+});
+```
+
 ### start()
 Platform: iOS, Android
 
