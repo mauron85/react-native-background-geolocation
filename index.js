@@ -232,12 +232,19 @@ var BackgroundGeolocation = {
   },
 
   removeAllListeners: function(event) {
+    if (!event) {
+      this.events.forEach(function(event) {
+        DeviceEventEmitter.removeAllListeners(event);
+      });
+      return void 0;
+    }
     if (this.events.indexOf(event) < 0) {
       console.log('[WARN] ' + TAG + ': removeAllListeners for unknown event "' + event + '"');
-      return false;
+      return void 0;
     }
 
-    return DeviceEventEmitter.removeAllListeners(event);
+    DeviceEventEmitter.removeAllListeners(event);
+    return void 0;
   }
 };
 

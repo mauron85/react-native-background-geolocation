@@ -248,7 +248,7 @@ class BgTracking extends Component {
 
   componentWillUnmount() {
     // unregister all event listeners
-    BackgroundGeolocation.events.forEach(event => BackgroundGeolocation.removeAllListeners(event));
+    BackgroundGeolocation.removeAllListeners();
   }
 }
 
@@ -565,7 +565,7 @@ Format of log entry:
 
 ### removeAllListeners(event)
 
-Unregister all event listeners for given event
+Unregister all event listeners for given event. If parameter `event` is not provided then all event listeners will be removed.
 
 ## Events
 

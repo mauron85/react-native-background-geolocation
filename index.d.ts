@@ -689,10 +689,12 @@ interface BackgroundGeolocationPlugin {
 
   /**
    * Unregister all event listeners for given event.
+   * 
+   * If parameter <code>event</code> is not provided then all event listeners will be removed.
    *
    * @param event
    */
-  removeAllListeners(event: Event): void;
+  removeAllListeners(event?: Event): void;
 
 
   /**
