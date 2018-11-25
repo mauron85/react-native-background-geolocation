@@ -15,3 +15,7 @@ local.properties
 *.iml
 build
 *.skip
+
+# Git modules
+.gitmodules
+.git
