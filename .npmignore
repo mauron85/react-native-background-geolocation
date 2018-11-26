@@ -19,3 +19,7 @@ build
 # Git modules
 .gitmodules
 .git
+
+# CircleCI
+.circleci
+res/
