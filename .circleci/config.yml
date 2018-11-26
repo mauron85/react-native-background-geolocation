@@ -24,6 +24,15 @@ reference:
       JVM_OPTS: -Xmx3200m
       TERM: dumb
 
+  project_checkout: &project_checkout
+    checkout:
+      path: *project_dir
+
+  submodule_checkout: &submodule_checkout
+    run:
+      name: Checkout git submodules
+      command: git submodule init && git submodule update
+
   gradle_key: &gradle_key
     jars-{{ checksum "build.gradle" }}-{{ checksum "lib/build.gradle" }}
 
@@ -38,10 +47,6 @@ reference:
         - ~/.gradle
         - ~/.m2
 
-  project_checkout: &project_checkout
-    checkout:
-      path: *project_dir
-
   android_dependencies: &android_dependencies
     run:
       name: Download Android Dependencies
@@ -53,6 +58,7 @@ jobs:
     <<: *android_config
     steps:
       - *project_checkout
+      - *submodule_checkout
       - *restore_gradle_cache
       - *android_dependencies
       - *save_gradle_cache
@@ -71,6 +77,7 @@ jobs:
     <<: *android_config
     steps:
       - *project_checkout
+      - *submodule_checkout
       - *restore_gradle_cache
       - *android_dependencies
       - *save_gradle_cache
