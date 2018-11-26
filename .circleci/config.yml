@@ -86,7 +86,7 @@ jobs:
           command: ./gradlew assembleDebug assembleAndroidTest
       - run:
           name: Run Tests on Firebase test lab
-          command: source scripts/google_cloud.sh
+          command: source ../scripts/google_cloud.sh
 
 workflows:
   version: 2
