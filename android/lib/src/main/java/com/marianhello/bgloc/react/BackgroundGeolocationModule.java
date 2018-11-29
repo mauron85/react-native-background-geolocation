@@ -14,7 +14,6 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.marianhello.bgloc.BackgroundGeolocationFacade;
 import com.marianhello.bgloc.Config;
-import com.marianhello.bgloc.LocationService;
 import com.marianhello.bgloc.PluginDelegate;
 import com.marianhello.bgloc.PluginException;
 import com.marianhello.bgloc.data.BackgroundActivity;
@@ -270,14 +269,9 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     public void getConfig(final Callback success, final Callback error) {
         runOnBackgroundThread(new Runnable() {
             public void run() {
-                try {
-                    Config config = facade.getConfig();
-                    ReadableMap out = ConfigMapper.toMap(config);
-                    success.invoke(out);
-                } catch (PluginException e) {
-                    logger.error("Error getting config: {}", e.getMessage());
-                    error.invoke(ErrorMap.from(e));
-                }
+                Config config = facade.getConfig();
+                ReadableMap out = ConfigMapper.toMap(config);
+                success.invoke(out);
             }
         });
     }
@@ -385,7 +379,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     }
 
     @Override
-    public void onActitivyChanged(BackgroundActivity activity) {
+    public void onActivityChanged(BackgroundActivity activity) {
         WritableMap out = Arguments.createMap();
         out.putInt("confidence", activity.getConfidence());
         out.putString("type", BackgroundActivity.getActivityString(activity.getType()));
@@ -395,10 +389,10 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     @Override
     public void onServiceStatusChanged(int status) {
         switch (status) {
-            case LocationService.SERVICE_STARTED:
+            case BackgroundGeolocationFacade.SERVICE_STARTED:
                 sendEvent(START_EVENT, null);
                 return;
-            case LocationService.SERVICE_STOPPED:
+            case BackgroundGeolocationFacade.SERVICE_STOPPED:
                 sendEvent(STOP_EVENT, null);
                 return;
         }
