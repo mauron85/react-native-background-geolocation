@@ -229,6 +229,9 @@ Since alpha.46:
 Since alpha.48:
 - Android prefix content_authority to prevent collision with other plugins (fixes #320)
 
+Since alpha.49:
+- Android fix App Crashes when entering / leaving Background (fixes #319)
+
 ### [0.4.1] - 2017-12-19
 #### Changed
 - react native peer dependency >0.49.0
