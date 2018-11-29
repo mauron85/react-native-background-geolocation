@@ -4,7 +4,7 @@ const config = require('./config');
 const isInstalled = require('./isInstalled');
 
 const appDir = config.appDir;
-const manifest = require(path.join(appDir, 'package.json'));
+const appConfig = require(path.join(appDir, 'app.json'));
 
 if (!isInstalled.forAndroid()) {
   // Android register common project
@@ -25,7 +25,7 @@ if (!isInstalled.forAndroid()) {
 
 if (!isInstalled.forIos()) {
   const plist = require('plist');
-  const infoPlistPath = path.join(appDir, 'ios', manifest.name, 'Info.plist');
+  const infoPlistPath = path.join(appDir, 'ios', appConfig.name, 'Info.plist');
   const infoPlistFile = fs.readFileSync(infoPlistPath, 'utf8');
   const infoPlist = plist.parse(infoPlistFile);
   const pListChanges = {};
