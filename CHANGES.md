@@ -232,6 +232,10 @@ Since alpha.48:
 Since alpha.49:
 - Android fix App Crashes when entering / leaving Background (fixes #319)
 
+Since alpha.50:
+- Android fix service checkStatus isStarted
+- Android fix crash on permission when started from background
+
 ### [0.4.1] - 2017-12-19
 #### Changed
 - react native peer dependency >0.49.0
