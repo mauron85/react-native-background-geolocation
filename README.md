@@ -813,7 +813,7 @@ TODO
 
 
 ## Geofencing
-Try using [react-native-geo-fencing](https://github.com/surialabs/react-native-geo-fencing). Let's keep this plugin lightweight as much as possible.
+Try using [react-native-boundary](https://github.com/eddieowens/react-native-boundary). Let's keep this plugin lightweight as much as possible.
 
 ## Changelog
 
