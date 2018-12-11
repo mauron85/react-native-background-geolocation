@@ -455,7 +455,7 @@ export interface HeadlessTaskEvent {
   params: any;
 }
 
-interface BackgroundGeolocationPlugin {
+export interface BackgroundGeolocationPlugin {
 
   DISTANCE_FILTER_PROVIDER: LocationProvider;
   ACTIVITY_PROVIDER: LocationProvider;
