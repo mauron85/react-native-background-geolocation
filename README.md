@@ -303,7 +303,12 @@ dependencies {
 Register the module (in `MainApplication.java`)
 
 ```java
+
+// version < 0.5.0-alpha.50
 import com.marianhello.bgloc.react.BackgroundGeolocationPackage;  // <--- Import Package
+
+// version >= 0.5.0-alpha.50
+import com.marianhello.bgloc.react.BackgroundGeolocationPackage;
 
 public class MainApplication extends Application implements ReactApplication {
   ...
