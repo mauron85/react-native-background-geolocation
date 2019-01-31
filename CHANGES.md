@@ -1,6 +1,23 @@
 ## Changelog
 
-### [0.5.0] - unreleased
+### [0.5.0] - 2019-01-31
+
+### Added
+- ios implement config.stopOnTerminate using startMonitoringSignificantLocationChanges
+
+Commit: [5149178c65322d04f4e9e47bd278b17cf0e4bd9a](https://github.com/mauron85/background-geolocation-ios/commit/5149178c65322d04f4e9e47bd278b17cf0e4bd9a)
+Origin-PR: [#7](https://github.com/mauron85/background-geolocation-ios/pull/7)
+Contributed-By: [@StanislavMayorov](https://github.com/StanislavMayorov)
+
+### Fixed
+- Android - cannot find symbol Assert.assertNotNull 
+
+Commit: [ec334ba6a8612c399d608bbfc4aacfad68fc2105](https://github.com/mauron85/background-geolocation-android/commit/ec334ba6a8612c399d608bbfc4aacfad68fc2105)
+Origin-PR: [#25](https://github.com/mauron85/background-geolocation-android/pull/25)
+Origin-Issue: [#340](https://github.com/mauron85/react-native-background-geolocation/issues/340)
+Contributed-By: [@scurtoni](https://github.com/scurtoni)
+
+### [0.5.0-alpha.XY] - unreleased
 
 This release brings abstractions, allowing code reuse
 between ReactNative Cordova plugin variants.
