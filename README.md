@@ -2,9 +2,6 @@
 
 [![CircleCI](https://circleci.com/gh/mauron85/react-native-background-geolocation/tree/master.svg?style=shield)](https://circleci.com/gh/mauron85/react-native-background-geolocation/tree/master)
 
-## Breaking changes
-This document is describing module as in version 0.5. Documentation for version 0.4 can be found [here](https://github.com/mauron85/react-native-background-geolocation/tree/0.4-stable).
-
 # Donation
 
 Please support my work and continued development with your donation.
