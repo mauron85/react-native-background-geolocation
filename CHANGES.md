@@ -1,5 +1,9 @@
 ## Changelog
 
+### [0.5.1] - 2019-03-25
+### Fixed
+- Android fix #360 - When app crashes for other reasons the service is started by the system
+
 ### [0.5.0] - 2019-01-31
 
 ### Added
