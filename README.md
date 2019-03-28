@@ -1,6 +1,10 @@
-# react-native-mauron85-background-geolocation
+# @mauron85/react-native-background-geolocation
 
 [![CircleCI](https://circleci.com/gh/mauron85/react-native-background-geolocation/tree/master.svg?style=shield)](https://circleci.com/gh/mauron85/react-native-background-geolocation/tree/master)
+
+## We're moving
+
+Npm package is now [@mauron85/react-native-background-geolocation](https://www.npmjs.com/package/@mauron85/react-native-background-geolocation)!
 
 # Donation
 
@@ -141,7 +145,7 @@ The repository [react-native-background-geolocation-example](https://github.com/
 ```javascript
 import React, { Component } from 'react';
 import { Alert } from 'react-native';
-import BackgroundGeolocation from 'react-native-mauron85-background-geolocation';
+import BackgroundGeolocation from '@mauron85/react-native-background-geolocation';
 
 class BgTracking extends Component {
   componentDidMount() {
@@ -264,7 +268,7 @@ export default BgTracking;
 Add the package to your project
 
 ```
-yarn add react-native-mauron85-background-geolocation
+yarn add @mauron85/react-native-background-geolocation
 ```
 
 ### Automatic setup
@@ -272,7 +276,7 @@ yarn add react-native-mauron85-background-geolocation
 Link your native dependencies
 
 ```
-react-native link react-native-mauron85-background-geolocation
+react-native link @mauron85/react-native-background-geolocation
 ```
 
 ### Manual setup
@@ -283,10 +287,10 @@ In `android/settings.gradle`
 
 ```gradle
 ...
-include ':react-native-mauron85-background-geolocation-common'
-project(':react-native-mauron85-background-geolocation-common').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-mauron85-background-geolocation/android/common')
-include ':react-native-mauron85-background-geolocation'
-project(':react-native-mauron85-background-geolocation').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-mauron85-background-geolocation/android/lib')
+include ':@mauron85_react-native-background-geolocation-common'
+project(':@mauron85_react-native-background-geolocation-common').projectDir = new File(rootProject.projectDir, '../node_modules/@mauron85/react-native-background-geolocation/android/common')
+include ':@mauron85_react-native-background-geolocation'
+project(':@mauron85_react-native-background-geolocation').projectDir = new File(rootProject.projectDir, '../node_modules/@mauron85/react-native-background-geolocation/android/lib')
 ...
 ```
 
@@ -295,7 +299,7 @@ In `android/app/build.gradle`
 ```gradle
 dependencies {
     ...
-    compile project(':react-native-mauron85-background-geolocation')
+    compile project(':@mauron85_react-native-background-geolocation')
     ...
 }
 ```
@@ -325,7 +329,7 @@ public class MainApplication extends Application implements ReactApplication {
 #### iOS setup
 
 1. In XCode, in the project navigator, right click `Libraries` ➜ `Add Files to [your project's name]`
-2. Add `./node_modules/react-native-mauron85-background-geolocation/ios/RCTBackgroundGeolocation.xcodeproj`
+2. Add `./node_modules/@mauron85/react-native-background-geolocation/ios/RCTBackgroundGeolocation.xcodeproj`
 3. In the XCode project navigator, select your project, select the `Build Phases` tab and in the `Link Binary With Libraries` section add **libRCTBackgroundGeolocation.a**
 4. Add `UIBackgroundModes` **location** to `Info.plist`
 5. Add `NSMotionUsageDescription` **App requires motion tracking** to `Info.plist` (required by ACTIVITY_PROVIDER)

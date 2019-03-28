@@ -1,6 +1,6 @@
 {
-  "name": "react-native-mauron85-background-geolocation",
-  "version": "0.5.2",
+  "name": "@mauron85/react-native-background-geolocation",
+  "version": "0.5.3",
   "description": "optimized background location tracking",
   "main": "./index.js",
   "types": "./index.d.ts",
@@ -38,8 +38,8 @@
   },
   "rnpm": {
     "commands": {
-      "postlink": "node node_modules/react-native-mauron85-background-geolocation/scripts/postlink.js",
-      "postunlink": "node node_modules/react-native-mauron85-background-geolocation/scripts/postunlink.js"
+      "postlink": "node node_modules/@mauron85/react-native-background-geolocation/scripts/postlink.js",
+      "postunlink": "node node_modules/@mauron85/react-native-background-geolocation/scripts/postunlink.js"
     },
     "android": {
       "sourceDir": "./android/lib"

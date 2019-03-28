@@ -95,14 +95,14 @@ android {
 
 dependencies {
     if (hasGradle3Support) {
-        implementation project(path: ':react-native-mauron85-background-geolocation-common')
+        implementation project(path: ':@mauron85_react-native-background-geolocation-common')
 
         oreoDependencies.each {
             add(it.configuration, it.dependency)
         }
     } else {
-        releaseCompile project(path: ':react-native-mauron85-background-geolocation-common', configuration: "${projectFlavor}Release")
-        debugCompile project(path: ':react-native-mauron85-background-geolocation-common', configuration: "${projectFlavor}Debug")
+        releaseCompile project(path: ':@mauron85_react-native-background-geolocation-common', configuration: "${projectFlavor}Release")
+        debugCompile project(path: ':@mauron85_react-native-background-geolocation-common', configuration: "${projectFlavor}Debug")
 
         preoreoDependencies.each {
             add(it.configuration, it.dependency)

@@ -1,3 +1,3 @@
 include ':lib'
-include ':react-native-mauron85-background-geolocation-common'
-project(':react-native-mauron85-background-geolocation-common').projectDir = new File(rootProject.projectDir, './common')
+include ':@mauron85_react-native-background-geolocation-common'
+project(':@mauron85_react-native-background-geolocation-common').projectDir = new File(rootProject.projectDir, './common')
