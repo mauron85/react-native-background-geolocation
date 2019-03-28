@@ -1,5 +1,10 @@
 ## Changelog
 
+### [0.5.2] - 2019-03-28
+### Fixed
+- Android fix don't start service on app visibility change events fixes
+- Android ignore failing instrumentation tests
+
 ### [0.5.1] - 2019-03-25
 ### Fixed
 - Android fix #360 - When app crashes for other reasons the service is started by the system
