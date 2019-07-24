@@ -399,7 +399,7 @@ BackgroundGeolocation.configure({
 
 In this case new configuration options will be merged with stored configuration options and changes will be applied immediately.
 
-**Important:** Because configuration options are applied partially, it's not possible to reset option to default value just by emitting it's key name and calling `configure` method. To reset configuration option to the default value, it's key must be set to `null`!
+**Important:** Because configuration options are applied partially, it's not possible to reset option to default value just by omitting it's key name and calling `configure` method. To reset configuration option to the default value, it's key must be set to `null`!
 
 ```
 // Example: reset postTemplate to default
