@@ -26,9 +26,9 @@ There are repeatedly reported issues with some android devices not working in th
 
 Another confusing fact about Android services is concept of foreground services. Foreground service in context of Android OS is different thing than background geolocation service of this plugin (they're related thought). **Plugin's background geolocation service** actually **becomes foreground service** when app is in the background. Confusing, right? :D
 
-Android 6.0 and above requires service to become `foreground` when app is paused (goes to the background) and service wants to continue to run in the background. Foreground services must have visible notification, which is the reason, why you can't disable drawer notification.
+If service wants to continue to run in the background, it must "promote" itself to `foreground service`. Foreground services must have visible notification, which is the reason, why you can't disable drawer notification.
 
-The notification can only be disabled when app is running in the foreground, with config option `startForeground: false`  (this is the default option), but will always be visible in the background (when service was started).
+The notification can only be disabled, when app is running in the foreground, by setting config option `startForeground: false` (this is the default option), but will always be visible in the background (if service was started).
 
 Recommend you to read https://developer.android.com/about/versions/oreo/background
 
