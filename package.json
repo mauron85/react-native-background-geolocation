@@ -1,6 +1,6 @@
 {
   "name": "@mauron85/react-native-background-geolocation",
-  "version": "0.5.3",
+  "version": "0.5.4",
   "description": "optimized background location tracking",
   "main": "./index.js",
   "types": "./index.d.ts",

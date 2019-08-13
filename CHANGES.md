@@ -1,5 +1,17 @@
 ## Changelog
 
+### [0.5.4] - 2019-08-13
+### Fixed
+- Android fixed pausing that wouldn't take config into account (PR #38 common repo) - @rewieer
+- Android Removed minsdk from manifest (fixes #357) - @maleriepace
+- Android add additional check for applicationId (PR #36 common repo) - @mysport12
+- Android minSdk version should not be declared on manifest - @wesleycoder and @maleriepace
+- Android Change the react-native link command repositories (PR #374) - @mantaroh
+- Update CHANGES_zh-Hans.md - @Kennytian
+- Fixed typo in README - @diegogurpegui
+
+Many thanks to all contributors
+
 ### [0.5.2] - 2019-03-28
 ### Fixed
 - Android fix don't start service on app visibility change events fixes
