@@ -1,6 +1,32 @@
 ## 变更日志
 
-### [0.5.0] - 未发布
+### [0.5.2] - 2019-03-28
+### 修复
+- Android 修复程序无法启动 APP VisibilityChange 事件缺陷
+- Android 忽略失败的 instrumentation 测试项
+
+### [0.5.1] - 2019-03-25
+### 修复
+- Android 修复 #360 - 当应用因其他原因崩溃时，系统会启动该服务
+
+### [0.5.0] - 2019-01-31
+
+### 新增
+- 用 startMonitoringSignificantLocationChanges 实现 iOS config.stopOnTerminate 功能
+
+Commit: [5149178c65322d04f4e9e47bd278b17cf0e4bd9a](https://github.com/mauron85/background-geolocation-ios/commit/5149178c65322d04f4e9e47bd278b17cf0e4bd9a)
+Origin-PR: [#7](https://github.com/mauron85/background-geolocation-ios/pull/7)
+Contributed-By: [@StanislavMayorov](https://github.com/StanislavMayorov)
+
+### 修复
+- Android - 无法找到 Assert.assertNotNull 标识
+
+Commit: [ec334ba6a8612c399d608bbfc4aacfad68fc2105](https://github.com/mauron85/background-geolocation-android/commit/ec334ba6a8612c399d608bbfc4aacfad68fc2105)
+Origin-PR: [#25](https://github.com/mauron85/background-geolocation-android/pull/25)
+Origin-Issue: [#340](https://github.com/mauron85/react-native-background-geolocation/issues/340)
+Contributed-By: [@scurtoni](https://github.com/scurtoni)
+
+### [0.5.0-alpha.XY] - 未发布
 
 此版本提供了抽象代码以复用 React Native Cordova 插件之间变量，从而加快开发速度修复共享代码库的错误。
 
