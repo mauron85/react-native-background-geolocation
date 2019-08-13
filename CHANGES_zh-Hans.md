@@ -1,5 +1,16 @@
 ## 变更日志
 
+### [0.5.5] - 2019-08-13
+### 修复
+- Android 修复 ToneGenerator 闪退问题
+- Android 从 manifest 里删除 minSdk (fixes #357) - @maleriepace
+- Android 为 applicationId 添加选项检查 (PR #36 common repo) - @mysport12
+- Android 不会在 manifest 里声明 minSdk 版本了 @wesleycoder 和 @maleriepace
+- Android 改变 react-native link command 仓库地址 (PR #374) - @mantaroh
+- 更新 CHANGES_zh-Hans.md 翻译文档 - @Kennytian
+- 修正 README 里的错别字 - @diegogurpegui
+- 感谢所有的贡献者
+
 ### [0.5.2] - 2019-03-28
 ### 修复
 - Android 修复程序无法启动 APP VisibilityChange 事件缺陷
