@@ -1,8 +1,8 @@
 ## Changelog
 
-### [0.5.4] - 2019-08-13
+### [0.5.5] - 2019-08-13
 ### Fixed
-- Android fixed pausing that wouldn't take config into account (PR #38 common repo) - @rewieer
+- Android fix tone generator crash
 - Android Removed minsdk from manifest (fixes #357) - @maleriepace
 - Android add additional check for applicationId (PR #36 common repo) - @mysport12
 - Android minSdk version should not be declared on manifest - @wesleycoder and @maleriepace
