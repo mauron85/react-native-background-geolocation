@@ -14,6 +14,7 @@ Pod::Spec.new do |s|
 
   s.source       = { :git => "https://github.com/mauron85/react-native-background-geolocation.git", :submodules => true }
   s.source_files  = "ios/**/*.{h,m}"
+  s.exclude_files = "ios/common/BackgroundGeolocationTests/*.{h,m}"
 
   s.dependency 'React'
 end
