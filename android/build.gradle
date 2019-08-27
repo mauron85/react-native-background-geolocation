@@ -33,6 +33,10 @@ allprojects {
     }
 }
 
+ext {
+    reactNativeLibVersion = "0.55.3"
+}
+
 task clean(type: Delete) {
     delete rootProject.buildDir
 }

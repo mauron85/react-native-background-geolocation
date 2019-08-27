@@ -30,7 +30,8 @@ apply plugin: 'com.android.library'
 apply from: '../common/VERSIONS.gradle'
 def playServicesVersion = getPlayServicesVersion()
 def supportLibVersion = getSupportLibVersion()
-def hasGradle3Support = getGradle3Support();
+def hasGradle3Support = getGradle3Support()
+def hasApp = findProject(':app') != null
 
 def projectFlavor = "preoreo"
 if (rootProject.hasProperty('oreoEXPERIMENTAL')) {
@@ -78,7 +79,7 @@ repositories {
 android {
     compileSdkVersion project.ext.getCompileSdkVersion()
     buildToolsVersion project.ext.getBuildToolsVersion()
-    if (!rootProject.hasProperty('applicationId')) {
+    if (hasApp) {
         evaluationDependsOn(':app')
     }
 
