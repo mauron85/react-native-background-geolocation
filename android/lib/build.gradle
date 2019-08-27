@@ -28,7 +28,6 @@
 apply plugin: 'com.android.library'
 
 apply from: '../common/VERSIONS.gradle'
-def applicationId = getApplicationId()
 def playServicesVersion = getPlayServicesVersion()
 def supportLibVersion = getSupportLibVersion()
 def hasGradle3Support = getGradle3Support();
@@ -79,6 +78,9 @@ repositories {
 android {
     compileSdkVersion project.ext.getCompileSdkVersion()
     buildToolsVersion project.ext.getBuildToolsVersion()
+    if (!rootProject.hasProperty('applicationId')) {
+        evaluationDependsOn(':app')
+    }
 
     defaultConfig {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
