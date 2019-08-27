@@ -86,65 +86,6 @@ ext {
 }
 ```
 
-### Experimental Gradle 3 support
-
-Gradle 3 support is enabled by default starting React Native v57.
-
-Support for previous versions of React Native can be enabled with following steps:
-
-1. Add following into your root `build.gradle`:
-
-```
-ext {
-    compileSdkVersion = 26
-    targetSdkVersion = 26
-    buildToolsVersion = "27.0.3"
-    supportLibVersion = "27.1.0"
-    googlePlayServicesVersion = "11.8.0"
-    gradle3EXPERIMENTAL = "yes"
-}
-```
-
-2. Add Google maven repository into allprojects -> repositories
-
-```
-maven { url 'https://maven.google.com' }
-```
-
-3. Edit `android/app/build.gradle`
-
-```
-android {
-...
-    compileSdkVersion 26
-    buildToolsVersion "27.0.3"
-...
-}
-```
-
-#### Android Oreo
-
-Android Oreo support is enabled by default starting React Native v57.
-
-You can enable experimental Oreo support for older version by adding following into root build.gradle:
-
-```
-allprojects {
-  repositories {
-    maven { url 'https://maven.google.com' }
-  }
-}
-
-ext {
-  compileSdkVersion = 26
-  targetSdkVersion = 26
-  buildToolsVersion = "26.0.2"
-  supportLibVersion = "26.1.0"
-  googlePlayServicesVersion = "11.8.0"
-  oreoEXPERIMENTAL = "yes"
-}
-```
-
 ## Example Apps
 
 The repository [react-native-background-geolocation-example](https://github.com/mauron85/react-native-background-geolocation-example) hosts an example app for both iOS and Android platform.
