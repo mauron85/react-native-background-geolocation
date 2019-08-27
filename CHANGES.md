@@ -1,5 +1,9 @@
 ## Changelog
 
+### [0.5.6] - 2019-08-27
+### Fixed
+- Android allow to start service from background on API >=26 (fixes #356)
+
 ### [0.5.5] - 2019-08-13
 ### Fixed
 - Android fix tone generator crash
