@@ -35,14 +35,5 @@
   },
   "devDependencies": {
     "plist": "^3.0.1"
-  },
-  "rnpm": {
-    "commands": {
-      "postlink": "node node_modules/@mauron85/react-native-background-geolocation/scripts/postlink.js",
-      "postunlink": "node node_modules/@mauron85/react-native-background-geolocation/scripts/postunlink.js"
-    },
-    "android": {
-      "sourceDir": "./android/lib"
-    }
   }
 }
