@@ -73,6 +73,7 @@ compatible with this module.
 |------------------|-------------------|
 | 0.1.0 - 0.2.0    | 0.33              |
 | >=0.3.0          | >=0.47            |
+| >=0.6.0          | >=0.60            |
 
 If you are using an older version of React Native with this module some features may be buggy.
 
@@ -281,10 +282,11 @@ yarn add @mauron85/react-native-background-geolocation
 
 ### Automatic setup
 
-Link your native dependencies
+Since version 0.60 React Native does linking of modules [automatically](https://github.com/react-native-community/cli/blob/master/docs/autolinking.md). However it does it only for single module.
+As plugin depends on additional 'common' module, it is required to link it with:
 
 ```
-react-native link @mauron85/react-native-background-geolocation
+node ./node_modules/@mauron85/react-native-background-geolocation/scripts/postlink.js
 ```
 
 ### Manual setup

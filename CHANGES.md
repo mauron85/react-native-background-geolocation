@@ -1,5 +1,12 @@
 ## Changelog
 
+### [0.6.0] - 2019-08-27
+### Fixed
+- Android fix conflicting provider (fixes #344)
+
+### Changed
+- Android autolinking for RN 0.60
+
 ### [0.5.6] - 2019-08-27
 ### Fixed
 - Android allow to start service from background on API >=26 (fixes #356)
