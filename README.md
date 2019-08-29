@@ -658,8 +658,10 @@ Keep in mind that the callback function lives in an isolated scope. Variables fr
 
 Following example requires [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) enabled backend server.
 
+**Warning:** callback function must by `async`!
+
 ```
-BackgroundGeolocation.headlessTask(function(event) {
+BackgroundGeolocation.headlessTask(async (event) => {
     if (event.name === 'location' ||
       event.name === 'stationary') {
         var xhr = new XMLHttpRequest();
@@ -667,10 +669,21 @@ BackgroundGeolocation.headlessTask(function(event) {
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.send(JSON.stringify(event.params));
     }
-
-    return 'Processing event: ' + event.name; // will be logged
 });
 ```
+
+**Important:**
+
+After application is launched again (main activity becomes visible), it is important to call `start` method to rebind all event listeners.
+
+```
+BackgroundGeolocation.checkStatus(({ isRunning }) => {
+  if (isRunning) {
+    BackgroundGeolocation.start(); // service was running -> rebind all listeners
+  }
+});
+```
+
 
 ### Transforming/filtering locations in native code
 
