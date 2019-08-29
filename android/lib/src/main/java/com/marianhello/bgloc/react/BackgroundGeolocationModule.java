@@ -167,18 +167,6 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
         });
     }
 
-    @Deprecated // use checkStatus as replacement
-    @ReactMethod
-    public void isLocationEnabled(Callback success, Callback error) {
-        logger.debug("Location services enabled check");
-        try {
-            success.invoke(facade.locationServicesEnabled());
-        } catch (PluginException e) {
-            logger.error("Location service checked failed: {}", e.getMessage());
-            error.invoke(ErrorMap.from(e));
-        }
-    }
-
     @ReactMethod
     public void showLocationSettings() {
         BackgroundGeolocationFacade.showLocationSettings(getContext());

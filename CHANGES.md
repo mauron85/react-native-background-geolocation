@@ -1,5 +1,9 @@
 ## Changelog
 
+### [0.6.1] - 2019-08-XX
+### Changed
+- Remove deprecated isLocationEnabled method
+
 ### [0.6.0] - 2019-08-27
 ### Fixed
 - Android fix conflicting provider (fixes #344)

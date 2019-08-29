@@ -410,19 +410,6 @@ Error codes:
 | 2     | LOCATION_UNAVAILABLE | Internal source of location returned an internal error                   |
 | 3     | TIMEOUT              | Timeout defined by `option.timeout was exceeded                          |
 
-
-### isLocationEnabled(success, fail)
-Deprecated: This method is deprecated and will be removed in next major version.
-Use `checkStatus` as replacement.
-
-Platform: iOS, Android
-
-One time check for status of location services. In case of error, fail callback will be executed.
-
-| Success callback parameter | Type      | Description                                          |
-|----------------------------|-----------|------------------------------------------------------|
-| `enabled`                  | `Boolean` | true/false (true when location services are enabled) |
-
 ### checkStatus(success, fail)
 
 Check status of the service

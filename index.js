@@ -52,32 +52,6 @@ var BackgroundGeolocation = {
   LOCATION_UNAVAILABLE: 2,
   TIMEOUT: 3,
 
-  // @Deprecated
-  provider: {
-    ANDROID_DISTANCE_FILTER_PROVIDER: 0,
-    ANDROID_ACTIVITY_PROVIDER: 1
-  },
-
-  // @Deprecated
-  mode: {
-    BACKGROUND: 0,
-    FOREGROUND: 1
-  },
-
-  // @Deprecated
-  accuracy: {
-    HIGH: 0,
-    MEDIUM: 100,
-    LOW: 1000,
-    PASSIVE: 10000
-  },
-
-  // @Deprecated
-  auth: {
-    DENIED: 0,
-    AUTHORIZED: 1
-  },
-
   configure: function(config, successFn, errorFn) {
     successFn = successFn || emptyFn;
     errorFn = errorFn || defaultErrorHandler;
@@ -90,14 +64,6 @@ var BackgroundGeolocation = {
 
   stop: function() {
     RNBackgroundGeolocation.stop();
-  },
-
-  // @deprecated
-  isLocationEnabled: function(successFn, errorFn) {
-    console.log('[WARN]: this method is deprecated. Use checkStatus instead.');
-    successFn = successFn || emptyFn;
-    errorFn = errorFn || emptyFn;
-    RNBackgroundGeolocation.isLocationEnabled(successFn, errorFn);
   },
 
   checkStatus: function(successFn, errorFn) {
