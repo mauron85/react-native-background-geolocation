@@ -49,6 +49,6 @@ gcloud config set project ${GCLOUD_PROJECT}
 gcloud firebase test android run \
   --type instrumentation \
   --app ${project_dir}/res/dummy.apk \
-  --test $(ls -dt ${project_dir}/android/lib/build/outputs/apk/*.apk | head -1) \
+  --test $(ls -dt ${project_dir}/android/lib/build/outputs/apk/androidTest/debug/*.apk | head -1) \
   --device model=Nexus6,version=25,locale=en,orientation=portrait  \
   --timeout 90s
