@@ -1,8 +1,9 @@
 ## Changelog
 
-### [0.6.1] - 2019-08-XX
+### [0.6.1] - 2019-08-29
 ### Changed
 - Remove deprecated isLocationEnabled method
+- Android use react-native headless JS instead of jsevaluator
 
 ### [0.6.0] - 2019-08-27
 ### Fixed
