@@ -696,22 +696,22 @@ Android example:
 When the `Application` is initialized (which also happens before services gets started in the background), write some code like this:
 
 ```
-BackgroundGeolocationFacade.setLocationTransform(new ILocationTransform() {
-            @Nullable
-            @Override
-            public BackgroundLocation transformLocationBeforeCommit(@NonNull Context context, @NonNull BackgroundLocation location) {
-                // `context` is available too if there's a need to use a value from preferences etc.
-                
-                // Modify the location
-                location.setLatitude(location.getLatitude() + 0.018);
-                
-                // Return modified location
-                return location;
-  
-                // You could return null to reject the location,
-                // or if you did something else with the location and the library should not post or save it.
-            }
-        }
+BackgroundGeolocationFacade.setLocationTransform(new LocationTransform() {
+    @Nullable
+    @Override
+    public BackgroundLocation transformLocationBeforeCommit(@NonNull Context context, @NonNull BackgroundLocation location) {
+    // `context` is available too if there's a need to use a value from preferences etc.
+
+    // Modify the location
+    location.setLatitude(location.getLatitude() + 0.018);
+
+    // Return modified location
+    return location;
+
+    // You could return null to reject the location,
+    // or if you did something else with the location and the library should not post or save it.
+    }
+});
 ```
 
 iOS example:
