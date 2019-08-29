@@ -1,8 +1,9 @@
 'use strict';
 
-var { DeviceEventEmitter, NativeModules } = require('react-native');
+var { DeviceEventEmitter, NativeModules, AppRegistry } = require('react-native');
 var RNBackgroundGeolocation = NativeModules.BackgroundGeolocation;
 var TAG = 'RNBackgroundGeolocation';
+var TASK_KEY = 'com.marianhello.bgloc.react.headless.Task';
 
 function emptyFn() {}
 function defaultErrorHandler(error) {
@@ -174,10 +175,11 @@ var BackgroundGeolocation = {
     }
   },
 
-  headlessTask: function(func, successFn, errorFn) {
+  headlessTask: function(task, successFn, errorFn) {
     successFn = successFn || emptyFn;
     errorFn = errorFn || emptyFn;
-    RNBackgroundGeolocation.headlessTask(func.toString(), successFn, errorFn);
+    AppRegistry.registerHeadlessTask(TASK_KEY, () => task);
+    RNBackgroundGeolocation.registerHeadlessTask(successFn, errorFn);
   },
 
   forceSync: function(successFn, errorFn) {

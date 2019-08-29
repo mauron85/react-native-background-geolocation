@@ -19,6 +19,7 @@ import com.marianhello.bgloc.PluginException;
 import com.marianhello.bgloc.data.BackgroundActivity;
 import com.marianhello.bgloc.data.BackgroundLocation;
 import com.marianhello.bgloc.react.data.LocationMapper;
+import com.marianhello.bgloc.react.headless.HeadlessTaskRunner;
 import com.marianhello.logging.LogEntry;
 import com.marianhello.logging.LoggerManager;
 
@@ -309,9 +310,9 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     }
 
     @ReactMethod
-    public void headlessTask(String jsFunction, Callback success, Callback error) {
+    public void registerHeadlessTask(Callback success, Callback error) {
         logger.debug("Registering headless task");
-        facade.registerHeadlessTask(jsFunction);
+        facade.registerHeadlessTask(HeadlessTaskRunner.class.getName());
         success.invoke();
     }
 
