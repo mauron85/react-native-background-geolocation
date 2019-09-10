@@ -21,6 +21,10 @@ Instructions for how to prepare debug logs can be found in section [Debugging](#
 If you're reporting an app crash, debug logs might not contain all the necessary information about the cause of the crash.
 In that case, also provide relevant parts of output of `adb logcat` command.
 
+## Issue Hunt
+
+Fund your issues or feature request to drag attraction of developers. Checkout our [issue hunt page](https://issuehunt.io/r/mauron85/react-native-background-geolocation/issues).
+
 # Android background service issues
 There are repeatedly reported issues with some android devices not working in the background. Check if your device model is on  [dontkillmyapp list](https://dontkillmyapp.com) before you report new issue. For more information check out [dontkillmyapp.com](https://dontkillmyapp.com/problem).
 
