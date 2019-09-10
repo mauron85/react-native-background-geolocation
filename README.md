@@ -59,11 +59,11 @@ When ext is not provided then following defaults will be used:
 
 ```
 ext {
-  compileSdkVersion = 27
-  buildToolsVersion = "27.0.3"
-  targetSdkVersion = 26
+  compileSdkVersion = 28
+  buildToolsVersion = "28.0.3"
+  targetSdkVersion = 28
   minSdkVersion = 16
-  supportLibVersion = "27.1.1"
+  supportLibVersion = "28.0.0"
   googlePlayServicesVersion = "11+"
 }
 ```

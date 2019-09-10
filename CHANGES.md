@@ -1,5 +1,10 @@
 ## Changelog
 
+### [0.6.2] - 2019-09-10
+### Changed
+- Android remove preoreo target
+- Android add android.permission.FOREGROUND_SERVICE permission
+
 ### [0.6.1] - 2019-08-29
 ### Changed
 - Remove deprecated isLocationEnabled method
