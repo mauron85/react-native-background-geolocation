@@ -1,5 +1,26 @@
 ## 变更日志
 
+### [0.6.2] - 2019-09-10
+### 变量
+- Android 端移除 preoreo 目标
+- Android 端添加 android.permission.FOREGROUND_SERVICE 权限
+
+### [0.6.1] - 2019-08-29
+### 变更
+- 移除过时的 isLocationEnabled 方法
+- Android 端用 react-native headless js 替换 jsevaluator
+
+### [0.6.0] - 2019-08-27
+### 修复
+- 修复 Android 端提供者(provider)冲突 (fixes #344)
+
+### 变更
+- 支持 RN 0.60 的自动链接(autolinking)
+
+### [0.5.6] - 2019-08-27
+### 修复
+- Android API >= 26 允许从后台开启服务 (fixes #356)
+
 ### [0.5.5] - 2019-08-13
 ### 修复
 - Android 修复 ToneGenerator 闪退问题
