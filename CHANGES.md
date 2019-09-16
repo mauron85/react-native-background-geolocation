@@ -1,5 +1,10 @@
 ## Changelog
 
+### [0.6.3] - 2019-09-16
+### Fixed
+- Android fix RejectedExecutionException (fixes #319 #259 #243 #149 #68)
+- Android add stop guard
+
 ### [0.6.2] - 2019-09-10
 ### Changed
 - Android remove preoreo target
