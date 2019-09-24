@@ -1,3 +1,4 @@
+.github
 .DS_Store
 node_modules
 npm-debug.log
@@ -14,3 +15,11 @@ local.properties
 *.iml
 build
 *.skip
+
+# Git modules
+.gitmodules
+.git
+
+# CircleCI
+.circleci
+res/

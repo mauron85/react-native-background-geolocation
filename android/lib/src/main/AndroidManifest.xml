@@ -40,11 +40,12 @@
                 android:resource="@xml/authenticator" />
         </service>
         <provider
-            android:name="com.marianhello.bgloc.sync.DummyContentProvider"
-            android:authorities="@string/content_authority"
+            android:name="com.marianhello.bgloc.data.provider.LocationContentProvider"
+            android:authorities="@string/mauron85_bgloc_content_authority"
             android:exported="false"
             android:syncable="true"/>
-        <service android:enabled="true" android:exported="false" android:name="com.marianhello.bgloc.LocationService" />
+        <service android:enabled="true" android:exported="false" android:name="com.marianhello.bgloc.service.LocationServiceImpl" />
+        <service android:enabled="true" android:exported="false" android:name="com.marianhello.bgloc.react.headless.HeadlessService" />
         <receiver android:enabled="true" android:exported="true" android:name="com.marianhello.bgloc.BootCompletedReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
@@ -52,7 +53,6 @@
         </receiver>
     </application>
 
-    <uses-sdk android:minSdkVersion="14" />
     <uses-permission android:name="android.hardware.location" />
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -65,4 +65,5 @@
     <uses-permission android:name="android.permission.READ_SYNC_SETTINGS"/>
     <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS"/>
     <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 </manifest>

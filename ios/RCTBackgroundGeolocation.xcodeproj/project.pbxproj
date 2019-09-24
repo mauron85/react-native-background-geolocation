@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		412123DE207F696000D23929 /* MAHUncaughtExceptionLogger.h in Copy Files */ = {isa = PBXBuildFile; fileRef = 412123DC207F663B00D23929 /* MAHUncaughtExceptionLogger.h */; };
 		4164B01620419D4000D7AC50 /* libBackgroundGeolocation.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 4164B00B20419C5800D7AC50 /* libBackgroundGeolocation.a */; };
 		418F754A1D02DC3D0045FEA0 /* RCTBackgroundGeolocation.h in Copy Files */ = {isa = PBXBuildFile; fileRef = 418F75491D02DC3D0045FEA0 /* RCTBackgroundGeolocation.h */; };
 		418F754C1D02DC3D0045FEA0 /* RCTBackgroundGeolocation.m in Sources */ = {isa = PBXBuildFile; fileRef = 418F754B1D02DC3D0045FEA0 /* RCTBackgroundGeolocation.m */; };
@@ -45,7 +44,6 @@
 			dstPath = "include/$(PRODUCT_NAME)";
 			dstSubfolderSpec = 16;
 			files = (
-				412123DE207F696000D23929 /* MAHUncaughtExceptionLogger.h in Copy Files */,
 				418F754A1D02DC3D0045FEA0 /* RCTBackgroundGeolocation.h in Copy Files */,
 			);
 			name = "Copy Files";
@@ -54,7 +52,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		412123DC207F663B00D23929 /* MAHUncaughtExceptionLogger.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MAHUncaughtExceptionLogger.h; sourceTree = "<group>"; };
 		4164B00520419C5800D7AC50 /* BackgroundGeolocation.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = BackgroundGeolocation.xcodeproj; path = common/BackgroundGeolocation.xcodeproj; sourceTree = "<group>"; };
 		418F75461D02DC3D0045FEA0 /* libRCTBackgroundGeolocation.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libRCTBackgroundGeolocation.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		418F75491D02DC3D0045FEA0 /* RCTBackgroundGeolocation.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = RCTBackgroundGeolocation.h; sourceTree = "<group>"; };
@@ -115,7 +112,6 @@
 			children = (
 				418F75491D02DC3D0045FEA0 /* RCTBackgroundGeolocation.h */,
 				418F754B1D02DC3D0045FEA0 /* RCTBackgroundGeolocation.m */,
-				412123DC207F663B00D23929 /* MAHUncaughtExceptionLogger.h */,
 			);
 			path = RCTBackgroundGeolocation;
 			sourceTree = "<group>";
@@ -306,7 +302,7 @@
 					"$(inherited)",
 					"$(SRCROOT)/../../../React/**",
 					"$(SRCROOT)/../../react-native/React/**",
-					"$(SRCROOT)/react-native/React/**",
+					"$(SRCROOT)/../../../../ios/Pods/Headers/Public/**",
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -321,7 +317,7 @@
 					"$(inherited)",
 					"$(SRCROOT)/../../../React/**",
 					"$(SRCROOT)/../../react-native/React/**",
-					"$(SRCROOT)/react-native/React/**",
+					"$(SRCROOT)/../../../../ios/Pods/Headers/Public/**",
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = "$(TARGET_NAME)";

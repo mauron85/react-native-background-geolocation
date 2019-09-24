@@ -1,0 +1,98 @@
+# Android Gradle CircleCI 2.0 configuration file
+#
+# Check https://circleci.com/docs/2.0/language-android/ for more details
+# https://github.com/flyve-mdm/android-mdm-agent/blob/develop/.circleci/config.yml
+
+version: 2
+reference:
+
+  ## Workspaces
+  project_dir: &project_dir
+    ~/mauron85_bgloc
+
+  android_config: &android_config
+    working_directory: ~/mauron85_bgloc/android
+    docker:
+      # specify the version you desire here
+      - image: circleci/android:api-28-alpha
+      # Specify service dependencies here if necessary
+      # CircleCI maintains a library of pre-built images
+      # documented at https://circleci.com/docs/2.0/circleci-images/
+      # - image: circleci/postgres:9.4
+    environment:
+      # Customize the JVM maximum heap limit
+      JVM_OPTS: -Xmx3200m
+      TERM: dumb
+
+  project_checkout: &project_checkout
+    checkout:
+      path: *project_dir
+
+  submodule_checkout: &submodule_checkout
+    run:
+      name: Checkout git submodules
+      command: git submodule init && git submodule update
+
+  gradle_key: &gradle_key
+    jars-{{ checksum "build.gradle" }}-{{ checksum "lib/build.gradle" }}
+
+  restore_gradle_cache: &restore_gradle_cache
+    restore_cache:
+      key: *gradle_key
+
+  save_gradle_cache: &save_gradle_cache
+    save_cache:
+      key: *gradle_key
+      paths:
+        - ~/.gradle
+        - ~/.m2
+
+  android_dependencies: &android_dependencies
+    run:
+      name: Download Android Dependencies
+      command: ./gradlew androidDependencies
+
+jobs:
+  # unit test
+  build:
+    <<: *android_config
+    steps:
+      - *project_checkout
+      - *submodule_checkout
+      - *restore_gradle_cache
+      - *android_dependencies
+      - *save_gradle_cache
+      - run:
+          name: Run Build
+          command: ./gradlew build -x lint -x test
+      # - store_artifacts:
+      #     path: build/reports
+      #     destination: reports
+      # - store_test_results:
+      #     path: build/test-results
+      # See https://circleci.com/docs/2.0/deployment-integrations/ for deploy examples
+
+  # Test Instrumentation with Android 4.1 JELLY_BEAN API 16
+  test_instrumentation:
+    <<: *android_config
+    steps:
+      - *project_checkout
+      - *submodule_checkout
+      - *restore_gradle_cache
+      - *android_dependencies
+      - *save_gradle_cache
+      - run:
+          name: Create debug apk
+          command: ./gradlew assembleDebug assembleAndroidTest
+      - run:
+          name: Run Tests on Firebase test lab
+          command: source ../scripts/google_cloud.sh
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
+      - test_instrumentation:
+          requires:
+            - build

@@ -1,6 +1,64 @@
 ## 变更日志
 
-### [0.5.0] - 未发布
+### [0.6.2] - 2019-09-10
+### 变量
+- Android 端移除 preoreo 目标
+- Android 端添加 android.permission.FOREGROUND_SERVICE 权限
+
+### [0.6.1] - 2019-08-29
+### 变更
+- 移除过时的 isLocationEnabled 方法
+- Android 端用 react-native headless js 替换 jsevaluator
+
+### [0.6.0] - 2019-08-27
+### 修复
+- 修复 Android 端提供者(provider)冲突 (fixes #344)
+
+### 变更
+- 支持 RN 0.60 的自动链接(autolinking)
+
+### [0.5.6] - 2019-08-27
+### 修复
+- Android API >= 26 允许从后台开启服务 (fixes #356)
+
+### [0.5.5] - 2019-08-13
+### 修复
+- Android 修复 ToneGenerator 闪退问题
+- Android 从 manifest 里删除 minSdk (fixes #357) - @maleriepace
+- Android 为 applicationId 添加选项检查 (PR #36 common repo) - @mysport12
+- Android 不会在 manifest 里声明 minSdk 版本了 @wesleycoder 和 @maleriepace
+- Android 改变 react-native link command 仓库地址 (PR #374) - @mantaroh
+- 更新 CHANGES_zh-Hans.md 翻译文档 - @Kennytian
+- 修正 README 里的错别字 - @diegogurpegui
+- 感谢所有的贡献者
+
+### [0.5.2] - 2019-03-28
+### 修复
+- Android 修复程序无法启动 APP VisibilityChange 事件缺陷
+- Android 忽略失败的 instrumentation 测试项
+
+### [0.5.1] - 2019-03-25
+### 修复
+- Android 修复 #360 - 当应用因其他原因崩溃时，系统会启动该服务
+
+### [0.5.0] - 2019-01-31
+
+### 新增
+- 用 startMonitoringSignificantLocationChanges 实现 iOS config.stopOnTerminate 功能
+
+Commit: [5149178c65322d04f4e9e47bd278b17cf0e4bd9a](https://github.com/mauron85/background-geolocation-ios/commit/5149178c65322d04f4e9e47bd278b17cf0e4bd9a)
+Origin-PR: [#7](https://github.com/mauron85/background-geolocation-ios/pull/7)
+Contributed-By: [@StanislavMayorov](https://github.com/StanislavMayorov)
+
+### 修复
+- Android - 无法找到 Assert.assertNotNull 标识
+
+Commit: [ec334ba6a8612c399d608bbfc4aacfad68fc2105](https://github.com/mauron85/background-geolocation-android/commit/ec334ba6a8612c399d608bbfc4aacfad68fc2105)
+Origin-PR: [#25](https://github.com/mauron85/background-geolocation-android/pull/25)
+Origin-Issue: [#340](https://github.com/mauron85/react-native-background-geolocation/issues/340)
+Contributed-By: [@scurtoni](https://github.com/scurtoni)
+
+### [0.5.0-alpha.XY] - 未发布
 
 此版本提供了抽象代码以复用 React Native Cordova 插件之间变量，从而加快开发速度修复共享代码库的错误。
 

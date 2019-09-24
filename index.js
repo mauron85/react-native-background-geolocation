@@ -1,8 +1,9 @@
 'use strict';
 
-var { DeviceEventEmitter, NativeModules } = require('react-native');
+var { DeviceEventEmitter, NativeModules, AppRegistry } = require('react-native');
 var RNBackgroundGeolocation = NativeModules.BackgroundGeolocation;
 var TAG = 'RNBackgroundGeolocation';
+var TASK_KEY = 'com.marianhello.bgloc.react.headless.Task';
 
 function emptyFn() {}
 function defaultErrorHandler(error) {
@@ -22,7 +23,8 @@ var BackgroundGeolocation = {
     'authorization',
     'foreground',
     'background',
-    'abort_requested'
+    'abort_requested',
+    'http_authorization'
   ],
 
   DISTANCE_FILTER_PROVIDER: 0,
@@ -51,32 +53,6 @@ var BackgroundGeolocation = {
   LOCATION_UNAVAILABLE: 2,
   TIMEOUT: 3,
 
-  // @Deprecated
-  provider: {
-    ANDROID_DISTANCE_FILTER_PROVIDER: 0,
-    ANDROID_ACTIVITY_PROVIDER: 1
-  },
-
-  // @Deprecated
-  mode: {
-    BACKGROUND: 0,
-    FOREGROUND: 1
-  },
-
-  // @Deprecated
-  accuracy: {
-    HIGH: 0,
-    MEDIUM: 100,
-    LOW: 1000,
-    PASSIVE: 10000
-  },
-
-  // @Deprecated
-  auth: {
-    DENIED: 0,
-    AUTHORIZED: 1
-  },
-
   configure: function(config, successFn, errorFn) {
     successFn = successFn || emptyFn;
     errorFn = errorFn || defaultErrorHandler;
@@ -89,14 +65,6 @@ var BackgroundGeolocation = {
 
   stop: function() {
     RNBackgroundGeolocation.stop();
-  },
-
-  // @deprecated
-  isLocationEnabled: function(successFn, errorFn) {
-    console.log('[WARN]: this method is deprecated. Use checkStatus instead.');
-    successFn = successFn || emptyFn;
-    errorFn = errorFn || emptyFn;
-    RNBackgroundGeolocation.isLocationEnabled(successFn, errorFn);
   },
 
   checkStatus: function(successFn, errorFn) {
@@ -207,10 +175,11 @@ var BackgroundGeolocation = {
     }
   },
 
-  headlessTask: function(func, successFn, errorFn) {
+  headlessTask: function(task, successFn, errorFn) {
     successFn = successFn || emptyFn;
     errorFn = errorFn || emptyFn;
-    RNBackgroundGeolocation.headlessTask(func.toString(), successFn, errorFn);
+    AppRegistry.registerHeadlessTask(TASK_KEY, () => task);
+    RNBackgroundGeolocation.registerHeadlessTask(successFn, errorFn);
   },
 
   forceSync: function(successFn, errorFn) {
@@ -231,12 +200,19 @@ var BackgroundGeolocation = {
   },
 
   removeAllListeners: function(event) {
+    if (!event) {
+      this.events.forEach(function(event) {
+        DeviceEventEmitter.removeAllListeners(event);
+      });
+      return void 0;
+    }
     if (this.events.indexOf(event) < 0) {
       console.log('[WARN] ' + TAG + ': removeAllListeners for unknown event "' + event + '"');
-      return false;
+      return void 0;
     }
 
-    return DeviceEventEmitter.removeAllListeners(event);
+    DeviceEventEmitter.removeAllListeners(event);
+    return void 0;
   }
 };
 

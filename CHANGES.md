@@ -1,6 +1,70 @@
 ## Changelog
 
-### [0.5.0] - unreleased
+### [0.6.3] - 2019-09-16
+### Fixed
+- Android fix RejectedExecutionException (fixes #319 #259 #243 #149 #68)
+- Android add stop guard
+
+### [0.6.2] - 2019-09-10
+### Changed
+- Android remove preoreo target
+- Android add android.permission.FOREGROUND_SERVICE permission
+
+### [0.6.1] - 2019-08-29
+### Changed
+- Remove deprecated isLocationEnabled method
+- Android use react-native headless JS instead of jsevaluator
+
+### [0.6.0] - 2019-08-27
+### Fixed
+- Android fix conflicting provider (fixes #344)
+
+### Changed
+- Android autolinking for RN 0.60
+
+### [0.5.6] - 2019-08-27
+### Fixed
+- Android allow to start service from background on API >=26 (fixes #356)
+
+### [0.5.5] - 2019-08-13
+### Fixed
+- Android fix tone generator crash
+- Android Removed minsdk from manifest (fixes #357) - @maleriepace
+- Android add additional check for applicationId (PR #36 common repo) - @mysport12
+- Android minSdk version should not be declared on manifest - @wesleycoder and @maleriepace
+- Android Change the react-native link command repositories (PR #374) - @mantaroh
+- Update CHANGES_zh-Hans.md - @Kennytian
+- Fixed typo in README - @diegogurpegui
+
+Many thanks to all contributors
+
+### [0.5.2] - 2019-03-28
+### Fixed
+- Android fix don't start service on app visibility change events fixes
+- Android ignore failing instrumentation tests
+
+### [0.5.1] - 2019-03-25
+### Fixed
+- Android fix #360 - When app crashes for other reasons the service is started by the system
+
+### [0.5.0] - 2019-01-31
+
+### Added
+- ios implement config.stopOnTerminate using startMonitoringSignificantLocationChanges
+
+Commit: [5149178c65322d04f4e9e47bd278b17cf0e4bd9a](https://github.com/mauron85/background-geolocation-ios/commit/5149178c65322d04f4e9e47bd278b17cf0e4bd9a)
+Origin-PR: [#7](https://github.com/mauron85/background-geolocation-ios/pull/7)
+Contributed-By: [@StanislavMayorov](https://github.com/StanislavMayorov)
+
+### Fixed
+- Android - cannot find symbol Assert.assertNotNull 
+
+Commit: [ec334ba6a8612c399d608bbfc4aacfad68fc2105](https://github.com/mauron85/background-geolocation-android/commit/ec334ba6a8612c399d608bbfc4aacfad68fc2105)
+Origin-PR: [#25](https://github.com/mauron85/background-geolocation-android/pull/25)
+Origin-Issue: [#340](https://github.com/mauron85/react-native-background-geolocation/issues/340)
+Contributed-By: [@scurtoni](https://github.com/scurtoni)
+
+### [0.5.0-alpha.XY] - unreleased
 
 This release brings abstractions, allowing code reuse
 between ReactNative Cordova plugin variants.
@@ -64,6 +128,24 @@ More info: https://github.com/mauron85/react-native-background-geolocation/pull/
 - Allow stopping location updates on status "285 Updates Not Required" (by [@danielgindi](https://github.com/danielgindi/))
 More info: https://github.com/mauron85/react-native-background-geolocation/pull/271
 
+Since alpha.43:
+- Listen for 401 Unauthorized status codes received from http server (by [@FeNoMeNa](https://github.com/FeNoMeNa/))
+More info: https://github.com/mauron85/react-native-background-geolocation/pull/308/files
+
+Since alpha.44:
+- typescript definitions (index.d.ts)
+- Android allow override minSdkVersion
+
+Since alpha.45:
+- allow nested location props in postTemplate
+
+Since alpha.47:
+- Android make sync account name configurable
+in "android/app/src/main/res/values/strings.xml"
+```
+<string name="account_name">Sync Locations</string>
+```
+
 ### Changed
 
 Since alpha.6:
@@ -116,6 +198,9 @@ Since alpha.38:
 (PR: [#9](https://github.com/mauron85/background-geolocation-android/pull/9)
 by [@danielgindi](https://github.com/danielgindi/),
 Closes #260)
+
+Since alpha.48:
+- removeAllListeners - remove all event listeners when calling without parameter
 
 ### Fixed
 
@@ -183,6 +268,37 @@ Since alpha.38:
 by [@danielgindi](https://github.com/danielgindi/),
 fixes #206, #256)
 
+Since alpha.41:
+- Android fix locationService treating success as errors
+(PR: [#13](https://github.com/mauron85/background-geolocation-android/pull/13)
+by [@hoisel](https://github.com/hoisel/))
+
+Since alpha.42:
+- Android make sure mService exists when we call start or stop
+(PR: [#17](https://github.com/mauron85/background-geolocation-android/pull/17)
+by [@ivosabev](https://github.com/ivosabev/),
+fixes #257, #280)
+
+Since alpha.44:
+- Android automatically use gradle4 template when gradle >= 4.4 is detected
+(no need for gradle3EXPERIMENTAL)
+- Android upgrade default libraries to version compatible with RN57
+- Android fix gradle4 compile, testCompile deprecated warnings
+- Android fix service crash on boot for Android 8 when startOnBoot option is used
+
+Since alpha.46:
+- Android use global location content provider (in attempt to fix db locking issue)
+- fix type definition
+
+Since alpha.48:
+- Android prefix content_authority to prevent collision with other plugins (fixes #320)
+
+Since alpha.49:
+- Android fix App Crashes when entering / leaving Background (fixes #319)
+
+Since alpha.50:
+- Android fix service checkStatus isStarted
+- Android fix crash on permission when started from background
 
 ### [0.4.1] - 2017-12-19
 #### Changed

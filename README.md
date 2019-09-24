@@ -1,13 +1,41 @@
-# react-native-mauron85-background-geolocation
+# @mauron85/react-native-background-geolocation
 
-## Breaking changes
-This document is describing module as in version 0.5. Documentation for version 0.4 can be found [here](https://github.com/mauron85/react-native-background-geolocation/tree/0.4-stable).
+[![CircleCI](https://circleci.com/gh/mauron85/react-native-background-geolocation/tree/master.svg?style=shield)](https://circleci.com/gh/mauron85/react-native-background-geolocation/tree/master)
+[![issuehunt-shield-v1](issuehunt-shield-v1.svg)](https://issuehunt.io/r/mauron85/react-native-background-geolocation/)
+
+## We're moving
+
+Npm package is now [@mauron85/react-native-background-geolocation](https://www.npmjs.com/package/@mauron85/react-native-background-geolocation)!
 
 # Donation
 
 Please support my work and continued development with your donation.
 
 [![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=6GW8FPTE6TV5J)
+
+## Submitting issues
+
+All new issues should follow instructions in [ISSUE_TEMPLATE.md](https://raw.githubusercontent.com/mauron85/react-native-background-geolocation/master/ISSUE_TEMPLATE.md).
+A properly filled issue report will significantly reduce number of follow up questions and decrease issue resolving time.
+Most issues cannot be resolved without debug logs. Please try to isolate debug lines related to your issue.
+Instructions for how to prepare debug logs can be found in section [Debugging](#debugging).
+If you're reporting an app crash, debug logs might not contain all the necessary information about the cause of the crash.
+In that case, also provide relevant parts of output of `adb logcat` command.
+
+## Issue Hunt
+
+Fund your issues or feature request to drag attraction of developers. Checkout our [issue hunt page](https://issuehunt.io/r/mauron85/react-native-background-geolocation/issues).
+
+# Android background service issues
+There are repeatedly reported issues with some android devices not working in the background. Check if your device model is on  [dontkillmyapp list](https://dontkillmyapp.com) before you report new issue. For more information check out [dontkillmyapp.com](https://dontkillmyapp.com/problem).
+
+Another confusing fact about Android services is concept of foreground services. Foreground service in context of Android OS is different thing than background geolocation service of this plugin (they're related thought). **Plugin's background geolocation service** actually **becomes foreground service** when app is in the background. Confusing, right? :D
+
+If service wants to continue to run in the background, it must "promote" itself to `foreground service`. Foreground services must have visible notification, which is the reason, why you can't disable drawer notification.
+
+The notification can only be disabled, when app is running in the foreground, by setting config option `startForeground: false` (this is the default option), but will always be visible in the background (if service was started).
+
+Recommend you to read https://developer.android.com/about/versions/oreo/background
 
 ## Description
 React Native fork of [cordova-plugin-background-geolocation](https://github.com/mauron85/cordova-plugin-background-geolocation)
@@ -22,6 +50,24 @@ You can choose from following location providers:
 
 See [Which provider should I use?](/PROVIDERS.md) for more information about providers.
 
+## Dependencies
+
+Versions of libraries and sdk versions used to compile this plugin can be overriden in
+`android/build.gradle` with ext declaration.
+
+When ext is not provided then following defaults will be used:
+
+```
+ext {
+  compileSdkVersion = 28
+  buildToolsVersion = "28.0.3"
+  targetSdkVersion = 28
+  minSdkVersion = 16
+  supportLibVersion = "28.0.0"
+  googlePlayServicesVersion = "11+"
+}
+```
+
 ## Compatibility
 
 Due to the rapid changes being made in the React Native ecosystem, this module will support
@@ -32,6 +78,7 @@ compatible with this module.
 |------------------|-------------------|
 | 0.1.0 - 0.2.0    | 0.33              |
 | >=0.3.0          | >=0.47            |
+| >=0.6.0          | >=0.60            |
 
 If you are using an older version of React Native with this module some features may be buggy.
 
@@ -44,47 +91,6 @@ ext {
 }
 ```
 
-### Experimental Gradle 3 support
-
-1. Add following into your root `build.gradle`:
-
-```
-ext {
-    compileSdkVersion = 26
-    targetSdkVersion = 26
-    buildToolsVersion = "27.0.3"
-    supportLibVersion = "27.1.0"
-    googlePlayServicesVersion = "11.8.0"
-    gradle3EXPERIMENTAL = "yes"
-}
-```
-
-2. Add Google maven repository into allprojects -> repositories
-
-```
-maven { url 'https://maven.google.com' }
-```
-
-3. Edit `android/app/build.gradle`
-
-```
-android {
-...
-    compileSdkVersion 26
-    buildToolsVersion "27.0.3"
-...
-}
-```
-
-## Submitting issues
-
-All new issues should follow instructions in [ISSUE_TEMPLATE.md](https://raw.githubusercontent.com/mauron85/react-native-background-geolocation/master/ISSUE_TEMPLATE.md).
-A properly filled issue report will significantly reduce number of follow up questions and decrease issue resolving time.
-Most issues cannot be resolved without debug logs. Please try to isolate debug lines related to your issue.
-Instructions for how to prepare debug logs can be found in section [Debugging](#debugging).
-If you're reporting an app crash, debug logs might not contain all the necessary information about the cause of the crash.
-In that case, also provide relevant parts of output of `adb logcat` command.
-
 ## Example Apps
 
 The repository [react-native-background-geolocation-example](https://github.com/mauron85/react-native-background-geolocation-example) hosts an example app for both iOS and Android platform.
@@ -94,7 +100,7 @@ The repository [react-native-background-geolocation-example](https://github.com/
 ```javascript
 import React, { Component } from 'react';
 import { Alert } from 'react-native';
-import BackgroundGeolocation from 'react-native-mauron85-background-geolocation';
+import BackgroundGeolocation from '@mauron85/react-native-background-geolocation';
 
 class BgTracking extends Component {
   componentDidMount() {
@@ -106,7 +112,7 @@ class BgTracking extends Component {
       notificationText: 'enabled',
       debug: true,
       startOnBoot: false,
-      stopOnTerminate: false,
+      stopOnTerminate: true,
       locationProvider: BackgroundGeolocation.ACTIVITY_PROVIDER,
       interval: 10000,
       fastestInterval: 5000,
@@ -182,6 +188,10 @@ class BgTracking extends Component {
       // But you might be counting on it to receive location updates in the UI, so you could just reconfigure and set `url` to null.
     });
 
+    BackgroundGeolocation.on('http_authorization', () => {
+      console.log('[INFO] App needs to authorize the http requests');
+    });
+
     BackgroundGeolocation.checkStatus(status => {
       console.log('[INFO] BackgroundGeolocation service is running', status.isRunning);
       console.log('[INFO] BackgroundGeolocation services enabled', status.locationServicesEnabled);
@@ -199,7 +209,7 @@ class BgTracking extends Component {
 
   componentWillUnmount() {
     // unregister all event listeners
-    BackgroundGeolocation.events.forEach(event => BackgroundGeolocation.removeAllListeners(event));
+    BackgroundGeolocation.removeAllListeners();
   }
 }
 
@@ -213,15 +223,16 @@ export default BgTracking;
 Add the package to your project
 
 ```
-yarn add react-native-mauron85-background-geolocation
+yarn add @mauron85/react-native-background-geolocation
 ```
 
 ### Automatic setup
 
-Link your native dependencies
+Since version 0.60 React Native does linking of modules [automatically](https://github.com/react-native-community/cli/blob/master/docs/autolinking.md). However it does it only for single module.
+As plugin depends on additional 'common' module, it is required to link it with:
 
 ```
-react-native link react-native-mauron85-background-geolocation
+node ./node_modules/@mauron85/react-native-background-geolocation/scripts/postlink.js
 ```
 
 ### Manual setup
@@ -232,10 +243,10 @@ In `android/settings.gradle`
 
 ```gradle
 ...
-include ':react-native-mauron85-background-geolocation-common'
-project(':react-native-mauron85-background-geolocation-common').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-mauron85-background-geolocation/android/common')
-include ':react-native-mauron85-background-geolocation'
-project(':react-native-mauron85-background-geolocation').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-mauron85-background-geolocation/android/lib')
+include ':@mauron85_react-native-background-geolocation-common'
+project(':@mauron85_react-native-background-geolocation-common').projectDir = new File(rootProject.projectDir, '../node_modules/@mauron85/react-native-background-geolocation/android/common')
+include ':@mauron85_react-native-background-geolocation'
+project(':@mauron85_react-native-background-geolocation').projectDir = new File(rootProject.projectDir, '../node_modules/@mauron85/react-native-background-geolocation/android/lib')
 ...
 ```
 
@@ -244,7 +255,7 @@ In `android/app/build.gradle`
 ```gradle
 dependencies {
     ...
-    compile project(':react-native-mauron85-background-geolocation')
+    compile project(':@mauron85_react-native-background-geolocation')
     ...
 }
 ```
@@ -271,45 +282,10 @@ public class MainApplication extends Application implements ReactApplication {
 }
 ```
 
-#### Dependencies
-Make sure you have installed the following items through the Android SDK Manager:
-
-| Name                       | Version |
-|----------------------------|---------|
-| Android SDK Tools          | 26.0.2  |
-| Android SDK Platform-tools | 26.0.2  |
-| Android SDK Build-tools    | 26.0.2  |
-| Android Support Repository | 47      |
-| Android Support Library    | 26.1.0  |
-| Google Play Services       | 11.8.0  |
-| Google Repository          | 58      |
-
-
-#### Android Oreo
-
-You can enable experimental Oreo support by adding following into root build.gradle:
-
-```
-allprojects {
-  repositories {
-    maven { url 'https://maven.google.com' }
-  }
-}
-
-ext {
-  compileSdkVersion = 26
-  targetSdkVersion = 26
-  buildToolsVersion = "26.0.2"
-  supportLibVersion = "26.1.0"
-  googlePlayServicesVersion = "11.8.0"
-  oreoEXPERIMENTAL = "yes"
-}
-```
-
 #### iOS setup
 
 1. In XCode, in the project navigator, right click `Libraries` ➜ `Add Files to [your project's name]`
-2. Add `./node_modules/react-native-mauron85-background-geolocation/ios/RCTBackgroundGeolocation.xcodeproj`
+2. Add `./node_modules/@mauron85/react-native-background-geolocation/ios/RCTBackgroundGeolocation.xcodeproj`
 3. In the XCode project navigator, select your project, select the `Build Phases` tab and in the `Link Binary With Libraries` section add **libRCTBackgroundGeolocation.a**
 4. Add `UIBackgroundModes` **location** to `Info.plist`
 5. Add `NSMotionUsageDescription` **App requires motion tracking** to `Info.plist` (required by ACTIVITY_PROVIDER)
@@ -379,6 +355,28 @@ BackgroundGeolocation.configure({
 
 In this case new configuration options will be merged with stored configuration options and changes will be applied immediately.
 
+**Important:** Because configuration options are applied partially, it's not possible to reset option to default value just by omitting it's key name and calling `configure` method. To reset configuration option to the default value, it's key must be set to `null`!
+
+```
+// Example: reset postTemplate to default
+BackgroundGeolocation.configure({
+  postTemplate: null
+});
+```
+
+### getConfig(success, fail)
+Platform: iOS, Android
+
+Get current configuration. Method will return all configuration options and their values in success callback.
+Because `configure` method can be called with subset of the configuration options only,
+`getConfig` method can be used to check the actual applied configuration.
+
+```
+BackgroundGeolocation.getConfig(function(config) {
+  console.log(config);
+});
+```
+
 ### start()
 Platform: iOS, Android
 
@@ -416,19 +414,6 @@ Error codes:
 | 1     | PERMISSION_DENIED    | Request failed due missing permissions                                   |
 | 2     | LOCATION_UNAVAILABLE | Internal source of location returned an internal error                   |
 | 3     | TIMEOUT              | Timeout defined by `option.timeout was exceeded                          |
-
-
-### isLocationEnabled(success, fail)
-Deprecated: This method is deprecated and will be removed in next major version.
-Use `checkStatus` as replacement.
-
-Platform: iOS, Android
-
-One time check for status of location services. In case of error, fail callback will be executed.
-
-| Success callback parameter | Type      | Description                                          |
-|----------------------------|-----------|------------------------------------------------------|
-| `enabled`                  | `Boolean` | true/false (true when location services are enabled) |
 
 ### checkStatus(success, fail)
 
@@ -519,7 +504,7 @@ BackgroundGeolocation.switchMode(BackgroundGeolocation.FOREGROUND_MODE);
 // switch to BACKGROUND mode
 BackgroundGeolocation.switchMode(BackgroundGeolocation.BACKGROUND_MODE);
 ```
-### forceSync(success, fail)
+### forceSync()
 Platform: Android, iOS
 
 Force sync of pending locations. Option `syncThreshold` will be ignored and
@@ -551,7 +536,7 @@ Format of log entry:
 
 ### removeAllListeners(event)
 
-Unregister all event listeners for given event
+Unregister all event listeners for given event. If parameter `event` is not provided then all event listeners will be removed.
 
 ## Events
 
@@ -567,6 +552,7 @@ Unregister all event listeners for given event
 | `foreground`        |                        | Android      | all         | app entered foreground state (visible)           |
 | `background`        |                        | Android      | all         | app entered background state                     |
 | `abort_requested`   |                        | all          | all         | server responded with "285 Updates Not Required" |
+| `http_authorization`|                        | all          | all         | server responded with "401 Unauthorized"         |
 
 ### Location event
 | Location parameter     | Type      | Description                                                            |
@@ -677,8 +663,10 @@ Keep in mind that the callback function lives in an isolated scope. Variables fr
 
 Following example requires [CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS) enabled backend server.
 
+**Warning:** callback function must by `async`!
+
 ```
-BackgroundGeolocation.headlessTask(function(event) {
+BackgroundGeolocation.headlessTask(async (event) => {
     if (event.name === 'location' ||
       event.name === 'stationary') {
         var xhr = new XMLHttpRequest();
@@ -686,10 +674,21 @@ BackgroundGeolocation.headlessTask(function(event) {
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.send(JSON.stringify(event.params));
     }
-
-    return 'Processing event: ' + event.name; // will be logged
 });
 ```
+
+**Important:**
+
+After application is launched again (main activity becomes visible), it is important to call `start` method to rebind all event listeners.
+
+```
+BackgroundGeolocation.checkStatus(({ isRunning }) => {
+  if (isRunning) {
+    BackgroundGeolocation.start(); // service was running -> rebind all listeners
+  }
+});
+```
+
 
 ### Transforming/filtering locations in native code
 
@@ -702,22 +701,22 @@ Android example:
 When the `Application` is initialized (which also happens before services gets started in the background), write some code like this:
 
 ```
-BackgroundGeolocationFacade.setLocationTransform(new ILocationTransform() {
-            @Nullable
-            @Override
-            public BackgroundLocation transformLocationBeforeCommit(@NonNull Context context, @NonNull BackgroundLocation location) {
-                // `context` is available too if there's a need to use a value from preferences etc.
-                
-                // Modify the location
-                location.setLatitude(location.getLatitude() + 0.018);
-                
-                // Return modified location
-                return location;
-  
-                // You could return null to reject the location,
-                // or if you did something else with the location and the library should not post or save it.
-            }
-        }
+BackgroundGeolocationFacade.setLocationTransform(new LocationTransform() {
+    @Nullable
+    @Override
+    public BackgroundLocation transformLocationBeforeCommit(@NonNull Context context, @NonNull BackgroundLocation location) {
+    // `context` is available too if there's a need to use a value from preferences etc.
+
+    // Modify the location
+    location.setLatitude(location.getLatitude() + 0.018);
+
+    // Return modified location
+    return location;
+
+    // You could return null to reject the location,
+    // or if you did something else with the location and the library should not post or save it.
+    }
+});
 ```
 
 iOS example:
@@ -736,6 +735,17 @@ BackgroundGeolocationFacade.locationTransform = ^(MAURLocation * location) {
   // You could return null to reject the location,
   // or if you did something else with the location and the library should not post or save it.
 };
+```
+
+### Advanced plugin configuration
+
+#### Change Account Service Name (Android)
+
+Add string resource "account_name" into "android/app/src/main/res/values/strings.xml"
+
+```
+<string name="account_name">Sync Locations</string>
+
 ```
 
 ### Example of backend server
@@ -763,7 +773,7 @@ TODO
 
 
 ## Geofencing
-Try using [react-native-geo-fencing](https://github.com/surialabs/react-native-geo-fencing). Let's keep this plugin lightweight as much as possible.
+Try using [react-native-boundary](https://github.com/eddieowens/react-native-boundary). Let's keep this plugin lightweight as much as possible.
 
 ## Changelog
 

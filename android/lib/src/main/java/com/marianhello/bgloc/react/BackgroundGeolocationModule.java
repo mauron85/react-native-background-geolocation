@@ -14,12 +14,12 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.marianhello.bgloc.BackgroundGeolocationFacade;
 import com.marianhello.bgloc.Config;
-import com.marianhello.bgloc.LocationService;
 import com.marianhello.bgloc.PluginDelegate;
 import com.marianhello.bgloc.PluginException;
 import com.marianhello.bgloc.data.BackgroundActivity;
 import com.marianhello.bgloc.data.BackgroundLocation;
 import com.marianhello.bgloc.react.data.LocationMapper;
+import com.marianhello.bgloc.react.headless.HeadlessTaskRunner;
 import com.marianhello.logging.LogEntry;
 import com.marianhello.logging.LoggerManager;
 
@@ -40,6 +40,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     public static final String START_EVENT = "start";
     public static final String STOP_EVENT = "stop";
     public static final String ABORT_REQUESTED_EVENT = "abort_requested";
+    public static final String HTTP_AUTHORIZATION_EVENT = "http_authorization";
     public static final String ERROR_EVENT = "error";
 
     private static final int PERMISSIONS_REQUEST_CODE = 1;
@@ -167,18 +168,6 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
         });
     }
 
-    @Deprecated // use checkStatus as replacement
-    @ReactMethod
-    public void isLocationEnabled(Callback success, Callback error) {
-        logger.debug("Location services enabled check");
-        try {
-            success.invoke(facade.locationServicesEnabled());
-        } catch (PluginException e) {
-            logger.error("Location service checked failed: {}", e.getMessage());
-            error.invoke(ErrorMap.from(e));
-        }
-    }
-
     @ReactMethod
     public void showLocationSettings() {
         BackgroundGeolocationFacade.showLocationSettings(getContext());
@@ -269,14 +258,9 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     public void getConfig(final Callback success, final Callback error) {
         runOnBackgroundThread(new Runnable() {
             public void run() {
-                try {
-                    Config config = facade.getConfig();
-                    ReadableMap out = ConfigMapper.toMap(config);
-                    success.invoke(out);
-                } catch (PluginException e) {
-                    logger.error("Error getting config: {}", e.getMessage());
-                    error.invoke(ErrorMap.from(e));
-                }
+                Config config = facade.getConfig();
+                ReadableMap out = ConfigMapper.toMap(config);
+                success.invoke(out);
             }
         });
     }
@@ -326,9 +310,9 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     }
 
     @ReactMethod
-    public void headlessTask(String jsFunction, Callback success, Callback error) {
+    public void registerHeadlessTask(Callback success, Callback error) {
         logger.debug("Registering headless task");
-        facade.registerHeadlessTask(jsFunction);
+        facade.registerHeadlessTask(HeadlessTaskRunner.class.getName());
         success.invoke();
     }
 
@@ -384,7 +368,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     }
 
     @Override
-    public void onActitivyChanged(BackgroundActivity activity) {
+    public void onActivityChanged(BackgroundActivity activity) {
         WritableMap out = Arguments.createMap();
         out.putInt("confidence", activity.getConfidence());
         out.putString("type", BackgroundActivity.getActivityString(activity.getType()));
@@ -394,10 +378,10 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     @Override
     public void onServiceStatusChanged(int status) {
         switch (status) {
-            case LocationService.SERVICE_STARTED:
+            case BackgroundGeolocationFacade.SERVICE_STARTED:
                 sendEvent(START_EVENT, null);
                 return;
-            case LocationService.SERVICE_STOPPED:
+            case BackgroundGeolocationFacade.SERVICE_STOPPED:
                 sendEvent(STOP_EVENT, null);
                 return;
         }
@@ -411,5 +395,10 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     @Override
     public void onAbortRequested() {
         sendEvent(ABORT_REQUESTED_EVENT, null);
+    }
+
+    @Override
+    public void onHttpAuthorization() {
+        sendEvent(HTTP_AUTHORIZATION_EVENT, null);
     }
 }
