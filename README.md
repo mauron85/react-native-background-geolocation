@@ -57,7 +57,7 @@ Versions of libraries and sdk versions used to compile this plugin can be overri
 
 When ext is not provided then following defaults will be used:
 
-```
+```gradle
 ext {
   compileSdkVersion = 28
   buildToolsVersion = "28.0.3"
@@ -85,7 +85,7 @@ If you are using an older version of React Native with this module some features
 If you are using `react-native-maps` or another lib that requires `Google Play Services` such as `Exponent.js`, then in addition to the instalation steps described here, you must set `Google Play Services` library version to match the version used by those libraries. (in this case `9.8.0`)
 
 Add following to `android/build.gradle`
-```
+```gradle
 ext {
   googlePlayServicesVersion = "9.8.0"
 }
@@ -347,7 +347,7 @@ RAW = RAW\_PROVIDER
 
 Partial reconfiguration is possible by later providing a subset of the configuration options:
 
-```
+```javascript
 BackgroundGeolocation.configure({
   debug: true
 });
@@ -357,7 +357,7 @@ In this case new configuration options will be merged with stored configuration 
 
 **Important:** Because configuration options are applied partially, it's not possible to reset option to default value just by omitting it's key name and calling `configure` method. To reset configuration option to the default value, it's key must be set to `null`!
 
-```
+```javascript
 // Example: reset postTemplate to default
 BackgroundGeolocation.configure({
   postTemplate: null
@@ -371,7 +371,7 @@ Get current configuration. Method will return all configuration options and thei
 Because `configure` method can be called with subset of the configuration options only,
 `getConfig` method can be used to check the actual applied configuration.
 
-```
+```javascript
 BackgroundGeolocation.getConfig(function(config) {
   console.log(config);
 });
@@ -497,7 +497,7 @@ by `option.desiredAccuracy` and `option.distanceFilter`.
 In **BACKGROUND** mode plugin uses significant changes and region monitoring to receive locations
 and uses `option.stationaryRadius` only.
 
-```
+```javascript
 // switch to FOREGROUND mode
 BackgroundGeolocation.switchMode(BackgroundGeolocation.FOREGROUND_MODE);
 
@@ -586,13 +586,13 @@ Note: Android currently returns `time` as type of String (instead of Number) [@s
 
 Event listeners can registered with:
 
-```
+```javascript
 const eventSubscription = BackgroundGeolocation.on('event', callbackFn);
 ```
 
 And unregistered:
 
-```
+```javascript
 eventSubscription.remove();
 ```
 
@@ -627,7 +627,7 @@ Two forms are supported:
 
 **jsonObject**
 
-```
+```javascript
 BackgroundGeolocation.configure({
   postTemplate: {
     lat: '@latitude',
@@ -638,7 +638,7 @@ BackgroundGeolocation.configure({
 ```
 
 **jsonArray**
-```
+```javascript
 BackgroundGeolocation.configure({
   postTemplate: ['@latitude', '@longitude', 'foo', 'bar']
 });
@@ -665,7 +665,7 @@ Following example requires [CORS](https://developer.mozilla.org/en-US/docs/Web/H
 
 **Warning:** callback function must by `async`!
 
-```
+```javascript
 BackgroundGeolocation.headlessTask(async (event) => {
     if (event.name === 'location' ||
       event.name === 'stationary') {
@@ -681,7 +681,7 @@ BackgroundGeolocation.headlessTask(async (event) => {
 
 After application is launched again (main activity becomes visible), it is important to call `start` method to rebind all event listeners.
 
-```
+```javascript
 BackgroundGeolocation.checkStatus(({ isRunning }) => {
   if (isRunning) {
     BackgroundGeolocation.start(); // service was running -> rebind all listeners
@@ -700,7 +700,7 @@ Android example:
 
 When the `Application` is initialized (which also happens before services gets started in the background), write some code like this:
 
-```
+```java
 BackgroundGeolocationFacade.setLocationTransform(new LocationTransform() {
     @Nullable
     @Override
@@ -724,7 +724,7 @@ iOS example:
 
 In `didFinishLaunchingWithOptions` delegate method, write some code like this:
 
-```
+```objc
 BackgroundGeolocationFacade.locationTransform = ^(MAURLocation * location) {
   // Modify the location
   location.latitude = @(location.latitude.doubleValue + 0.018);
@@ -743,9 +743,8 @@ BackgroundGeolocationFacade.locationTransform = ^(MAURLocation * location) {
 
 Add string resource "account_name" into "android/app/src/main/res/values/strings.xml"
 
-```
+```xml
 <string name="account_name">Sync Locations</string>
-
 ```
 
 ### Example of backend server
