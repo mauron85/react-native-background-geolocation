@@ -336,6 +336,9 @@ export interface Location {
   /** Longitude, in degrees. */
   longitude: number;
 
+  /** The floor of a building on which the user's device is located (IOS) */
+  floor?: number;
+
   /** Estimated accuracy of this location, in meters. */
   accuracy: number;
 

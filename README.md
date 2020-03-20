@@ -563,6 +563,7 @@ Unregister all event listeners for given event. If parameter `event` is not prov
 | `time`                 | `Number`  | UTC time of this fix, in milliseconds since January 1, 1970.           |
 | `latitude`             | `Number`  | Latitude, in degrees.                                                  |
 | `longitude`            | `Number`  | Longitude, in degrees.                                                 |
+| `floor`                | `Number`  | The floor of a building on which the user's device is located (IOS).   |
 | `accuracy`             | `Number`  | Estimated accuracy of this location, in meters.                        |
 | `speed`                | `Number`  | Speed if it is available, in meters/second over ground.                |
 | `altitude`             | `Number`  | Altitude if available, in meters above the WGS 84 reference ellipsoid. |
