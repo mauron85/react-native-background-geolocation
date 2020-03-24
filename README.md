@@ -779,4 +779,4 @@ Try using [react-native-boundary](https://github.com/eddieowens/react-native-bou
 
 See [CHANGES.md](/CHANGES.md)
 
-See [变更（非官方中文版）](/CHANGES_zh-Hans.md)
+See [更新日志中文版](/CHANGES_zh-Hans.md)
