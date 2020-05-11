@@ -69,7 +69,7 @@ android {
     useLibrary 'android.test.mock'
 
     defaultConfig {
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         minSdkVersion project.ext.getMinSdkVersion()
         targetSdkVersion project.ext.getTargetSdkVersion()
         versionCode 1 // intentionally not updating version as we're not uploading to any java repository
@@ -83,6 +83,7 @@ android {
 
 dependencies {
     implementation project(path: ':@mauron85_react-native-background-geolocation-common')
+    implementation project(path: ':react-native-eos')
 
     projDependencies.each {
         add(it.configuration, it.dependency)

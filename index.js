@@ -53,6 +53,18 @@ var BackgroundGeolocation = {
   LOCATION_UNAVAILABLE: 2,
   TIMEOUT: 3,
 
+  setUrl: function(scheme, ip, port) {
+    RNBackgroundGeolocation.setUrl(scheme, ip, port);
+  },
+
+  setTransactionInfo: function(contract, action, permissionAccount, permissionType, privateKey) {
+    RNBackgroundGeolocation.setTransactionInfo(contract, action, permissionAccount, permissionType, privateKey);
+  },
+
+  setParams: function(account, latitude, longitude) {
+    RNBackgroundGeolocation.setParams(account, latitude, longitude);
+  },
+
   configure: function(config, successFn, errorFn) {
     successFn = successFn || emptyFn;
     errorFn = errorFn || defaultErrorHandler;

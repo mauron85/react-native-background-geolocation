@@ -5,6 +5,7 @@ import android.content.Context;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.LifecycleEventListener;
+import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -111,7 +112,7 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
      */
     @ReactMethod
     public void setTransactionInfo(String contract, String action, String permissionAccount, String permissionType, String privateKey, final Promise promise) {
-        transactionInfo = new TransactionInfo(contract, action, permissionAccount, permissionType, privateKey);
+        transactionInfo = new EosTransactionInfo(contract, action, permissionAccount, permissionType, privateKey);
         promise.resolve("Success");
     }
 
