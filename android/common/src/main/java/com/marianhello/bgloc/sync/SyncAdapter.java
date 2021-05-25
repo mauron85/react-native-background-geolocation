@@ -154,20 +154,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements HttpPost
                 broadcastMessage(bundle);
             }
 
-            if (builder != null) {
-                if (isStatusOkay) {
-                    builder.setContentText("Sync completed");
-                } else {
-                    builder.setContentText("Sync failed due server error");
-                }
-            }
-
             return isStatusOkay;
         } catch (IOException e) {
             logger.warn("Error uploading locations: {}", e.getMessage());
-
-            if (builder != null)
-                builder.setContentText("Sync failed: " + e.getMessage());
         } finally {
             logger.info("Syncing endAt: {}", System.currentTimeMillis());
         }

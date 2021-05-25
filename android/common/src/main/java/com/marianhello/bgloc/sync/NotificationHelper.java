@@ -86,13 +86,13 @@ public class NotificationHelper {
             // Create the NotificationChannel, but only on API 26+ because
             // the NotificationChannel class is new and not in the support library
             android.app.NotificationManager notificationManager = (android.app.NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-            notificationManager.createNotificationChannel(createServiceChannel(appName));
+            notificationManager.createNotificationChannel(createServiceChannel(channelId, channelName));
         }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public static NotificationChannel createServiceChannel(CharSequence channelId, CharSequence channelName) {
-        NotificationChannel channel = new NotificationChannel(channelId, channelName, android.app.NotificationManager.IMPORTANCE_HIGHs);
+        NotificationChannel channel = new NotificationChannel(channelId, channelName, android.app.NotificationManager.IMPORTANCE_HIGH);
         channel.enableVibration(false);
         return channel;
     }
