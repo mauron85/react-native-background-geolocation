@@ -1,7 +1,6 @@
 package com.marianhello.bgloc.sync;
 
 import android.accounts.Account;
-import android.app.NotificationManager;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
 import android.content.ContentResolver;
@@ -37,9 +36,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements HttpPost
 
     ContentResolver contentResolver;
     private ConfigurationDAO configDAO;
-    private NotificationManager notificationManager;
     private BatchManager batchManager;
-    private boolean notificationsEnabled = true;
 
     private org.slf4j.Logger logger;
 
@@ -71,9 +68,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements HttpPost
         contentResolver = context.getContentResolver();
         configDAO = DAOFactory.createConfigurationDAO(context);
         batchManager = new BatchManager(this.getContext());
-        notificationManager = (NotificationManager) getContext().getSystemService(Context.NOTIFICATION_SERVICE);
-
-        NotificationHelper.registerSyncChannel(context);
     }
 
     /*
@@ -99,9 +93,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements HttpPost
         if (config == null || !config.hasValidSyncUrl()) {
             return;
         }
-
-        //noinspection ConstantConditions
-        notificationsEnabled = !config.hasNotificationsEnabled() || config.getNotificationsEnabled();
 
         Long batchStartMillis = System.currentTimeMillis();
         boolean isForced = extras.getBoolean(ContentResolver.SYNC_EXTRAS_MANUAL);
@@ -141,17 +132,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements HttpPost
     }
 
     private boolean uploadLocations(File file, String url, HashMap httpHeaders) {
-        NotificationCompat.Builder builder = null;
-
-        if (notificationsEnabled) {
-            builder = new NotificationCompat.Builder(getContext(), NotificationHelper.SYNC_CHANNEL_ID);
-            builder.setOngoing(true);
-            builder.setContentTitle("Syncing locations");
-            builder.setContentText("Sync in progress");
-            builder.setSmallIcon(android.R.drawable.ic_dialog_info);
-            notificationManager.notify(NOTIFICATION_ID, builder.build());
-        }
-
         try {
             int responseCode = HttpPostService.postJSONFile(url, file, httpHeaders, this);
 
@@ -190,22 +170,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements HttpPost
                 builder.setContentText("Sync failed: " + e.getMessage());
         } finally {
             logger.info("Syncing endAt: {}", System.currentTimeMillis());
-
-            if (builder != null) {
-                builder.setOngoing(false);
-                builder.setProgress(0, 0, false);
-                builder.setAutoCancel(true);
-                notificationManager.notify(NOTIFICATION_ID, builder.build());
-
-                Handler h = new Handler(Looper.getMainLooper());
-                long delayInMilliseconds = 5000;
-                h.postDelayed(new Runnable() {
-                    public void run() {
-                        logger.info("Notification cancelledAt: {}", System.currentTimeMillis());
-                        notificationManager.cancel(NOTIFICATION_ID);
-                    }
-                }, delayInMilliseconds);
-            }
         }
 
         return false;
@@ -213,16 +177,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter implements HttpPost
 
     public void onProgress(int progress) {
         logger.debug("Syncing progress: {} updatedAt: {}", progress, System.currentTimeMillis());
-
-        if (notificationsEnabled) {
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(getContext(), NotificationHelper.SYNC_CHANNEL_ID);
-            builder.setOngoing(true);
-            builder.setContentTitle("Syncing locations");
-            builder.setContentText("Sync in progress");
-            builder.setSmallIcon(android.R.drawable.ic_dialog_info);
-            builder.setProgress(100, progress, false);
-            notificationManager.notify(NOTIFICATION_ID, builder.build());
-        }
     }
 
     private void broadcastMessage(Bundle bundle) {

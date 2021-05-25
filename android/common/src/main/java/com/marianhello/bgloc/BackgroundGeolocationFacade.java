@@ -82,7 +82,7 @@ public class BackgroundGeolocationFacade {
 
         logger.info("Initializing plugin");
 
-        NotificationHelper.registerAllChannels(getApplicationContext());
+        NotificationHelper.registerServiceChannel(getApplicationContext());
     }
 
     private BroadcastReceiver locationModeChangeReceiver = new BroadcastReceiver() {
