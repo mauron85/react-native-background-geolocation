@@ -44,8 +44,7 @@ public class NotificationHelper {
             Context appContext = mContext.getApplicationContext();
 
             // Build a Notification required for running service in foreground.
-            String channelId = appContext.getString("bg_geolocation_service_channel_id");
-
+            String channelId = ResourceResolver.newInstance(appContext).getString("bg_geolocation_service_channel_id");
             NotificationCompat.Builder builder = new NotificationCompat.Builder(mContext, channelId);
 
             builder.setContentTitle(title);
@@ -91,7 +90,7 @@ public class NotificationHelper {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public static NotificationChannel createServiceChannel(CharSequence channelId, CharSequence channelName) {
+    public static NotificationChannel createServiceChannel(String channelId, CharSequence channelName) {
         NotificationChannel channel = new NotificationChannel(channelId, channelName, android.app.NotificationManager.IMPORTANCE_HIGH);
         channel.enableVibration(false);
         return channel;
