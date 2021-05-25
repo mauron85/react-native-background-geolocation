@@ -1,0 +1,93 @@
+//
+//  MAURSQLiteHelper.m
+//  BackgroundGeolocation
+//
+//  Created by Marian Hello on 23/06/16.
+//  Copyright © 2016 mauron85. All rights reserved.
+//
+
+#import <Foundation/Foundation.h>
+#import "MAURSQLiteHelper.h"
+
+@implementation SQLColumnType
+
+@synthesize type;
+
++ (SQLColumnType*) sqlColumnWithType:(SQLType)type
+{
+    SQLColumnType *instance = [[SQLColumnType alloc] init];
+    instance.type = type;
+    return instance;
+}
+
+- (NSString*) asString
+{
+    switch (type) {
+        case kReal:
+            return @"REAL";
+        case kText:
+            return @"TEXT";
+        case kInteger:
+            return @"INTEGER";
+        case kDateTime:
+            return @"DATETIME";
+    }
+}
+@end
+
+
+@implementation SQLPrimaryKeyColumnType : SQLColumnType
++ (SQLColumnType*) sqlColumnWithType:(SQLType)type
+{
+    SQLPrimaryKeyAutoIncColumnType *instance = [[SQLPrimaryKeyAutoIncColumnType alloc] init];
+    instance.type = type;
+    return instance;
+}
+
+- (NSString*) asString
+{
+    return [NSString stringWithFormat:@"%@ PRIMARY KEY", [super asString]];
+}
+@end
+
+
+@implementation SQLPrimaryKeyAutoIncColumnType : SQLColumnType
++ (SQLColumnType*) sqlColumnWithType:(SQLType)type
+{
+    SQLPrimaryKeyAutoIncColumnType *instance = [[SQLPrimaryKeyAutoIncColumnType alloc] init];
+    instance.type = type;
+    return instance;
+}
+
+- (NSString*) asString
+{
+    return [NSString stringWithFormat:@"%@ PRIMARY KEY AUTOINCREMENT", [super asString]];
+}
+@end
+
+
+@implementation MAURSQLiteHelper
+
++ (NSString*) createTableSqlStatement:(NSString*)tableName columns:(SQLColumns*)columns
+{
+    NSMutableArray *sql = [NSMutableArray arrayWithObject: @"CREATE TABLE IF NOT EXISTS"];
+    [sql addObjectsFromArray: @[tableName, @"("]];
+    NSEnumerator *enumerator = [columns objectEnumerator];
+    id column = [enumerator nextObject];
+    while (nil != column) {
+        NSString *columnName = [column objectForKey: @"name"];
+        SQLColumnType *columnType = [column objectForKey: @"type"];
+        id nextColumn = [enumerator nextObject];
+        if (nil != nextColumn) {
+            [sql addObjectsFromArray: @[columnName, [columnType asString], @COMMA_SEP]];
+        } else {
+            [sql addObjectsFromArray: @[columnName, [columnType asString]]];
+        }
+        column = nextColumn;
+    }
+    [sql addObject: @");"];
+    
+    return [sql componentsJoinedByString: @SPACE_SEP];
+}
+
+@end

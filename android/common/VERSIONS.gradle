@@ -1,0 +1,150 @@
+import org.gradle.util.GradleVersion
+
+def DEFAULT_COMPILE_SDK_VERSION = 28
+def DEFAULT_BUILD_TOOLS_VERSION = "28.0.3"
+def DEFAULT_TARGET_SDK_VERSION = 28
+def DEFAULT_MIN_SDK_VERSION = 16
+def DEFAULT_PLAY_SERVICES_VERSION = "11+"
+def DEFAULT_SUPPORT_LIB_VERSION = "28.0.0"
+def DEFAULT_REACT_NATIVE_LIB_VERSION = "+"
+
+def MOCKITO_CORE_VERSION = "1.10.19"
+def POWERMOCK_VERSION = "1.6.2"
+def ROBOLECTRIC_VERSION = "3.0"
+def UI_AUTOMATOR_VERSION = "2.1.2"
+def JUNIT_VERSION = "4.12"
+def FEST_ASSERT_CORE_VERSION = "2.0M10"
+def SUPPORT_TEST_VERSION = "1.0.2"
+def SUPPORTX_TEST_VERSION = "1.1.0"
+def RESOURCE_PREFIX = "mauron85_bgloc_"
+
+ext {
+    getApplicationId = { ->
+        def applicationId = "com.marianhello.app"
+        if (findProject('..:app') != null) {
+            applicationId = project('..:app').android.defaultConfig.applicationId
+        } else if (findProject(':app') != null) {
+            applicationId = project(':app').android.defaultConfig.applicationId
+        }
+        if (rootProject.hasProperty('applicationId')) {
+            applicationId = rootProject.applicationId
+        }
+        return applicationId
+    }
+
+    getAccountPrefix = { ->
+        if (rootProject.hasProperty('accountPrefix')) {
+            return rootProject.accountPrefix;
+        }
+        def applicationId = getApplicationId();
+        return applicationId + '.mauron85.bgloc';
+    }
+
+    getReactNativeLibVersion = { ->
+        def reactNativeLibVersion = DEFAULT_REACT_NATIVE_LIB_VERSION
+        if (rootProject.hasProperty('reactNativeLibVersion')) {
+            reactNativeLibVersion = rootProject.reactNativeLibVersion
+        }
+        return reactNativeLibVersion
+    }
+
+    getPlayServicesVersion = { ->
+        // Check for application-defined play-services version
+        def playServicesVersion = DEFAULT_PLAY_SERVICES_VERSION
+        if (rootProject.hasProperty('playServicesVersion')) {
+            playServicesVersion = rootProject.playServicesVersion
+        } else if (rootProject.hasProperty('googlePlayServicesVersion')) {
+            playServicesVersion = rootProject.googlePlayServicesVersion
+        }
+
+        return playServicesVersion
+    }
+
+    getSupportLibVersion = { ->
+        def supportLibVersion = DEFAULT_SUPPORT_LIB_VERSION
+        if (rootProject.hasProperty('supportLibVersion')) {
+            supportLibVersion = rootProject.supportLibVersion
+        }
+        return supportLibVersion
+    }
+
+    getCompileSdkVersion = { ->
+        def compileSdkVersion = DEFAULT_COMPILE_SDK_VERSION
+        if (rootProject.hasProperty('compileSdkVersion')) {
+            compileSdkVersion = rootProject.compileSdkVersion
+        }
+        return compileSdkVersion
+    }
+
+    getBuildToolsVersion = { ->
+        def buildToolsVersion = DEFAULT_BUILD_TOOLS_VERSION
+        if (rootProject.hasProperty('buildToolsVersion')) {
+            buildToolsVersion = rootProject.buildToolsVersion
+        }
+        return buildToolsVersion
+    }
+
+    getTargetSdkVersion = { ->
+        def targetSdkVersion = DEFAULT_TARGET_SDK_VERSION
+        if (rootProject.hasProperty('targetSdkVersion')) {
+            targetSdkVersion = rootProject.targetSdkVersion
+        }
+        return targetSdkVersion
+    }
+
+    getMinSdkVersion = { ->
+        def minSdkVersion = DEFAULT_MIN_SDK_VERSION
+        if (rootProject.hasProperty('minSdkVersion')) {
+            minSdkVersion = rootProject.minSdkVersion
+        }
+        return minSdkVersion
+    }
+
+    getGradle3Support = { ->
+        if (rootProject.hasProperty('gradle3EXPERIMENTAL')) {
+            return true
+        }
+        def gradleVersionCurrent = GradleVersion.current()
+        if (gradleVersionCurrent >= GradleVersion.version('4.4')) {
+            println "Enabling gradle3EXPERIMENTAL support for gradle $gradleVersionCurrent"
+            return true
+        }
+        return false
+    }
+
+    getResourcePrefix = { ->
+        return RESOURCE_PREFIX
+    }
+
+    androidLibs = [
+        supportAnnotations: [group: 'com.android.support', name: 'support-annotations', version: '24.0.0'],
+        supportCompat: [group: 'com.android.support', name: 'support-compat', version: getSupportLibVersion()],
+        appcompat: [group: 'com.android.support', name: 'appcompat-v7', version: getSupportLibVersion()],
+        playServicesLocation: [group: 'com.google.android.gms', name: 'play-services-location', version: getPlayServicesVersion()],
+        testCore: [group: 'androidx.test', name: 'core', version: '1.0.0'],
+        testRunner: [group: 'androidx.test', name: 'runner', version: SUPPORTX_TEST_VERSION],
+        testRules: [group: 'androidx.test', name: 'rules', version: SUPPORTX_TEST_VERSION],
+    ]
+
+    testLibs = [
+        testRunner: [group: 'com.android.support.test', name: 'runner', version: SUPPORT_TEST_VERSION],
+        testRules: [group: 'com.android.support.test', name: 'rules', version: SUPPORT_TEST_VERSION],
+        uiautomator: [group: 'com.android.support.test.uiautomator', name: 'uiautomator-v18', version: UI_AUTOMATOR_VERSION],
+        junit: [group: 'junit', name: 'junit', version: JUNIT_VERSION],
+        json: [group: 'org.json', name: 'json', version: '20140107'],
+        powermockMockito: [group: 'org.powermock', name: 'powermock-api-mockito', version: POWERMOCK_VERSION],
+        powermockjUnit: [group: 'org.powermock', name: 'powermock-module-junit4-rule', version: POWERMOCK_VERSION],
+        powermockClassloading: [group: 'org.powermock', name: 'powermock-classloading-xstream', version: POWERMOCK_VERSION],
+        mockitoCore: [group: 'org.mockito', name: 'mockito-core', version: MOCKITO_CORE_VERSION],
+        festAssertCore: [group: 'org.easytesting', name: 'fest-assert-core', version: FEST_ASSERT_CORE_VERSION],
+        robolectric: [group: 'org.robolectric', name: 'robolectric', version: ROBOLECTRIC_VERSION],
+    ]
+
+    libs = [
+        reactNative: [group: 'com.facebook.react', name: 'react-native', version: getReactNativeLibVersion()],
+        permissions: [group: 'com.intentfilter', name: 'android-permissions', version: '0.1.7'],
+        logback: [group: 'com.github.tony19', name: 'logback-android', version: '1.1.1-9'],
+        slf4j: [group: 'org.slf4j', name: 'slf4j-api', version: '1.7.21'],
+        promise: [group: 'com.github.jparkie', name: 'promise', version: '1.0.3'],
+    ]
+}

@@ -1,0 +1,96 @@
+apply plugin: 'com.android.library'
+
+apply from: './VERSIONS.gradle'
+def accountPrefix = getAccountPrefix()
+def resourcePrefix = getResourcePrefix()
+
+// https://hackernoon.com/android-how-to-add-gradle-dependencies-using-foreach-c4cbcc070458
+def projDependencies = [
+    [configuration: "androidTestImplementation", dependency: androidLibs.supportAnnotations],
+    [configuration: "androidTestImplementation", dependency: testLibs.testRunner],
+    [configuration: "androidTestImplementation", dependency: testLibs.testRules],
+    [configuration: "testImplementation", dependency: testLibs.testRunner],
+    [configuration: "testImplementation", dependency: testLibs.testRules],
+    [configuration: "testImplementation", dependency: testLibs.junit],
+    [configuration: "testImplementation", dependency: testLibs.json],
+    [configuration: "testImplementation", dependency: testLibs.robolectric],
+    [configuration: "testImplementation", dependency: testLibs.mockitoCore],
+    [configuration: "implementation", dependency: androidLibs.playServicesLocation],
+    [configuration: "implementation", dependency: androidLibs.supportCompat],
+    [configuration: "implementation", dependency: androidLibs.appcompat],
+    [configuration: "implementation", dependency: libs.permissions,
+        options: { exclude group: 'com.android.support', module: 'appcompat-v7'}],
+    [configuration: "implementation", dependency: libs.logback],
+    [configuration: "implementation", dependency: libs.slf4j],
+    [configuration: "implementation", dependency: libs.promise],
+]
+
+buildscript {
+    repositories {
+        maven {
+            url 'https://maven.google.com/'
+            name 'Google'
+        }
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.4.1'
+
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+allprojects {
+    repositories {
+        maven {
+            url 'https://maven.google.com'
+        }
+        jcenter()
+    }
+}
+
+android {
+    compileSdkVersion project.ext.getCompileSdkVersion()
+    buildToolsVersion project.ext.getBuildToolsVersion()
+
+    // Tip: https://stackoverflow.com/questions/39987669/renamingdelegatingcontext-is-deprecated-how-do-we-test-sqlite-db-now/52170737#52170737
+    // Gradle automatically adds 'android.test.runner' as a dependency.
+    useLibrary 'android.test.runner'
+    useLibrary 'android.test.base'
+    useLibrary 'android.test.mock'
+
+    defaultConfig {
+        resValue "string", resourcePrefix + "account_name", 'Locations'
+        resValue "string", resourcePrefix + "account_type", accountPrefix + '.account'
+        resValue "string", resourcePrefix + "content_authority", accountPrefix + '.provider'
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        minSdkVersion project.ext.getMinSdkVersion()
+        versionCode 1
+        versionName "1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    testOptions {
+        //unitTests.includeAndroidResources = true
+        unitTests.returnDefaultValues = true
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+}
+
+dependencies {
+    projDependencies.each {
+        add(it.configuration, it.dependency)
+    }
+
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+}
