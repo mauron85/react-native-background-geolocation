@@ -1,20 +1,12 @@
 # @mauron85/react-native-background-geolocation
 
-[![CircleCI](https://circleci.com/gh/mauron85/react-native-background-geolocation/tree/master.svg?style=shield)](https://circleci.com/gh/mauron85/react-native-background-geolocation/tree/master)
-[![issuehunt-shield-v1](issuehunt-shield-v1.svg)](https://issuehunt.io/r/mauron85/react-native-background-geolocation/)
+This package is a fork of [@mauron85/react-native-background-geolocation](https://www.npmjs.com/package/@mauron85/react-native-background-geolocation). Some of the notification channels are removed and it is now required to include two resources in order to define one notification channel.
 
-## We're moving
-
-Npm package is now [@mauron85/react-native-background-geolocation](https://www.npmjs.com/package/@mauron85/react-native-background-geolocation)!
-
-## Submitting issues
-
-All new issues should follow instructions in [ISSUE_TEMPLATE.md](https://raw.githubusercontent.com/mauron85/react-native-background-geolocation/master/ISSUE_TEMPLATE.md).
-A properly filled issue report will significantly reduce number of follow up questions and decrease issue resolving time.
-Most issues cannot be resolved without debug logs. Please try to isolate debug lines related to your issue.
-Instructions for how to prepare debug logs can be found in section [Debugging](#debugging).
-If you're reporting an app crash, debug logs might not contain all the necessary information about the cause of the crash.
-In that case, also provide relevant parts of output of `adb logcat` command.
+**android/app/src/main/res/values/strings.xml**
+```
+<string name="bg_geolocation_service_channel_id">channel_id</string>
+<string name="bg_geolocation_service_channel_name">Your channel name</string>
+```
 
 ## Issue Hunt
 
