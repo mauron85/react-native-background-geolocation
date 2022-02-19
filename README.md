@@ -76,7 +76,7 @@ compatible with this module.
 
 If you are using an older version of React Native with this module some features may be buggy.
 
-If you are using `react-native-maps` or another lib that requires `Google Play Services` such as `Exponent.js`, then in addition to the instalation steps described here, you must set `Google Play Services` library version to match the version used by those libraries. (in this case `9.8.0`)
+If you are using `react-native-maps` or another lib that requires `Google Play Services` such as `Exponent.js`, then in addition to the installation steps described here, you must set `Google Play Services` library version to match the version used by those libraries. (in this case `9.8.0`)
 
 Add following to `android/build.gradle`
 ```
@@ -210,7 +210,7 @@ class BgTracking extends Component {
 export default BgTracking;
 ```
 
-## Instalation
+## Installation
 
 ### Installation
 
