@@ -3,9 +3,86 @@
 [![CircleCI](https://circleci.com/gh/mauron85/react-native-background-geolocation/tree/master.svg?style=shield)](https://circleci.com/gh/mauron85/react-native-background-geolocation/tree/master)
 [![issuehunt-shield-v1](issuehunt-shield-v1.svg)](https://issuehunt.io/r/mauron85/react-native-background-geolocation/)
 
-## We're moving
+Forked from [@maruon85/react-native-background-geolocation](https://github.com/mauron85/react-native-background-geolocation) due to inactivity.
 
-Npm package is now [@mauron85/react-native-background-geolocation](https://www.npmjs.com/package/@mauron85/react-native-background-geolocation)!
+## Installation
+
+```
+yarn add @mauron85/react-native-background-geolocation
+```
+
+### Automatic setup
+
+Since version 0.60 React Native does linking of modules [automatically](https://github.com/react-native-community/cli/blob/master/docs/autolinking.md). However it does it only for single module.
+As plugin depends on additional 'common' module, it is required to link it with:
+
+```
+node ./node_modules/@mauron85/react-native-background-geolocation/scripts/postlink.js
+```
+
+### Manual setup
+
+#### Android setup
+
+In `android/settings.gradle`
+
+```gradle
+...
+include ':@mauron85_react-native-background-geolocation-common'
+project(':@mauron85_react-native-background-geolocation-common').projectDir = new File(rootProject.projectDir, '../node_modules/@mauron85/react-native-background-geolocation/android/common')
+include ':@mauron85_react-native-background-geolocation'
+project(':@mauron85_react-native-background-geolocation').projectDir = new File(rootProject.projectDir, '../node_modules/@mauron85/react-native-background-geolocation/android/lib')
+...
+```
+
+In `android/app/build.gradle`
+
+```gradle
+dependencies {
+    ...
+    compile project(':@mauron85_react-native-background-geolocation')
+    ...
+}
+```
+
+Register the module (in `MainApplication.java`)
+
+```java
+import com.marianhello.bgloc.react.BackgroundGeolocationPackage;  // <--- Import Package
+
+public class MainApplication extends Application implements ReactApplication {
+  ...
+  /**
+   * A list of packages used by the app. If the app uses additional views
+   * or modules besides the default ones, add more packages here.
+   */
+  @Override
+  protected List<ReactPackage> getPackages() {
+      return Arrays.<ReactPackage>asList(
+          new MainReactPackage(),
+          new BackgroundGeolocationPackage() // <---- Add the Package
+      );
+  }
+  ...
+}
+```
+
+#### iOS setup
+
+1. In XCode, in the project navigator, right click `Libraries` ➜ `Add Files to [your project's name]`
+2. Add `./node_modules/@mauron85/react-native-background-geolocation/ios/RCTBackgroundGeolocation.xcodeproj`
+3. In the XCode project navigator, select your project, select the `Build Phases` tab and in the `Link Binary With Libraries` section add **libRCTBackgroundGeolocation.a**
+4. Add `UIBackgroundModes` **location** to `Info.plist`
+5. Add `NSMotionUsageDescription` **App requires motion tracking** to `Info.plist` (required by ACTIVITY_PROVIDER)
+
+For iOS before version 11:
+
+6. Add `NSLocationAlwaysUsageDescription` **App requires background tracking** to `Info.plist`
+
+For iOS 11:
+
+6. Add `NSLocationWhenInUseUsageDescription` **App requires background tracking** to `Info.plist`
+7. Add `NSLocationAlwaysAndWhenInUseUsageDescription` **App requires background tracking** to `Info.plist`
 
 ## Submitting issues
 
@@ -210,88 +287,6 @@ class BgTracking extends Component {
 export default BgTracking;
 ```
 
-## Instalation
-
-### Installation
-
-Add the package to your project
-
-```
-yarn add @mauron85/react-native-background-geolocation
-```
-
-### Automatic setup
-
-Since version 0.60 React Native does linking of modules [automatically](https://github.com/react-native-community/cli/blob/master/docs/autolinking.md). However it does it only for single module.
-As plugin depends on additional 'common' module, it is required to link it with:
-
-```
-node ./node_modules/@mauron85/react-native-background-geolocation/scripts/postlink.js
-```
-
-### Manual setup
-
-#### Android setup
-
-In `android/settings.gradle`
-
-```gradle
-...
-include ':@mauron85_react-native-background-geolocation-common'
-project(':@mauron85_react-native-background-geolocation-common').projectDir = new File(rootProject.projectDir, '../node_modules/@mauron85/react-native-background-geolocation/android/common')
-include ':@mauron85_react-native-background-geolocation'
-project(':@mauron85_react-native-background-geolocation').projectDir = new File(rootProject.projectDir, '../node_modules/@mauron85/react-native-background-geolocation/android/lib')
-...
-```
-
-In `android/app/build.gradle`
-
-```gradle
-dependencies {
-    ...
-    compile project(':@mauron85_react-native-background-geolocation')
-    ...
-}
-```
-
-Register the module (in `MainApplication.java`)
-
-```java
-import com.marianhello.bgloc.react.BackgroundGeolocationPackage;  // <--- Import Package
-
-public class MainApplication extends Application implements ReactApplication {
-  ...
-  /**
-   * A list of packages used by the app. If the app uses additional views
-   * or modules besides the default ones, add more packages here.
-   */
-  @Override
-  protected List<ReactPackage> getPackages() {
-      return Arrays.<ReactPackage>asList(
-          new MainReactPackage(),
-          new BackgroundGeolocationPackage() // <---- Add the Package
-      );
-  }
-  ...
-}
-```
-
-#### iOS setup
-
-1. In XCode, in the project navigator, right click `Libraries` ➜ `Add Files to [your project's name]`
-2. Add `./node_modules/@mauron85/react-native-background-geolocation/ios/RCTBackgroundGeolocation.xcodeproj`
-3. In the XCode project navigator, select your project, select the `Build Phases` tab and in the `Link Binary With Libraries` section add **libRCTBackgroundGeolocation.a**
-4. Add `UIBackgroundModes` **location** to `Info.plist`
-5. Add `NSMotionUsageDescription` **App requires motion tracking** to `Info.plist` (required by ACTIVITY_PROVIDER)
-
-For iOS before version 11:
-
-6. Add `NSLocationAlwaysUsageDescription` **App requires background tracking** to `Info.plist`
-
-For iOS 11:
-
-6. Add `NSLocationWhenInUseUsageDescription` **App requires background tracking** to `Info.plist`
-7. Add `NSLocationAlwaysAndWhenInUseUsageDescription` **App requires background tracking** to `Info.plist`
 
 ## API
 
