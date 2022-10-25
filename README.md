@@ -210,7 +210,7 @@ class BgTracking extends Component {
 export default BgTracking;
 ```
 
-## Instalation
+## Installation
 
 ### Installation
 
