@@ -1,0 +1,161 @@
+-- Merging decision tree log ---
+manifest
+ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:20:1-69:12
+INJECTED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:20:1-69:12
+INJECTED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:20:1-69:12
+	package
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:21:5-42
+		INJECTED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml
+		INJECTED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml
+	android:versionName
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:21:43-68
+	xmlns:android
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:20:11-69
+	android:versionCode
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:21:69-92
+application
+ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:22:5-54:19
+service#com.marianhello.bgloc.sync.SyncService
+ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:23:9-32:19
+	android:process
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:26:13-36
+	android:exported
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:25:13-36
+	android:name
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:24:13-66
+intent-filter#action:name:android.content.SyncAdapter
+ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:27:13-29:29
+action#android.content.SyncAdapter
+ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:28:17-69
+	android:name
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:28:25-67
+meta-data#android.content.SyncAdapter
+ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:30:13-31:54
+	android:resource
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:31:17-52
+	android:name
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:30:24-66
+service#com.marianhello.bgloc.sync.AuthenticatorService
+ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:33:9-41:19
+	android:exported
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:34:76-99
+	android:name
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:34:13-75
+intent-filter#action:name:android.accounts.AccountAuthenticator
+ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:35:13-37:29
+action#android.accounts.AccountAuthenticator
+ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:36:17-79
+	android:name
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:36:25-77
+meta-data#android.accounts.AccountAuthenticator
+ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:38:13-40:57
+	android:resource
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:40:17-54
+	android:name
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:39:17-69
+provider#com.marianhello.bgloc.data.provider.LocationContentProvider
+ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:42:9-46:38
+	android:authorities
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:44:13-75
+	android:syncable
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:46:13-36
+	android:exported
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:45:13-37
+	android:name
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:43:13-87
+service#com.marianhello.bgloc.service.LocationServiceImpl
+ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:47:9-133
+	android:enabled
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:47:18-40
+	android:exported
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:47:41-65
+	android:name
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:47:66-130
+service#com.marianhello.bgloc.react.headless.HeadlessService
+ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:48:9-136
+	android:enabled
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:48:18-40
+	android:exported
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:48:41-65
+	android:name
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:48:66-133
+receiver#com.marianhello.bgloc.BootCompletedReceiver
+ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:49:9-53:20
+	android:enabled
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:49:19-41
+	android:exported
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:49:42-65
+	android:name
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:49:66-124
+intent-filter#action:name:android.intent.action.BOOT_COMPLETED
+ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:50:13-52:29
+action#android.intent.action.BOOT_COMPLETED
+ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:51:17-79
+	android:name
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:51:25-76
+uses-permission#android.hardware.location
+ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:56:5-65
+	android:name
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:56:22-62
+uses-permission#android.permission.INTERNET
+ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:57:5-66
+	android:name
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:57:22-64
+uses-permission#android.permission.WAKE_LOCK
+ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:58:5-68
+	android:name
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:58:22-65
+uses-permission#android.permission.ACCESS_NETWORK_STATE
+ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:59:5-79
+	android:name
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:59:22-76
+uses-permission#android.permission.ACCESS_COARSE_LOCATION
+ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:60:5-81
+	android:name
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:60:22-78
+uses-permission#android.permission.ACCESS_FINE_LOCATION
+ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:61:5-79
+	android:name
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:61:22-76
+uses-permission#android.permission.ACCESS_LOCATION_EXTRA_COMMANDS
+ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:62:5-89
+	android:name
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:62:22-86
+uses-permission#com.google.android.gms.permission.ACTIVITY_RECOGNITION
+ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:63:5-94
+	android:name
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:63:22-91
+uses-permission#android.permission.RECEIVE_BOOT_COMPLETED
+ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:64:5-81
+	android:name
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:64:22-78
+uses-permission#android.permission.READ_SYNC_SETTINGS
+ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:65:5-76
+	android:name
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:65:22-74
+uses-permission#android.permission.WRITE_SYNC_SETTINGS
+ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:66:5-77
+	android:name
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:66:22-75
+uses-permission#android.permission.AUTHENTICATE_ACCOUNTS
+ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:67:5-79
+	android:name
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:67:22-77
+uses-permission#android.permission.FOREGROUND_SERVICE
+ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:68:5-77
+	android:name
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml:68:22-74
+uses-sdk
+INJECTED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml reason: use-sdk injection requested
+INJECTED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml
+INJECTED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml
+INJECTED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml
+INJECTED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml
+	android:targetSdkVersion
+		INJECTED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml
+		INJECTED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml
+	android:minSdkVersion
+		INJECTED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml
+		ADDED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml
+		INJECTED from E:\CruzeDriver\CruzeDriver\node_modules\@mauron85\react-native-background-geolocation\android\lib\src\main\AndroidManifest.xml

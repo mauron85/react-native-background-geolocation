@@ -23,7 +23,7 @@
         <service
             android:name="com.marianhello.bgloc.sync.SyncService"
             android:exported="true"
-            android:process=":sync">
+            android:process=":sync" >
             <intent-filter>
                 <action android:name="android.content.SyncAdapter"/>
             </intent-filter>
@@ -31,7 +31,7 @@
                 android:resource="@xml/syncadapter"/>
         </service>
         <service
-            android:name="com.marianhello.bgloc.sync.AuthenticatorService">
+            android:name="com.marianhello.bgloc.sync.AuthenticatorService" android:exported="true">
             <intent-filter>
                 <action android:name="android.accounts.AccountAuthenticator"/>
             </intent-filter>
@@ -46,7 +46,7 @@
             android:syncable="true"/>
         <service android:enabled="true" android:exported="false" android:name="com.marianhello.bgloc.service.LocationServiceImpl" />
         <service android:enabled="true" android:exported="false" android:name="com.marianhello.bgloc.react.headless.HeadlessService" />
-        <receiver android:enabled="true" android:exported="true" android:name="com.marianhello.bgloc.BootCompletedReceiver">
+        <receiver android:enabled="true" android:exported="true" android:name="com.marianhello.bgloc.BootCompletedReceiver" >
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>

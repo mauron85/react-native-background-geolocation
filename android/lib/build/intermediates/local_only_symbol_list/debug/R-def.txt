@@ -1,0 +1,6 @@
+R_DEF: Internal format may change without notice
+local
+mipmap ic_launcher
+string app_name
+xml authenticator
+xml syncadapter
