@@ -2,7 +2,7 @@ module.exports = {
   dependency: {
     platforms: {
       android: {
-gu        sourceDir: "./android/lib",
+gu       sourceDir: "./android/lib",
         packageImportPath: "import com.marianhello.bgloc.react.BackgroundGeolocationPackage;",
         packageInstance: "new BackgroundGeolocationPackage()"
       },
