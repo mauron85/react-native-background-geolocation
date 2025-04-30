@@ -293,6 +293,97 @@ For iOS 11:
 6. Add `NSLocationWhenInUseUsageDescription` **App requires background tracking** to `Info.plist`
 7. Add `NSLocationAlwaysAndWhenInUseUsageDescription` **App requires background tracking** to `Info.plist`
 
+## Installation avec Expo
+
+### Configuration requise
+- Expo SDK 47 ou supérieur
+- Un projet Expo configuré avec expo-dev-client
+
+### Installation
+
+1. Installez le package :
+```bash
+npx expo install @mauron85/react-native-background-geolocation
+```
+
+2. Ajoutez les permissions nécessaires dans votre fichier app.json :
+```json
+{
+  "expo": {
+    "plugins": [
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Autoriser $(PRODUCT_NAME) à utiliser votre localisation en arrière-plan",
+          "locationAlwaysPermission": "Autoriser $(PRODUCT_NAME) à utiliser votre localisation en arrière-plan",
+          "locationWhenInUsePermission": "Autoriser $(PRODUCT_NAME) à utiliser votre localisation"
+        }
+      ]
+    ]
+  }
+}
+```
+
+
+```
+
+### Exemple d'utilisation avec Expo
+
+```javascript
+import BackgroundGeolocation from '@mauron85/react-native-background-geolocation';
+
+
+
+
+// Dans votre composant
+useEffect(() => {
+  BackgroundGeolocation.configure({
+    desiredAccuracy: BackgroundGeolocation.HIGH_ACCURACY,
+    stationaryRadius: 50,
+    distanceFilter: 50,
+    notificationTitle: 'Suivi en arrière-plan',
+    notificationText: 'activé',
+    debug: true,
+    startOnBoot: false,
+    stopOnTerminate: false,
+    locationProvider: BackgroundGeolocation.ACTIVITY_PROVIDER,
+    interval: 10000,
+    fastestInterval: 5000,
+    activitiesInterval: 10000,
+    stopOnStillActivity: false
+  });
+
+  BackgroundGeolocation.on('location', (location) => {
+    // Gérer la location ici
+    console.log(location);
+  });
+
+  BackgroundGeolocation.on('error', (error) => {
+    console.log('[ERROR] BackgroundGeolocation error:', error);
+  });
+
+  BackgroundGeolocation.start();
+
+  return () => {
+    BackgroundGeolocation.removeAllListeners();
+  };
+}, []);
+```
+
+### Notes importantes pour Expo
+
+1. Cette intégration nécessite l'utilisation d'expo-dev-client car elle contient du code natif.
+2. Pour les builds de production, vous devrez utilquer EAS Build :
+```bash
+eas build --platform ios
+eas build --platform android
+```
+
+3. Pour le développement local, utilisez :
+```bash
+npx expo start --dev-client
+```
+
 ## API
 
 ### configure(options, success, fail)

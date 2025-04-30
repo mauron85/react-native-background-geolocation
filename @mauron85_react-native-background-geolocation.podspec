@@ -10,11 +10,14 @@ Pod::Spec.new do |s|
 
   s.authors      = package['author']
   s.homepage     = package['homepage']
-  s.platform     = :ios, "9.0"
+  s.platform     = :ios, "11.0"
 
-  s.source       = { :path => "ios" }
-  s.source_files  = "ios/**/*.{h,m}"
+  s.source       = { :git => package['repository']['url'] }
+  s.source_files = "ios/**/*.{h,m}"
   s.exclude_files = "ios/common/BackgroundGeolocationTests/*.{h,m}"
 
-  s.dependency 'React'
+  s.framework    = 'CoreLocation'
+  s.framework    = 'CoreMotion'
+
+  s.dependency "React-Core"
 end
