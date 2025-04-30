@@ -29,50 +29,28 @@ apply plugin: 'com.android.library'
 apply from: '../common/VERSIONS.gradle'
 def hasApp = findProject(':app') != null
 
-// https://hackernoon.com/android-how-to-add-gradle-dependencies-using-foreach-c4cbcc070458
 def projDependencies = [
     [configuration: "implementation", dependency: libs.slf4j],
     [configuration: "implementation", dependency: libs.reactNative],
-    [configuration: "testImplementation", dependency: testLibs.testRunner],
-    [configuration: "testImplementation", dependency: testLibs.testRules],
     [configuration: "testImplementation", dependency: testLibs.junit],
-    [configuration: "testImplementation", dependency: testLibs.powermockMockito],
-    [configuration: "testImplementation", dependency: testLibs.powermockjUnit],
-    [configuration: "testImplementation", dependency: testLibs.powermockClassloading],
     [configuration: "testImplementation", dependency: testLibs.mockitoCore],
-    [configuration: "testImplementation", dependency: testLibs.festAssertCore],
-    [configuration: "testImplementation", dependency: testLibs.robolectric],
-    [configuration: "androidTestImplementation", dependency: testLibs.testRunner],
-    [configuration: "androidTestImplementation", dependency: testLibs.testRules],
+    [configuration: "androidTestImplementation", dependency: "androidx.test:runner:1.5.2"],
+    [configuration: "androidTestImplementation", dependency: "androidx.test:rules:1.5.0"],
 ]
 
 repositories {
-    // Google dependencies are now hosted at Maven
-    // unfortunately this is ignored when installing as react-native plugin
-    maven {
-        url 'https://maven.google.com'
-    }
-    jcenter()
+    google()
+    mavenCentral()
 }
 
 android {
-    compileSdkVersion project.ext.getCompileSdkVersion()
-    buildToolsVersion project.ext.getBuildToolsVersion()
-    if (hasApp) {
-        evaluationDependsOn(':app')
-    }
-
-    // Tip: https://stackoverflow.com/questions/39987669/renamingdelegatingcontext-is-deprecated-how-do-we-test-sqlite-db-now/52170737#52170737
-    // Gradle automatically adds 'android.test.runner' as a dependency.
-    useLibrary 'android.test.runner'
-    useLibrary 'android.test.base'
-    useLibrary 'android.test.mock'
-
+    compileSdkVersion 33
+    
     defaultConfig {
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        minSdkVersion project.ext.getMinSdkVersion()
-        targetSdkVersion project.ext.getTargetSdkVersion()
-        versionCode 1 // intentionally not updating version as we're not uploading to any java repository
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        minSdkVersion 21
+        targetSdkVersion 33
+        versionCode 1
         versionName "1.0"
     }
 
